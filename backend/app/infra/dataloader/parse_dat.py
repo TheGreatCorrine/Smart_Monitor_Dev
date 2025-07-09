@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Dict, List
 from collections import namedtuple
 
-from app.entities.record import Record
+from ...entities.record import Record
+from .record_factory import RecordFactory
 
 # ── 常量 & 解析布局（沿用你原稿） ─────────────────────────────────────────
 BYTE_ORDER    = ">"
@@ -114,7 +115,7 @@ def iter_new_records(path: Path, run_id: str):
         while chunk := fd.read(RECORD_BYTES):
             if len(chunk) == RECORD_BYTES:
                 rdict = _parse_record(chunk)
-                yield Record.from_dict(rdict, run_id=run_id, file_pos=pos)
+                yield RecordFactory.from_dict(rdict, run_id=run_id, file_pos=pos)
                 pos += RECORD_BYTES
         # 解析完毕，保存最新偏移
         save_offset(path, pos)
