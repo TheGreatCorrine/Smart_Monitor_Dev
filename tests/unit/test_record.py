@@ -1,8 +1,9 @@
 # tests/test_record.py
 from datetime import datetime, timezone
 import pytest
+import dataclasses
 
-from fridge_monitor.entities.record import Record
+from backend.app.entities.record import Record
 
 # ---------- helpers -------------------------------------------------
 RAW_SAMPLE = {

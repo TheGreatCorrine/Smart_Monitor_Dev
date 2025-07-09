@@ -7,8 +7,9 @@ Incremental SigmaData .dat parser → Record objects
 import argparse, json, struct, datetime as dt
 from pathlib import Path
 from typing import Dict, List
+from collections import namedtuple
 
-from fridge_monitor.entities.record import Record
+from app.entities.record import Record
 
 # ── 常量 & 解析布局（沿用你原稿） ─────────────────────────────────────────
 BYTE_ORDER    = ">"
