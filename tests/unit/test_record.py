@@ -21,8 +21,15 @@ FILE_POS = 456
 
 # ---------- tests ----------------------------------------------------
 
-def test_from_dict_basic():
-    rec = Record.from_dict(RAW_SAMPLE.copy(), run_id=RUN_ID, file_pos=FILE_POS)
+def test_record_creation():
+    """测试Record创建"""
+    ts = datetime.fromisoformat("2025-06-20 08:49:25").astimezone(timezone.utc)
+    rec = Record(
+        run_id=RUN_ID,
+        ts=ts,
+        metrics={"T1": -2.13, "U": 220.03, "P": 19.46},
+        file_pos=FILE_POS
+    )
 
     # ts 是否已变为 UTC aware datetime
     assert isinstance(rec.ts, datetime)
@@ -32,13 +39,20 @@ def test_from_dict_basic():
     assert rec.run_id == RUN_ID
     assert rec.file_pos == FILE_POS
 
-    # metrics 里应包含 T1/U/P，且不包含 Time/Timestamp
+    # metrics 里应包含 T1/U/P
     assert rec.metrics["T1"] == -2.13
-    assert "Timestamp" not in rec.metrics
-    assert "Time" not in rec.metrics
+    assert rec.metrics["U"] == 220.03
+    assert rec.metrics["P"] == 19.46
+
 
 def test_to_dict_roundtrip():
-    rec = Record.from_dict(RAW_SAMPLE.copy(), run_id=RUN_ID)
+    """测试to_dict方法"""
+    ts = datetime.fromisoformat("2025-06-20 08:49:25").astimezone(timezone.utc)
+    rec = Record(
+        run_id=RUN_ID,
+        ts=ts,
+        metrics={"T1": -2.13, "U": 220.03, "P": 19.46}
+    )
     d = rec.to_dict()
 
     # 展平后应包含 run_id、ts(字符串)、以及全部 metrics 键
@@ -47,17 +61,40 @@ def test_to_dict_roundtrip():
     for k in ("T1", "U", "P"):
         assert d[k] == RAW_SAMPLE[k]
 
-def test_missing_time_iso_raises():
-    bad = {"T1": 1.0}
-    with pytest.raises(ValueError):
-        Record.from_dict(bad, run_id="ANY")
 
 def test_frozen_immutable():
-    rec = Record.from_dict(RAW_SAMPLE.copy(), run_id=RUN_ID)
+    """测试不可变性"""
+    ts = datetime.fromisoformat("2025-06-20 08:49:25").astimezone(timezone.utc)
+    rec = Record(
+        run_id=RUN_ID,
+        ts=ts,
+        metrics={"T1": -2.13}
+    )
     with pytest.raises(dataclasses.FrozenInstanceError):
         rec.run_id = "NEW"
 
+
 def test_get_helper():
-    rec = Record.from_dict(RAW_SAMPLE.copy(), run_id=RUN_ID)
+    """测试get方法"""
+    ts = datetime.fromisoformat("2025-06-20 08:49:25").astimezone(timezone.utc)
+    rec = Record(
+        run_id=RUN_ID,
+        ts=ts,
+        metrics={"T1": -2.13, "U": 220.03}
+    )
     assert rec.get("T1") == -2.13
     assert rec.get("NON_EXIST", default=999) == 999
+
+
+def test_record_without_file_pos():
+    """测试不带file_pos的Record"""
+    ts = datetime.fromisoformat("2025-06-20 08:49:25").astimezone(timezone.utc)
+    rec = Record(
+        run_id=RUN_ID,
+        ts=ts,
+        metrics={"T1": -2.13}
+    )
+    
+    assert rec.file_pos is None
+    d = rec.to_dict()
+    assert "file_pos" not in d

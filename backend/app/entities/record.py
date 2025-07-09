@@ -1,12 +1,12 @@
 """
-fridge_monitor/entities/record.py
+backend/app/entities/record.py
 --------------------------------
-纯领域实体：不依赖任何框架，只描述“冰箱测试采样点”数据本身
+纯领域实体：不依赖任何框架，只描述"冰箱测试采样点"数据本身
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Dict, Any
 
 
@@ -26,41 +26,6 @@ class Record:
     ts: datetime
     metrics: Dict[str, float | int] = field(default_factory=dict)
     file_pos: int | None = None      # 方便做增量解析；不用可删
-
-    # ---------- 工具方法 --------------------------------------------------
-
-    @staticmethod
-    def from_dict(
-        d: Dict[str, Any],
-        *,
-        run_id: str,
-        file_pos: int | None = None,
-    ) -> "Record":
-        """
-        把解析出的裸 dict 转为 Record。
-        要求字典里必须有 `Time_iso`（ISO-8601 字符串）。
-
-        其它所有键值都进 metrics。
-        """
-        try:
-            # 示例格式： "2025-06-20 08:49:25" 或带时区
-            ts = datetime.fromisoformat(str(d.pop("Time_iso"))).astimezone(
-                timezone.utc
-            )
-        except KeyError:
-            raise ValueError("Expecting key 'Time_iso' in parsed dict")
-
-        # 去掉解析层可能塞进来的临时字段
-        d.pop("Timestamp", None)
-        d.pop("Time", None)
-        d.pop("run_id", None)
-
-        return Record(
-            run_id=run_id,
-            ts=ts,
-            metrics=d,
-            file_pos=file_pos,
-        )
 
     # ---------- 序列化 ------------------------------------------------------
 

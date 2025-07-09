@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# 环境
+.env
+.venv
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 单元测试缓存
+.pytest_cache/
+
+# 覆盖率
+.coverage
+htmlcov/
+
+# 其他
+*.log 
