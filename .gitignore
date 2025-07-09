@@ -10,6 +10,12 @@ __pycache__/
 # VSCode
 .vscode/
 
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
 # macOS
 .DS_Store
 
