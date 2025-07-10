@@ -1,0 +1,117 @@
+# 冰箱测试异常状态智能监测规则配置
+# 支持阈值判断、状态持续时间判断和逻辑组合
+
+rules:
+  # 温度异常检测
+  - id: "temp_high"
+    name: "温度过高告警"
+    description: "冰箱温度超过设定阈值"
+    severity: "high"
+    enabled: true
+    conditions:
+      - type: "threshold"
+        sensor: "温度"
+        operator: ">"
+        value: 8.0
+
+  # 压力异常检测
+  - id: "pressure_low"
+    name: "压力过低告警"
+    description: "系统压力低于安全值"
+    severity: "critical"
+    enabled: true
+    conditions:
+      - type: "threshold"
+        sensor: "压力"
+        operator: "<"
+        value: 0.5
+
+  # 状态持续时间检测
+  - id: "temp_stable_high"
+    name: "温度持续过高"
+    description: "温度持续高于阈值超过5分钟"
+    severity: "medium"
+    enabled: true
+    conditions:
+      - type: "state_duration"
+        sensor: "温度"
+        operator: ">"
+        value: 6.0
+        duration_minutes: 5
+
+  # 逻辑组合条件 - AND
+  - id: "temp_pressure_anomaly"
+    name: "温度压力异常组合"
+    description: "温度过高且压力异常"
+    severity: "critical"
+    enabled: true
+    conditions:
+      - type: "logic_and"
+        sensor: ""
+        operator: "=="
+        conditions:
+          - type: "threshold"
+            sensor: "温度"
+            operator: ">"
+            value: 7.0
+          - type: "threshold"
+            sensor: "压力"
+            operator: "<"
+            value: 0.8
+
+  # 逻辑组合条件 - OR
+  - id: "any_critical_condition"
+    name: "任一关键条件"
+    description: "温度过高或压力过低任一条件"
+    severity: "high"
+    enabled: true
+    conditions:
+      - type: "logic_or"
+        sensor: ""
+        operator: "=="
+        conditions:
+          - type: "threshold"
+            sensor: "温度"
+            operator: ">"
+            value: 9.0
+          - type: "threshold"
+            sensor: "压力"
+            operator: "<"
+            value: 0.3
+
+  # 复杂逻辑组合
+  - id: "complex_anomaly"
+    name: "复杂异常检测"
+    description: "温度持续过高且压力异常，或者温度过高且湿度异常"
+    severity: "critical"
+    enabled: true
+    conditions:
+      - type: "logic_or"
+        sensor: ""
+        operator: "=="
+        conditions:
+          - type: "logic_and"
+            sensor: ""
+            operator: "=="
+            conditions:
+              - type: "state_duration"
+                sensor: "温度"
+                operator: ">"
+                value: 6.5
+                duration_minutes: 3
+              - type: "threshold"
+                sensor: "压力"
+                operator: "<"
+                value: 0.6
+          - type: "logic_and"
+            sensor: ""
+            operator: "=="
+            conditions:
+              - type: "threshold"
+                sensor: "温度"
+                operator: ">"
+                value: 8.5
+              - type: "threshold"
+                sensor: "湿度"
+                operator: ">"
+                value: 80.0 

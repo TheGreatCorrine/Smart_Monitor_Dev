@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试 parse_dat.py 的功能
+测试 dat_parser.py 的功能
 使用 MPL6.dat 文件并结构化打印结果
 """
 import sys
@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "backend"))
 import json
 from datetime import datetime
 
-from app.infra.dataloader.parse_dat import iter_new_records
+from app.infra.datastore.dat_parser import iter_new_records
 
 
 def test_parse_mpl6_dat():
@@ -139,7 +139,7 @@ def test_record_structure():
 
 
 if __name__ == "__main__":
-    print("🚀 开始测试 parse_dat.py")
+    print("🚀 开始测试 dat_parser.py")
     print("=" * 60)
     
     test_parse_mpl6_dat()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Incremental SigmaData .dat parser → Record objects
-作者: Xiang, Yining (GDE-CLBP) + ChatGPT 修改
+作者: Xiang, Yining (GDE-CLBP)
 版本: 2025-07-07
 """
 import argparse, json, struct, datetime as dt
