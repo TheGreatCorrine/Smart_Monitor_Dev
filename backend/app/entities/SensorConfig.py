@@ -82,32 +82,4 @@ class SensorGroup:
     description: str = ""
     sensors: List[str] = field(default_factory=list)
     color: str = "#000000"
-    enabled: bool = True
-
-
-@dataclass(slots=True)
-class TestSession:
-    """
-    测试会话配置
-    
-    Attributes
-    ----------
-    session_id  : str   # 会话ID
-    name        : str   # 测试名称
-    description : str   # 描述
-    start_time  : datetime|None # 开始时间
-    end_time    : datetime|None # 结束时间
-    engineer    : str   # 工程师姓名
-    test_type   : str   # 测试类型
-    sensors     : Dict[str, SensorChannel] # 传感器配置
-    metadata    : Dict[str, str] # 元数据
-    """
-    session_id: str
-    name: str
-    description: str = ""
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    engineer: str = ""
-    test_type: str = ""
-    sensors: Dict[str, SensorChannel] = field(default_factory=dict)
-    metadata: Dict[str, str] = field(default_factory=dict) 
+    enabled: bool = True 
