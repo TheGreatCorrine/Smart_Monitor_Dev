@@ -81,28 +81,4 @@ class Rule:
     description: str
     conditions: List[Condition]
     severity: Severity
-    enabled: bool = True
-
-
-@dataclass(slots=True)
-class AlarmEvent:
-    """
-    告警事件
-    
-    Attributes
-    ----------
-    rule_id     : str           # 触发规则ID
-    rule_name   : str           # 规则名称
-    severity    : Severity      # 严重程度
-    timestamp   : datetime      # 触发时间
-    description : str           # 告警描述
-    sensor_values: Dict[str, float] # 传感器值
-    run_id      : str           # 测试会话ID
-    """
-    rule_id: str
-    rule_name: str
-    severity: Severity
-    timestamp: datetime
-    description: str
-    sensor_values: Dict[str, float]
-    run_id: str 
+    enabled: bool = True 
