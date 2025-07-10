@@ -1,5 +1,5 @@
 """
-backend/app/entities/sensor_config.py
+backend/app/entities/SensorConfig.py
 ------------------------------------
 纯领域实体：传感器配置相关的核心实体，不依赖任何框架
 """

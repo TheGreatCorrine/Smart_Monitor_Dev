@@ -1,4 +1,9 @@
-from ...entities.record import Record
+"""
+backend/app/infra/datastore/RecordRepository.py
+------------------------------------
+记录仓储 - 负责Record对象的创建和转换
+"""
+from ...entities.Record import Record
 from datetime import datetime, timezone
 
 class RecordFactory:

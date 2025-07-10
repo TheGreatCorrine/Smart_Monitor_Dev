@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+backend/app/infra/datastore/DatParser.py
+------------------------------------
 Incremental SigmaData .dat parser → Record objects
 作者: Xiang, Yining (GDE-CLBP)
 版本: 2025-07-07
@@ -9,8 +11,8 @@ from pathlib import Path
 from typing import Dict, List
 from collections import namedtuple
 
-from ...entities.record import Record
-from .record_factory import RecordFactory
+from ...entities.Record import Record
+from .RecordRepository import RecordFactory
 
 # ── 常量 & 解析布局（沿用你原稿） ─────────────────────────────────────────
 BYTE_ORDER    = ">"

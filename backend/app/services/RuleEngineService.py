@@ -1,5 +1,5 @@
 """
-backend/app/application/rule_engine.py
+backend/app/services/RuleEngineService.py
 ------------------------------------
 应用服务层：规则引擎，实现规则评估和告警生成的核心业务逻辑
 """
@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import logging
 
-from ..entities.rule import Rule, Condition, ConditionType, Operator, AlarmEvent, Severity
-from ..entities.record import Record
+from ..entities.Rule import Rule, Condition, ConditionType, Operator, AlarmEvent, Severity
+from ..entities.Record import Record
 
 
 class RuleEngine:

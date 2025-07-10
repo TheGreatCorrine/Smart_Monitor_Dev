@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "backend"))
 import json
 from datetime import datetime
 
-from app.infra.datastore.dat_parser import iter_new_records
+from app.infra.datastore.DatParser import iter_new_records
 
 
 def test_parse_mpl6_dat():

@@ -1,4 +1,8 @@
-# tests/unit/test_sensor_config.py
+"""
+tests/unit/test_sensor_config.py
+------------------------------------
+传感器配置测试
+"""
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -6,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 import pytest
 from datetime import datetime
 
-from backend.app.entities.sensor_config import (
+from backend.app.entities.SensorConfig import (
     SensorChannel, SensorType, Unit, TestSession, SensorGroup
 )
 

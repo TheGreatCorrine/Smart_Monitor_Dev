@@ -3,17 +3,23 @@
 demo_rule_engine.py
 ------------------------------------
 规则引擎演示脚本
-展示完整的监控服务功能
+演示如何使用规则引擎进行数据监控
 """
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
+from pathlib import Path
+
+# 添加backend目录到Python路径
+backend_path = Path(__file__).parent / "backend"
+sys.path.insert(0, str(backend_path))
 
 from datetime import datetime, timedelta
 import logging
 
-from backend.app.usecases.monitor_service import MonitorService, default_alarm_handler
-from backend.app.entities.record import Record
+from app.entities.Record import Record
+from app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+from app.services.RuleEngineService import RuleEngine
+from app.usecases.Monitor import MonitorService, default_alarm_handler
 
 
 def setup_logging():

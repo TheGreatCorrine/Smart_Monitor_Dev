@@ -11,7 +11,9 @@ import tempfile
 import yaml
 from datetime import datetime
 
-from backend.app.usecases.monitor_service import MonitorService, default_alarm_handler
+from backend.app.usecases.Monitor import MonitorService, default_alarm_handler
+from app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+from app.entities.Record import Record
 
 
 class TestMonitorIntegration:
@@ -86,7 +88,6 @@ class TestMonitorIntegration:
     def test_alarm_handling(self):
         """告警处理测试"""
         # 创建简单的规则
-        from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
         
         rule = Rule(
             id="test_alarm",
@@ -107,7 +108,6 @@ class TestMonitorIntegration:
         self.monitor_service.rule_engine.load_rules([rule])
         
         # 创建测试记录
-        from backend.app.entities.record import Record
         
         # 正常记录 - 不触发告警
         normal_record = Record(
@@ -136,8 +136,6 @@ class TestMonitorIntegration:
     
     def test_multiple_conditions(self):
         """多条件测试"""
-        from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
-        from backend.app.entities.record import Record
         
         # 创建复杂规则：温度 > 6.0 AND 压力 < 0.8
         rule = Rule(

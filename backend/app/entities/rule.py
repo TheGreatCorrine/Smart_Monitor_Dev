@@ -1,5 +1,5 @@
 """
-backend/app/entities/rule.py
+backend/app/entities/Rule.py
 ------------------------------------
 纯领域实体：规则相关的核心实体，不依赖任何框架
 """

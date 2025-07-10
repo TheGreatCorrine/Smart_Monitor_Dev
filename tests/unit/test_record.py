@@ -1,13 +1,16 @@
-# tests/test_record.py
+"""
+tests/unit/test_record.py
+------------------------------------
+Record实体测试
+"""
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from datetime import datetime, timezone
 import pytest
-import dataclasses
+from datetime import datetime, timezone
 
-from backend.app.entities.record import Record
+from backend.app.entities.Record import Record
 
 # ---------- helpers -------------------------------------------------
 RAW_SAMPLE = {

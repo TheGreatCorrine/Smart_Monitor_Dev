@@ -1,19 +1,24 @@
 """
-backend/app/usecases/monitor_service.py
+backend/app/usecases/Monitor.py
 ------------------------------------
-用例层：监控服务，协调数据加载、规则评估和告警处理
+监控用例 - 负责监控数据流和触发告警
 """
-from __future__ import annotations
-
-from typing import List, Optional, Callable
-from datetime import datetime
+import sys
+import os
 import logging
+from pathlib import Path
+from typing import List, Callable, Optional
+from datetime import datetime, timedelta
 
-from ..entities.record import Record
-from ..entities.rule import AlarmEvent
-from ..services.rule_engine import RuleEngine
-from ..infra.datastore import dat_parser
-from ..infra.config.rule_loader import RuleLoader
+# 添加backend目录到Python路径
+backend_path = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_path))
+
+from app.entities.Record import Record
+from app.entities.Rule import Rule, AlarmEvent
+from app.services.RuleEngineService import RuleEngine
+from app.infra.datastore.DatParser import iter_new_records
+from app.infra.config.RuleLoader import RuleLoader
 
 
 class MonitorService:
@@ -79,8 +84,7 @@ class MonitorService:
         
         try:
             # 解析数据文件
-            from pathlib import Path
-            records = list(dat_parser.iter_new_records(Path(file_path), run_id))
+            records = list(iter_new_records(Path(file_path), run_id))
             self.logger.info(f"解析了 {len(records)} 条记录")
             
             # 逐条评估记录

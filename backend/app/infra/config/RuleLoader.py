@@ -1,5 +1,5 @@
 """
-backend/app/infra/config/rule_loader.py
+backend/app/infra/config/RuleLoader.py
 ------------------------------------
 基础设施层：规则配置加载器，负责从YAML文件加载规则配置
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 
-from ...entities.rule import Rule, Condition, ConditionType, Operator, Severity
+from ...entities.Rule import Rule, Condition, ConditionType, Operator, Severity
 
 
 @dataclass
