@@ -1,11 +1,11 @@
 """
-tests/test_rule_engine.py
+tests/unit/test_rule_engine.py
 ------------------------------------
-规则引擎测试
+规则引擎单元测试
 """
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import pytest
 from datetime import datetime, timedelta
