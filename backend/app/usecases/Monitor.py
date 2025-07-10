@@ -64,9 +64,9 @@ class MonitorService:
         """
         self.alarm_handlers.append(handler)
     
-    def process_data_file(self, file_path: str, run_id: str) -> List[AlarmEvent]:
+    def process_data_file(self, file_path: str, run_id: str) -> tuple[List[AlarmEvent], int]:
         """
-        处理数据文件，返回所有告警事件
+        处理数据文件，返回所有告警事件和记录数
         
         Parameters
         ----------
@@ -77,8 +77,8 @@ class MonitorService:
             
         Returns
         -------
-        List[AlarmEvent]
-            告警事件列表
+        tuple[List[AlarmEvent], int]
+            告警事件列表和记录数
         """
         all_alarms = []
         
@@ -97,7 +97,7 @@ class MonitorService:
                     self._handle_alarm(alarm)
             
             self.logger.info(f"处理完成，生成了 {len(all_alarms)} 个告警事件")
-            return all_alarms
+            return all_alarms, len(records)
             
         except Exception as e:
             self.logger.error(f"处理数据文件失败: {e}")
