@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-run_tests.py
+tests/run_tests.py
 ------------------------------------
 统一测试运行脚本
 """
@@ -15,17 +15,18 @@ def run_unit_tests():
     print("=" * 60)
     
     unit_tests = [
-        "tests/unit/test_record.py",
-        "tests/unit/test_sensor_config.py", 
-        "tests/unit/test_rule_engine.py"
+        "unit/test_record.py",
+        "unit/test_sensor_config.py", 
+        "unit/test_rule_engine.py"
     ]
     
     for test_file in unit_tests:
-        if Path(test_file).exists():
+        test_path = Path(__file__).parent / test_file
+        if test_path.exists():
             print(f"\n📝 运行: {test_file}")
             print("-" * 40)
             try:
-                result = subprocess.run([sys.executable, test_file], 
+                result = subprocess.run([sys.executable, str(test_path)], 
                                       capture_output=True, text=True)
                 if result.returncode == 0:
                     print("✅ 通过")
@@ -44,16 +45,17 @@ def run_integration_tests():
     print("=" * 60)
     
     integration_tests = [
-        "tests/integration/test_monitor_integration.py",
-        "tests/integration/test_parse_dat.py"
+        "integration/test_monitor_integration.py",
+        "integration/test_parse_dat.py"
     ]
     
     for test_file in integration_tests:
-        if Path(test_file).exists():
+        test_path = Path(__file__).parent / test_file
+        if test_path.exists():
             print(f"\n📝 运行: {test_file}")
             print("-" * 40)
             try:
-                result = subprocess.run([sys.executable, test_file], 
+                result = subprocess.run([sys.executable, str(test_path)], 
                                       capture_output=True, text=True)
                 if result.returncode == 0:
                     print("✅ 通过")
