@@ -176,7 +176,7 @@ def main():
 
 
 def interactive_demo():
-    """交互式demo：让用户选择data/下的文件，处理前30条记录并输出告警"""
+    """交互式demo：让用户选择data/下的文件，支持范围选择处理记录并输出告警"""
     import os
     from pathlib import Path
     from app.usecases.Monitor import MonitorService, default_alarm_handler
@@ -212,18 +212,39 @@ def interactive_demo():
     file_path = data_dir / file_name
     print(f"\n✅ 选择文件: {file_path}")
     
+    # 先统计总记录数
+    print("\n 正在统计文件记录数...")
+    from app.infra.datastore.DatParser import iter_new_records
+    run_id = f"DEMO_{file_name}"
+    all_records = list(iter_new_records(file_path, run_id))
+    total_records = len(all_records)
+    print(f" 文件总记录数: {total_records:,}")
+    
+    # 询问处理范围
+    while True:
+        range_input = input(f"\n请输入要处理的记录范围 (例如: 1-10, 1-{total_records}): ").strip()
+        try:
+            if '-' in range_input:
+                start_str, end_str = range_input.split('-')
+                start_record = int(start_str)
+                end_record = int(end_str)
+                if 1 <= start_record <= end_record <= total_records:
+                    break
+                else:
+                    print(f"❌ 范围无效，请输入 1-{total_records} 之间的范围")
+            else:
+                print("❌ 请输入正确的范围格式，如: 1-10")
+        except ValueError:
+            print("❌ 输入格式错误，请输入数字范围，如: 1-10")
+    
     # 询问是否打印每条record
     print_record = input("\n是否需要打印每条record的详细信息？(y/n): ").strip().lower() == 'y'
-    print_count = 30
-    if print_record:
-        try:
-            count_input = input("打印前几条record？(默认30): ").strip()
-            if count_input:
-                print_count = int(count_input)
-        except ValueError:
-            print("输入无效，使用默认值30")
     
-    print(f"\n开始处理，{'将打印前' + str(print_count) + '条record' if print_record else '不打印record详情'}")
+    print(f"\n开始处理记录 {start_record}-{end_record}，共 {end_record-start_record+1} 条记录")
+    if print_record:
+        print("将打印每条record的详细信息")
+    else:
+        print("不打印record详情")
     print("-" * 60)
     
     # 初始化服务
@@ -232,21 +253,22 @@ def interactive_demo():
     monitor_service.rule_loader.config_path = Path(__file__).parent.parent / "config/rules.yaml"
     monitor_service.initialize()
     
-    # 处理记录
-    from app.infra.datastore.DatParser import iter_new_records
-    run_id = f"DEMO_{file_name}"
+    # 处理指定范围的记录
     records = []
     total_alarms = 0
     
-    for i, record in enumerate(iter_new_records(file_path, run_id)):
-        if i >= 30:  # 最多处理30条
+    for i, record in enumerate(all_records):
+        record_num = i + 1
+        if record_num < start_record:
+            continue
+        if record_num > end_record:
             break
         
         records.append(record)
         
         # 打印record信息（如果开启）
-        if print_record and i < print_count:
-            print(f"\n📊 Record #{i+1}")
+        if print_record:
+            print(f"\n📊 Record #{record_num}")
             print(f"   时间戳(Time): {record.metrics.get('Time_iso', 'N/A')}")
             print(f"   高精度时间戳(Timestamp): {record.metrics.get('Timestamp_iso', 'N/A')}")
             print(f"   传感器值: {record.metrics}")
@@ -257,15 +279,16 @@ def interactive_demo():
         total_alarms += len(alarms)
         
         # 打印告警信息（如果开启）
-        if print_record and i < print_count and alarms:
-            print(f"   🚨 触发 {len(alarms)} 个告警")
-        elif print_record and i < print_count:
+        if print_record and alarms:
+            print(f"    触发 {len(alarms)} 个告警")
+        elif print_record:
             print(f"   ✅ 无告警")
     
     print(f"\n" + "=" * 60)
-    print("📊 处理摘要")
+    print(" 处理摘要")
     print("=" * 60)
-    print(f"📈 总记录数: {len(records)}")
+    print(f"📈 处理记录数: {len(records)} (范围: {start_record}-{end_record})")
+    print(f" 文件总记录数: {total_records:,}")
     print(f"🚨 告警事件: {total_alarms}")
     if total_alarms > 0:
         print(f"⚠️  告警率: {total_alarms/len(records)*100:.2f}%")
