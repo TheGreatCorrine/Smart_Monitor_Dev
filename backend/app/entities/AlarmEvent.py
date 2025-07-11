@@ -10,6 +10,8 @@ from typing import Dict, Optional
 from enum import Enum
 from datetime import datetime
 
+from .Rule import Severity
+
 
 class AlarmStatus(Enum):
     """告警状态"""
@@ -39,7 +41,7 @@ class AlarmEvent:
     id              : str           # 告警事件唯一ID
     rule_id         : str           # 触发规则ID
     rule_name       : str           # 规则名称
-    severity        : str           # 严重程度 (low/medium/high/critical)
+    severity        : Severity      # 严重程度
     status          : AlarmStatus   # 告警状态
     category        : AlarmCategory # 告警分类
     timestamp       : datetime      # 触发时间
@@ -56,7 +58,7 @@ class AlarmEvent:
     id: str
     rule_id: str
     rule_name: str
-    severity: str
+    severity: Severity
     status: AlarmStatus = AlarmStatus.ACTIVE
     category: AlarmCategory = AlarmCategory.CUSTOM
     timestamp: datetime = field(default_factory=datetime.now)

@@ -13,9 +13,11 @@ import logging
 from ..entities.Rule import Rule, Condition, ConditionType, Operator, Severity
 from ..entities.AlarmEvent import AlarmEvent
 from ..entities.Record import Record
+from . import IRuleEngine
+from .AlarmService import AlarmService
 
 
-class RuleEngine:
+class RuleEngine(IRuleEngine):
     """
     规则引擎
     
@@ -23,13 +25,14 @@ class RuleEngine:
     支持阈值判断、状态持续时间判断和逻辑组合
     """
     
-    def __init__(self):
+    def __init__(self, alarm_service: Optional[AlarmService] = None):
         self.rules: List[Rule] = []
         self.sensor_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
         self.state_duration: Dict[str, Dict[str, datetime]] = defaultdict(dict)
+        self.alarm_service = alarm_service or AlarmService()
         self.logger = logging.getLogger(__name__)
     
-    def load_rules(self, rules: List[Rule]):
+    def load_rules(self, rules: List[Rule]) -> None:
         """加载规则"""
         self.rules = [rule for rule in rules if rule.enabled]
         self.logger.info(f"加载了 {len(self.rules)} 条规则")
@@ -154,9 +157,23 @@ class RuleEngine:
         return duration >= timedelta(minutes=duration_minutes)
     
     def _evaluate_frequency(self, condition: Condition, record: Record) -> bool:
-        """评估频率条件（简化实现）"""
-        # TODO: 实现频率检测逻辑
-        return False
+        """评估频率条件"""
+        if condition.sensor not in record.metrics:
+            return False
+        
+        # 获取历史数据
+        history = self.sensor_history[condition.sensor]
+        if len(history) < 2:
+            return False
+        
+        # 计算频率（简化实现：检查值变化次数）
+        changes = 0
+        for i in range(1, len(history)):
+            if abs(history[i]['value'] - history[i-1]['value']) > 0.1:
+                changes += 1
+        
+        # 如果变化次数超过阈值，认为频率异常
+        return changes >= (condition.value or 5)
     
     def _evaluate_logic_and(self, condition: Condition, record: Record) -> bool:
         """评估逻辑AND条件"""
@@ -181,19 +198,8 @@ class RuleEngine:
     def _create_alarm_event(self, rule: Rule, record: Record, run_id: str) -> Optional[AlarmEvent]:
         """创建告警事件"""
         try:
-            # 生成唯一ID
-            alarm_id = f"ALARM_{rule.id}_{record.ts.strftime('%Y%m%d_%H%M%S')}_{hash(record.ts) % 10000:04d}"
-            
-            return AlarmEvent(
-                id=alarm_id,
-                rule_id=rule.id,
-                rule_name=rule.name,
-                severity=rule.severity.value,  # 转换为字符串
-                timestamp=record.ts,
-                description=f"规则 '{rule.name}' 触发: {rule.description}",
-                sensor_values=record.metrics.copy(),
-                run_id=run_id
-            )
+            # 使用AlarmService创建告警
+            return self.alarm_service.create_alarm(rule, record, run_id)
         except Exception as e:
             self.logger.error(f"创建告警事件时出错: {e}")
             return None 

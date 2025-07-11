@@ -32,9 +32,9 @@ def custom_alarm_handler(alarm):
         "critical": "🔴"
     }
     
-    icon = severity_icons.get(alarm.severity, "⚪")
+    icon = severity_icons.get(alarm.severity.value, "⚪")
     
-    print(f"\n{icon} [{alarm.severity.upper()}] {alarm.timestamp}")
+    print(f"\n{icon} [{alarm.severity.value.upper()}] {alarm.timestamp}")
     print(f"   规则: {alarm.rule_name}")
     print(f"   描述: {alarm.description}")
     print(f"   传感器值: {alarm.sensor_values}")

@@ -81,7 +81,7 @@ def custom_alarm_handler(alarm):
     """自定义告警处理器"""
     print(f"\n🚨 告警触发!")
     print(f"   规则: {alarm.rule_name}")
-    print(f"   严重程度: {alarm.severity.upper()}")
+    print(f"   严重程度: {alarm.severity.value.upper()}")
     print(f"   时间: {alarm.timestamp}")
     print(f"   描述: {alarm.description}")
     print(f"   传感器值: {alarm.sensor_values}")

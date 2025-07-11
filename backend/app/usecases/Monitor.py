@@ -160,7 +160,7 @@ class MonitorService:
 # 默认告警处理器
 def default_alarm_handler(alarm: AlarmEvent):
     """默认告警处理器"""
-    print(f"[{alarm.severity.upper()}] {alarm.timestamp}: {alarm.description}")
+    print(f"[{alarm.severity.value.upper()}] {alarm.timestamp}: {alarm.description}")
     print(f"  传感器值: {alarm.sensor_values}")
     print(f"  规则ID: {alarm.rule_id}")
     print("-" * 50) 
