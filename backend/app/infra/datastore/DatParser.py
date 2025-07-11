@@ -85,11 +85,24 @@ def _save_offsets(tbl: Dict[str, int]):
     OFFSET_DB.write_text(json.dumps(tbl))
 
 def get_offset(path: Path) -> int:
-    return _load_offsets().get(str(path), 0)
+    tbl = _load_offsets()
+    # 尝试相对路径和绝对路径
+    relative_path = str(path.relative_to(Path.cwd())) if path.is_absolute() else str(path)
+    absolute_path = str(path.absolute())
+    
+    # 优先使用相对路径
+    if relative_path in tbl:
+        return tbl[relative_path]
+    elif absolute_path in tbl:
+        return tbl[absolute_path]
+    else:
+        return 0
 
 def save_offset(path: Path, pos: int):
     tbl = _load_offsets()
-    tbl[str(path)] = pos
+    # 确保使用相对路径，避免绝对路径和相对路径重复
+    relative_path = str(path.relative_to(Path.cwd())) if path.is_absolute() else str(path)
+    tbl[relative_path] = pos
     _save_offsets(tbl)
 
 # === 解析单条记录 → dict  ==========================================
