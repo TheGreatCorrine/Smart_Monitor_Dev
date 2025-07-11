@@ -97,7 +97,12 @@ def _parse_record(buf: bytes) -> Dict[str, float]:
     for f in FIELDS:
         if f.name in ("DIG0", "DIG1", "DEB1", "DEB2"):
             continue
-        rec[f.name] = struct.unpack_from(f.fmt, buf, f.offset)[0]
+        value = struct.unpack_from(f.fmt, buf, f.offset)[0]
+        # 对浮点数值进行round到小数点后两位
+        if f.fmt.endswith('f') or f.fmt.endswith('d'):
+            rec[f.name] = round(value, 2)
+        else:
+            rec[f.name] = value
 
     for off, names in DIGITAL_MAP.items():
         val = struct.unpack_from(">B", buf, off)[0]
