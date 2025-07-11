@@ -97,8 +97,9 @@ class TestMonitorIntegration:
                 Condition(
                     type=ConditionType.THRESHOLD,
                     sensor="温度",
-                    operator=Operator.GT,
-                    value=5.0
+                    operator=Operator.GREATER_THAN,
+                    value=30.0,
+                    duration_minutes=1
                 )
             ],
             severity=Severity.HIGH
@@ -146,18 +147,18 @@ class TestMonitorIntegration:
                 Condition(
                     type=ConditionType.LOGIC_AND,
                     sensor="",
-                    operator=Operator.EQ,
+                    operator=Operator.EQUAL,
                     conditions=[
                         Condition(
                             type=ConditionType.THRESHOLD,
                             sensor="温度",
-                            operator=Operator.GT,
+                            operator=Operator.GREATER_THAN,
                             value=6.0
                         ),
                         Condition(
                             type=ConditionType.THRESHOLD,
                             sensor="压力",
-                            operator=Operator.LT,
+                            operator=Operator.LESS_THAN,
                             value=0.8
                         )
                     ]

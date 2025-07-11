@@ -22,12 +22,12 @@ class ConditionType(Enum):
 
 class Operator(Enum):
     """操作符"""
-    GT = ">"
-    LT = "<"
-    GTE = ">="
-    LTE = "<="
-    EQ = "=="
-    NE = "!="
+    GREATER_THAN = ">"
+    LESS_THAN = "<"
+    GREATER_THAN_OR_EQUAL_TO = ">="
+    LESS_THAN_OR_EQUAL_TO = "<="
+    EQUAL = "=="
+    NOT_EQUAL = "!="
     UNCHANGED = "unchanged"
     CHANGED = "changed"
 

@@ -117,17 +117,17 @@ class RuleEngine(IRuleEngine):
         if threshold_value is None:
             return False
         
-        if condition.operator == Operator.GT:
+        if condition.operator == Operator.GREATER_THAN:
             return current_value > threshold_value
-        elif condition.operator == Operator.LT:
+        elif condition.operator == Operator.LESS_THAN:
             return current_value < threshold_value
-        elif condition.operator == Operator.GTE:
+        elif condition.operator == Operator.GREATER_THAN_OR_EQUAL_TO:
             return current_value >= threshold_value
-        elif condition.operator == Operator.LTE:
+        elif condition.operator == Operator.LESS_THAN_OR_EQUAL_TO:
             return current_value <= threshold_value
-        elif condition.operator == Operator.EQ:
+        elif condition.operator == Operator.EQUAL:
             return abs(current_value - threshold_value) < 0.001
-        elif condition.operator == Operator.NE:
+        elif condition.operator == Operator.NOT_EQUAL:
             return abs(current_value - threshold_value) >= 0.001
         else:
             return False

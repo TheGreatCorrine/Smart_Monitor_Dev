@@ -96,7 +96,7 @@ class RuleLoader:
                 return Condition(
                     type=condition_type,
                     sensor="",  # 逻辑条件不需要传感器
-                    operator=Operator.EQ,  # 占位符
+                    operator=Operator.EQUAL,  # 占位符
                     conditions=sub_conditions
                 )
             else:

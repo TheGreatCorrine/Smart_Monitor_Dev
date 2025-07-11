@@ -34,7 +34,7 @@ class TestRuleEngine:
                 Condition(
                     type=ConditionType.THRESHOLD,
                     sensor="温度",
-                    operator=Operator.GT,
+                    operator=Operator.GREATER_THAN,
                     value=8.0
                 )
             ],
@@ -73,7 +73,7 @@ class TestRuleEngine:
                 Condition(
                     type=ConditionType.STATE_DURATION,
                     sensor="温度",
-                    operator=Operator.GT,
+                    operator=Operator.GREATER_THAN,
                     value=6.0,
                     duration_minutes=2
                 )
@@ -122,18 +122,18 @@ class TestRuleEngine:
                 Condition(
                     type=ConditionType.LOGIC_AND,
                     sensor="",
-                    operator=Operator.EQ,
+                    operator=Operator.EQUAL,
                     conditions=[
                         Condition(
                             type=ConditionType.THRESHOLD,
                             sensor="温度",
-                            operator=Operator.GT,
+                            operator=Operator.GREATER_THAN,
                             value=7.0
                         ),
                         Condition(
                             type=ConditionType.THRESHOLD,
                             sensor="压力",
-                            operator=Operator.LT,
+                            operator=Operator.LESS_THAN,
                             value=0.8
                         )
                     ]
@@ -183,18 +183,18 @@ class TestRuleEngine:
                 Condition(
                     type=ConditionType.LOGIC_OR,
                     sensor="",
-                    operator=Operator.EQ,
+                    operator=Operator.EQUAL,
                     conditions=[
                         Condition(
                             type=ConditionType.THRESHOLD,
                             sensor="温度",
-                            operator=Operator.GT,
+                            operator=Operator.GREATER_THAN,
                             value=9.0
                         ),
                         Condition(
                             type=ConditionType.THRESHOLD,
                             sensor="压力",
-                            operator=Operator.LT,
+                            operator=Operator.LESS_THAN,
                             value=0.3
                         )
                     ]
@@ -255,24 +255,24 @@ class TestRuleEngine:
                 Condition(
                     type=ConditionType.LOGIC_OR,
                     sensor="",
-                    operator=Operator.EQ,
+                    operator=Operator.EQUAL,
                     conditions=[
                         Condition(
                             type=ConditionType.LOGIC_AND,
                             sensor="",
-                            operator=Operator.EQ,
+                            operator=Operator.EQUAL,
                             conditions=[
                                 Condition(
                                     type=ConditionType.STATE_DURATION,
                                     sensor="温度",
-                                    operator=Operator.GT,
+                                    operator=Operator.GREATER_THAN,
                                     value=6.5,
                                     duration_minutes=3
                                 ),
                                 Condition(
                                     type=ConditionType.THRESHOLD,
                                     sensor="压力",
-                                    operator=Operator.LT,
+                                    operator=Operator.LESS_THAN,
                                     value=0.6
                                 )
                             ]
@@ -280,18 +280,18 @@ class TestRuleEngine:
                         Condition(
                             type=ConditionType.LOGIC_AND,
                             sensor="",
-                            operator=Operator.EQ,
+                            operator=Operator.EQUAL,
                             conditions=[
                                 Condition(
                                     type=ConditionType.THRESHOLD,
                                     sensor="温度",
-                                    operator=Operator.GT,
+                                    operator=Operator.GREATER_THAN,
                                     value=8.5
                                 ),
                                 Condition(
                                     type=ConditionType.THRESHOLD,
                                     sensor="湿度",
-                                    operator=Operator.GT,
+                                    operator=Operator.GREATER_THAN,
                                     value=80.0
                                 )
                             ]
