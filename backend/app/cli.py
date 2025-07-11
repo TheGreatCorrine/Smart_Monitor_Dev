@@ -247,7 +247,8 @@ def interactive_demo():
         # 打印record信息（如果开启）
         if print_record and i < print_count:
             print(f"\n📊 Record #{i+1}")
-            print(f"   时间戳: {record.ts}")
+            print(f"   时间戳(Time): {record.metrics.get('Time_iso', 'N/A')}")
+            print(f"   高精度时间戳(Timestamp): {record.metrics.get('Timestamp_iso', 'N/A')}")
             print(f"   传感器值: {record.metrics}")
             print(f"   文件位置: {record.file_pos}")
         

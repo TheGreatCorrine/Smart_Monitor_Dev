@@ -18,6 +18,7 @@ from .RecordRepository import RecordFactory
 BYTE_ORDER    = ">"
 RECORD_BYTES  = 232
 DAT_EPOCH     = dt.datetime(1899, 12, 30, 0, 0, 0)
+FILETIME_EPOCH = dt.datetime(1601, 1, 1, 0, 0, 0)  # 添加FILETIME_EPOCH
 OFFSET_DB     = Path(".offsets.json")
 
 # ---- 布局表（与你原脚本一致，省略重复） -------------------------------
@@ -109,8 +110,17 @@ def _parse_record(buf: bytes) -> Dict[str, float]:
         for bit, name in enumerate(names):
             rec[name] = (val >> bit) & 1
 
+    # 处理两个时间戳
+    # Time: 秒数，从1899-12-30开始
     secs = rec["Time"]
     rec["Time_iso"] = (DAT_EPOCH + dt.timedelta(seconds=secs)).isoformat(sep=" ")
+    
+    # Timestamp: 高精度时间戳，从1601-01-01开始，精度100纳秒
+    filetime_ticks = rec["Timestamp"]
+    # 转换为秒数（100纳秒 = 0.0000001秒）
+    filetime_seconds = filetime_ticks * 0.0000001
+    rec["Timestamp_iso"] = (FILETIME_EPOCH + dt.timedelta(seconds=filetime_seconds)).isoformat(sep=" ")
+    
     return rec
 
 # === 增量迭代器 → Record ===========================================
