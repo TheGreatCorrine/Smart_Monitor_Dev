@@ -8,6 +8,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import pytest
+import dataclasses
 from datetime import datetime, timezone
 
 from backend.app.entities.Record import Record

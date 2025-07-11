@@ -1,5 +1,5 @@
 """
-backend/app/entities/record.py
+backend/app/entities/Record.py
 --------------------------------
 纯领域实体：不依赖任何框架，只描述"冰箱测试采样点"数据本身
 """

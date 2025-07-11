@@ -181,10 +181,14 @@ class RuleEngine:
     def _create_alarm_event(self, rule: Rule, record: Record, run_id: str) -> Optional[AlarmEvent]:
         """创建告警事件"""
         try:
+            # 生成唯一ID
+            alarm_id = f"ALARM_{rule.id}_{record.ts.strftime('%Y%m%d_%H%M%S')}_{hash(record.ts) % 10000:04d}"
+            
             return AlarmEvent(
+                id=alarm_id,
                 rule_id=rule.id,
                 rule_name=rule.name,
-                severity=rule.severity,
+                severity=rule.severity.value,  # 转换为字符串
                 timestamp=record.ts,
                 description=f"规则 '{rule.name}' 触发: {rule.description}",
                 sensor_values=record.metrics.copy(),

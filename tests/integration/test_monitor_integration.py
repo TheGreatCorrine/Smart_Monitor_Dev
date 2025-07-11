@@ -129,7 +129,7 @@ class TestMonitorIntegration:
         alarms2 = self.monitor_service.process_record(abnormal_record, "test_run_001")
         assert len(alarms2) == 1
         assert alarms2[0].rule_id == "test_alarm"
-        assert alarms2[0].severity == Severity.HIGH
+        assert alarms2[0].severity == "high"  # 改为字符串比较
         assert "温度" in alarms2[0].sensor_values
         
         print("✓ 告警处理测试通过")

@@ -10,9 +10,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 import pytest
 from datetime import datetime
 
-from backend.app.entities.SensorConfig import (
-    SensorChannel, SensorType, Unit, TestSession, SensorGroup
+from backend.app.entities.Sensor import (
+    SensorChannel, SensorType, Unit, SensorGroup
 )
+from backend.app.entities.TestSession import TestSession
 
 
 # ---------- 测试用例 -------------------------------------------------

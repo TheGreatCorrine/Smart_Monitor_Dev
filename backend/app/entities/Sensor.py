@@ -1,7 +1,7 @@
 """
-backend/app/entities/SensorConfig.py
+backend/app/entities/Sensor.py
 ------------------------------------
-纯领域实体：传感器配置相关的核心实体，不依赖任何框架
+纯领域实体：传感器相关的核心实体，不依赖任何框架
 """
 from __future__ import annotations
 
