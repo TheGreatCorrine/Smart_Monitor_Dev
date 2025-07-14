@@ -139,16 +139,28 @@ def _parse_record(buf: bytes) -> Dict[str, float]:
 # === 增量迭代器 → Record ===========================================
 def iter_new_records(path: Path, run_id: str):
     start = get_offset(path)
+    file_size = path.stat().st_size if path.exists() else 0
+    
+    # 添加调试信息
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"DatParser: 文件={path}, 当前offset={start}, 文件大小={file_size}, 可读字节数={file_size - start}")
+    
     with path.open("rb") as fd:
         fd.seek(start)
         pos = start
+        record_count = 0
         while chunk := fd.read(RECORD_BYTES):
             if len(chunk) == RECORD_BYTES:
                 rdict = _parse_record(chunk)
                 yield RecordFactory.from_dict(rdict, run_id=run_id, file_pos=pos)
                 pos += RECORD_BYTES
+                record_count += 1
+            else:
+                logger.info(f"DatParser: 读取到不完整的chunk，长度={len(chunk)}字节")
         # 解析完毕，保存最新偏移
         save_offset(path, pos)
+        logger.info(f"DatParser: 本次解析完成，读取了{record_count}条记录，新offset={pos}")
 
 # === CLI ===========================================================
 def main():

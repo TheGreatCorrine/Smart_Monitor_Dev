@@ -16,6 +16,7 @@ from typing import Optional, Dict, Any
 
 from .usecases.Monitor import MonitorService
 from .controllers.MonitorController import MonitorController
+from .infra.fileprovider import SimulatedFileProvider, LocalFileProvider
 
 
 class SmartMonitorGUI:
@@ -31,6 +32,15 @@ class SmartMonitorGUI:
         self.monitor_service = MonitorService()
         self.monitor_controller = MonitorController(self.monitor_service)
         
+        # FileProvider相关
+        self.file_provider: Optional[SimulatedFileProvider] = None
+        self.monitoring_thread: Optional[threading.Thread] = None
+        
+        # Session统计信息
+        self.session_start_time: Optional[datetime] = None
+        self.session_total_records = 0
+        self.session_total_alarms = 0
+        
         # 消息队列用于线程间通信
         self.message_queue = queue.Queue()
         
@@ -42,6 +52,9 @@ class SmartMonitorGUI:
         
         # 启动消息处理
         self.process_messages()
+        
+        # 启动状态更新定时器
+        self.update_status()
     
     def setup_logging(self):
         """设置日志"""
@@ -102,6 +115,12 @@ class SmartMonitorGUI:
         self.run_id_entry = ttk.Entry(file_frame, textvariable=self.run_id_var, width=50)
         self.run_id_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
         
+        # 工作站ID
+        ttk.Label(file_frame, text="工作站ID:").grid(row=3, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        self.workstation_id_var = tk.StringVar(value="6")
+        self.workstation_id_entry = ttk.Entry(file_frame, textvariable=self.workstation_id_var, width=10)
+        self.workstation_id_entry.grid(row=3, column=1, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        
         file_frame.columnconfigure(1, weight=1)
     
     def create_control_panel(self, parent):
@@ -119,8 +138,11 @@ class SmartMonitorGUI:
         self.stop_button = ttk.Button(button_frame, text="⏹️ 停止", command=self.stop_monitoring, state='disabled')
         self.stop_button.grid(row=0, column=1, padx=(0, 10))
         
+        self.simulate_button = ttk.Button(button_frame, text="🎭 开始模拟", command=self.start_simulation)
+        self.simulate_button.grid(row=0, column=2, padx=(0, 10))
+        
         self.clear_button = ttk.Button(button_frame, text="🗑️ 清空结果", command=self.clear_results)
-        self.clear_button.grid(row=0, column=2, padx=(0, 10))
+        self.clear_button.grid(row=0, column=3, padx=(0, 10))
         
         # 进度条
         self.progress_var = tk.DoubleVar()
@@ -269,9 +291,26 @@ class SmartMonitorGUI:
     
     def stop_monitoring(self):
         """停止监控"""
+        # 停止持续监控
+        if self.monitor_service.is_monitoring:
+            self.monitor_service.stop_continuous_monitoring()
+        
+        # 停止文件提供者
+        if self.file_provider:
+            self.file_provider.stop()
+        
+        # 清理临时文件和offset记录
+        self._cleanup_temp_files()
+        
+        # 重置session统计
+        self.session_start_time = None
+        self.session_total_records = 0
+        self.session_total_alarms = 0
+        
         self.status_text.set("已停止")
         self.start_button.config(state='normal')
         self.stop_button.config(state='disabled')
+        self.simulate_button.config(state='normal')
         self.progress_var.set(0)
     
     def clear_results(self):
@@ -288,6 +327,78 @@ class SmartMonitorGUI:
         
         # 清空日志
         self.log_text.delete(1.0, tk.END)
+    
+    def start_simulation(self):
+        """开始模拟文件推送"""
+        # 验证输入
+        dat_file = self.dat_file_var.get().strip()
+        config_file = self.config_file_var.get().strip()
+        run_id = self.run_id_var.get().strip()
+        workstation_id = self.workstation_id_var.get().strip()
+        
+        if not dat_file:
+            messagebox.showerror("错误", "请选择数据文件")
+            return
+        
+        if not config_file:
+            messagebox.showerror("错误", "请选择配置文件")
+            return
+        
+        if not run_id:
+            messagebox.showerror("错误", "请输入运行ID")
+            return
+        
+        if not workstation_id:
+            messagebox.showerror("错误", "请输入工作站ID")
+            return
+        
+        # 检查文件是否存在
+        if not Path(dat_file).exists():
+            messagebox.showerror("错误", f"数据文件不存在: {dat_file}")
+            return
+        
+        if not Path(config_file).exists():
+            messagebox.showerror("错误", f"配置文件不存在: {config_file}")
+            return
+        
+        try:
+            # 清理旧的临时文件和offset记录
+            self._cleanup_temp_files()
+            
+            # 初始化监控服务
+            self.monitor_service.rule_loader.config_path = Path(config_file)
+            self.monitor_service.initialize()
+            
+            # 添加告警处理器
+            self.monitor_service.add_alarm_handler(self._gui_alarm_handler)
+            
+            # 创建模拟文件提供者
+            self.file_provider = SimulatedFileProvider(dat_file, workstation_id)
+            
+            # 设置文件提供者
+            self.monitor_service.set_file_provider(self.file_provider)
+            
+            # 开始持续监控
+            if self.monitor_service.start_continuous_monitoring(run_id):
+                # 记录session开始时间
+                self.session_start_time = datetime.now()
+                self.session_total_records = 0
+                self.session_total_alarms = 0
+                
+                # 更新界面状态
+                self.start_button.config(state='disabled')
+                self.stop_button.config(state='normal')
+                self.simulate_button.config(state='disabled')
+                self.status_text.set("模拟监控运行中...")
+                self.progress_var.set(50)
+                
+                messagebox.showinfo("成功", f"模拟已启动！\n工作站ID: {workstation_id}\n每10秒推送一个record")
+            else:
+                messagebox.showerror("错误", "启动模拟失败")
+                
+        except Exception as e:
+            messagebox.showerror("错误", f"启动模拟失败: {str(e)}")
+            self.status_text.set(f"模拟失败: {str(e)}")
     
     def _monitoring_worker(self, dat_file: str, config_file: str, run_id: str):
         """监控工作线程"""
@@ -370,6 +481,79 @@ class SmartMonitorGUI:
         
         # 每100ms检查一次消息
         self.root.after(100, self.process_messages)
+    
+    def update_status(self):
+        """更新监控状态"""
+        if self.monitor_service.is_monitoring:
+            status = self.monitor_service.get_monitoring_status()
+            stats = status.get('stats', {})
+            
+            # 更新session统计
+            self.session_total_records = stats.get('total_records_processed', 0)
+            self.session_total_alarms = stats.get('total_alarms_generated', 0)
+            
+            # 计算session运行时间和处理速度
+            if self.session_start_time:
+                elapsed_time = (datetime.now() - self.session_start_time).total_seconds()
+                self.time_var.set(f"{elapsed_time:.1f}s")
+                
+                # 计算处理速度（记录/秒）
+                if elapsed_time > 0:
+                    speed = self.session_total_records / elapsed_time
+                    self.speed_var.set(f"{speed:.2f} 记录/秒")
+                else:
+                    self.speed_var.set("0.00 记录/秒")
+            else:
+                self.time_var.set("0.0s")
+                self.speed_var.set("0.00 记录/秒")
+            
+            # 更新记录数和告警数
+            self.records_var.set(str(self.session_total_records))
+            self.alarms_var.set(str(self.session_total_alarms))
+            
+            # 更新状态文本
+            if status.get('file_provider'):
+                fp_status = status['file_provider']
+                if fp_status.get('total_records_pushed'):
+                    self.status_text.set(f"模拟运行中 - 已推送 {fp_status['total_records_pushed']} 个records")
+                else:
+                    self.status_text.set("模拟运行中...")
+        
+        # 每1秒更新一次状态
+        self.root.after(1000, self.update_status)
+    
+    def _cleanup_temp_files(self):
+        """清理临时文件和offset记录"""
+        try:
+            import json
+            from pathlib import Path
+            
+            # 清理temp文件
+            workstation_id = self.workstation_id_var.get().strip() if hasattr(self, 'workstation_id_var') else "6"
+            temp_file = Path(f"data/mpl{workstation_id}_temp.dat")
+            if temp_file.exists():
+                temp_file.unlink()
+                print(f"已删除临时文件: {temp_file}")
+            
+            # 清理offset记录
+            offset_file = Path(".offsets.json")
+            if offset_file.exists():
+                try:
+                    with open(offset_file, 'r') as f:
+                        offsets = json.load(f)
+                    
+                    # 删除temp文件的offset记录
+                    temp_file_key = f"data/mpl{workstation_id}_temp.dat"
+                    if temp_file_key in offsets:
+                        del offsets[temp_file_key]
+                        with open(offset_file, 'w') as f:
+                            json.dump(offsets, f)
+                        print(f"已清理offset记录: {temp_file_key}")
+                except Exception as e:
+                    print(f"清理offset记录失败: {e}")
+            
+        except Exception as e:
+            print(f"清理临时文件失败: {e}")
     
     def run(self):
         """运行GUI应用"""
