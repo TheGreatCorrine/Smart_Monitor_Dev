@@ -281,6 +281,11 @@ class SmartMonitorGUI:
         self.status_text.set("正在处理...")
         self.progress_var.set(0)
         
+        # 记录session开始时间
+        self.session_start_time = datetime.now()
+        self.session_total_records = 0
+        self.session_total_alarms = 0
+        
         # 在后台线程中处理
         self.monitoring_thread = threading.Thread(
             target=self._monitoring_worker,
@@ -415,6 +420,10 @@ class SmartMonitorGUI:
             alarms, records_count = self.monitor_service.process_data_file(dat_file, run_id)
             end_time = datetime.now()
             
+            # 更新session统计
+            self.session_total_records = records_count
+            self.session_total_alarms = len(alarms)
+            
             processing_time = (end_time - start_time).total_seconds()
             speed = records_count / processing_time if processing_time > 0 else 0
             
@@ -422,7 +431,7 @@ class SmartMonitorGUI:
             self.records_var.set(str(records_count))
             self.alarms_var.set(str(len(alarms)))
             self.time_var.set(f"{processing_time:.2f}s")
-            self.speed_var.set(f"{speed:.0f} 记录/秒")
+            self.speed_var.set(f"{speed:.2f} 记录/秒")
             
             # 更新状态
             self.status_text.set("处理完成")
