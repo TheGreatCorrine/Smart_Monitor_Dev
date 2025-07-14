@@ -179,7 +179,7 @@ def interactive_demo():
     """交互式demo：让用户选择data/下的文件，支持范围选择处理记录并输出告警"""
     import os
     from pathlib import Path
-    from app.usecases.Monitor import MonitorService, default_alarm_handler
+    from backend.app.usecases.Monitor import MonitorService, default_alarm_handler
     
     # 修改为查找项目根目录下的data目录
     data_dir = Path(__file__).parent.parent.parent / "data"
@@ -214,7 +214,7 @@ def interactive_demo():
     
     # 先统计总记录数
     print("\n 正在统计文件记录数...")
-    from app.infra.datastore.DatParser import iter_new_records
+    from backend.app.infra.datastore.DatParser import iter_new_records
     run_id = f"DEMO_{file_name}"
     all_records = list(iter_new_records(file_path, run_id))
     total_records = len(all_records)

@@ -14,12 +14,12 @@ from datetime import datetime, timedelta
 backend_path = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(backend_path))
 
-from app.entities.Record import Record
-from app.entities.Rule import Rule
-from app.entities.AlarmEvent import AlarmEvent
-from app.services.RuleEngineService import RuleEngine
-from app.infra.datastore.DatParser import iter_new_records
-from app.infra.config.RuleLoader import RuleLoader
+from backend.app.entities.Record import Record
+from backend.app.entities.Rule import Rule
+from backend.app.entities.AlarmEvent import AlarmEvent
+from backend.app.services.RuleEngineService import RuleEngine
+from backend.app.infra.datastore.DatParser import iter_new_records
+from backend.app.infra.config.RuleLoader import RuleLoader
 
 
 class MonitorService:
