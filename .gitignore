@@ -42,3 +42,5 @@ htmlcov/
 # data files
 .offsets.json
 MPL*.dat
+data/parse_dat.py
+data/record.py
