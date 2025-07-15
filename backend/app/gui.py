@@ -117,7 +117,7 @@ class SmartMonitorGUI:
         
         # 工作站ID
         ttk.Label(file_frame, text="工作站ID:").grid(row=3, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
-        self.workstation_id_var = tk.StringVar(value="6")
+        self.workstation_id_var = tk.StringVar()
         self.workstation_id_entry = ttk.Entry(file_frame, textvariable=self.workstation_id_var, width=10)
         self.workstation_id_entry.grid(row=3, column=1, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         
@@ -234,6 +234,17 @@ class SmartMonitorGUI:
                 path = Path(filename)
                 run_id = f"RUN_{path.stem}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 self.run_id_var.set(run_id)
+            
+            # 自动推断工作站ID
+            path = Path(filename)
+            if path.stem.startswith('mpl') or path.stem.startswith('MPL'):
+                # 从文件名中提取工作站ID
+                import re
+                match = re.search(r'mpl(\d+)', path.stem.lower())
+                if match:
+                    workstation_id = match.group(1)
+                    self.workstation_id_var.set(workstation_id)
+                    print(f"自动推断工作站ID: {workstation_id} (来自文件名: {path.stem})")
     
     def browse_config_file(self):
         """浏览配置文件"""
@@ -332,11 +343,6 @@ class SmartMonitorGUI:
         
         # 清空日志
         self.log_text.delete(1.0, tk.END)
-        # 归零累计统计
-        self.session_total_records = 0
-        self.session_total_alarms = 0
-        self._last_records = 0
-        self._last_alarms = 0
     
     def start_simulation(self):
         """开始模拟文件推送"""
@@ -388,13 +394,13 @@ class SmartMonitorGUI:
             # 设置文件提供者
             self.monitor_service.set_file_provider(self.file_provider)
             
-            # 记录session开始时间（不重置累计记录数）
-            self.session_start_time = datetime.now()
-            self.session_total_alarms = 0
-            # 不重置self.session_total_records
-            
             # 开始持续监控
             if self.monitor_service.start_continuous_monitoring(run_id):
+                # 记录session开始时间
+                self.session_start_time = datetime.now()
+                self.session_total_records = 0
+                self.session_total_alarms = 0
+                
                 # 更新界面状态
                 self.start_button.config(state='disabled')
                 self.stop_button.config(state='normal')
@@ -501,16 +507,10 @@ class SmartMonitorGUI:
         if self.monitor_service.is_monitoring:
             status = self.monitor_service.get_monitoring_status()
             stats = status.get('stats', {})
-            new_records = stats.get('total_records_processed', 0)
-            new_alarms = stats.get('total_alarms_generated', 0)
-            # 累加
-            if not hasattr(self, '_last_records'):
-                self._last_records = 0
-                self._last_alarms = 0
-            self.session_total_records += max(0, new_records - self._last_records)
-            self.session_total_alarms += max(0, new_alarms - self._last_alarms)
-            self._last_records = new_records
-            self._last_alarms = new_alarms
+            
+            # 更新session统计
+            self.session_total_records = stats.get('total_records_processed', 0)
+            self.session_total_alarms = stats.get('total_alarms_generated', 0)
             
             # 计算session运行时间和处理速度
             if self.session_start_time:
@@ -549,7 +549,7 @@ class SmartMonitorGUI:
             from pathlib import Path
             
             # 清理temp文件
-            workstation_id = self.workstation_id_var.get().strip() if hasattr(self, 'workstation_id_var') else "6"
+            workstation_id = self.workstation_id_var.get().strip() if hasattr(self, 'workstation_id_var') and self.workstation_id_var.get().strip() else "1"
             temp_file = Path(f"data/mpl{workstation_id}_temp.dat")
             if temp_file.exists():
                 temp_file.unlink()
