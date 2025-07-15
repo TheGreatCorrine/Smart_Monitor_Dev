@@ -332,6 +332,11 @@ class SmartMonitorGUI:
         
         # 清空日志
         self.log_text.delete(1.0, tk.END)
+        # 归零累计统计
+        self.session_total_records = 0
+        self.session_total_alarms = 0
+        self._last_records = 0
+        self._last_alarms = 0
     
     def start_simulation(self):
         """开始模拟文件推送"""
@@ -383,13 +388,13 @@ class SmartMonitorGUI:
             # 设置文件提供者
             self.monitor_service.set_file_provider(self.file_provider)
             
+            # 记录session开始时间（不重置累计记录数）
+            self.session_start_time = datetime.now()
+            self.session_total_alarms = 0
+            # 不重置self.session_total_records
+            
             # 开始持续监控
             if self.monitor_service.start_continuous_monitoring(run_id):
-                # 记录session开始时间
-                self.session_start_time = datetime.now()
-                self.session_total_records = 0
-                self.session_total_alarms = 0
-                
                 # 更新界面状态
                 self.start_button.config(state='disabled')
                 self.stop_button.config(state='normal')
@@ -496,10 +501,16 @@ class SmartMonitorGUI:
         if self.monitor_service.is_monitoring:
             status = self.monitor_service.get_monitoring_status()
             stats = status.get('stats', {})
-            
-            # 更新session统计
-            self.session_total_records = stats.get('total_records_processed', 0)
-            self.session_total_alarms = stats.get('total_alarms_generated', 0)
+            new_records = stats.get('total_records_processed', 0)
+            new_alarms = stats.get('total_alarms_generated', 0)
+            # 累加
+            if not hasattr(self, '_last_records'):
+                self._last_records = 0
+                self._last_alarms = 0
+            self.session_total_records += max(0, new_records - self._last_records)
+            self.session_total_alarms += max(0, new_alarms - self._last_alarms)
+            self._last_records = new_records
+            self._last_alarms = new_alarms
             
             # 计算session运行时间和处理速度
             if self.session_start_time:
