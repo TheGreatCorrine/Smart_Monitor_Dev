@@ -118,8 +118,8 @@ def test_basic_functionality():
     
     try:
         # 测试实体创建
-        from backend.app.entities.Record import Record
-        from backend.app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+        from backend.app.entities.record import Record
+        from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
         from datetime import datetime
         
         # 创建测试记录

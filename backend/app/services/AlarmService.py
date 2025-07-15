@@ -11,8 +11,8 @@ from datetime import datetime
 from typing import List, Optional, Dict
 from dataclasses import dataclass
 
-from ..entities.Rule import Rule
-from ..entities.Record import Record
+from ..entities.rule import Rule
+from ..entities.record import Record
 from ..entities.AlarmEvent import AlarmEvent, AlarmStatus
 from . import IAlarmService
 

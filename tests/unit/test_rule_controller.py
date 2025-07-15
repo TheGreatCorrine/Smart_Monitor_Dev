@@ -8,7 +8,7 @@ from unittest.mock import Mock, MagicMock, patch
 from typing import List
 
 from backend.app.controllers.RuleController import RuleController
-from backend.app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
 
 
 class TestRuleController:

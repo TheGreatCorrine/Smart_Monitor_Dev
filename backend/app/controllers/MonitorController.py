@@ -11,7 +11,7 @@ from pathlib import Path
 import logging
 
 from ..usecases.Monitor import MonitorService
-from ..entities.Record import Record
+from ..entities.record import Record
 from ..entities.AlarmEvent import AlarmEvent
 
 

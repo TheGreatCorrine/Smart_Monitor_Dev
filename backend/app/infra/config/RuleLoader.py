@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 
-from ...entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+from ...entities.rule import Rule, Condition, ConditionType, Operator, Severity
 
 
 @dataclass

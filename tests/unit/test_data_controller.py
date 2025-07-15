@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from backend.app.controllers.DataController import DataController
-from backend.app.entities.Record import Record
+from backend.app.entities.record import Record
 
 
 class TestDataController:

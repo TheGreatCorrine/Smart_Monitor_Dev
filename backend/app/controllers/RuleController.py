@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, List
 import logging
 
-from ..entities.Rule import Rule, Severity
+from ..entities.rule import Rule, Severity
 from ..infra.config.RuleLoader import RuleLoader
 
 

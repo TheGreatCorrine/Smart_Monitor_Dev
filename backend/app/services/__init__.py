@@ -5,8 +5,8 @@ backend/app/services/__init__.py
 """
 from abc import ABC, abstractmethod
 from typing import List, Protocol
-from ..entities.Rule import Rule
-from ..entities.Record import Record
+from ..entities.rule import Rule
+from ..entities.record import Record
 from ..entities.AlarmEvent import AlarmEvent
 
 

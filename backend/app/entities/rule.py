@@ -50,9 +50,9 @@ class Condition:
     type        : ConditionType # 条件类型
     sensor      : str           # 传感器标签
     operator    : Operator      # 操作符
-    value       : float|None    # 比较值
-    duration_minutes : int|None # 持续时间（分钟）
-    conditions  : List[Condition]|None # 逻辑组合条件
+    value       : Optional[float]    # 比较值
+    duration_minutes : Optional[int] # 持续时间（分钟）
+    conditions  : Optional[List[Condition]] # 逻辑组合条件
     """
     type: ConditionType
     sensor: str

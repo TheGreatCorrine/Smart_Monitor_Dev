@@ -10,7 +10,7 @@ from typing import List
 
 from backend.app.controllers.AlarmController import AlarmController
 from backend.app.entities.AlarmEvent import AlarmEvent, AlarmStatus
-from backend.app.entities.Rule import Severity
+from backend.app.entities.rule import Severity
 from backend.app.services.AlarmService import AlarmFilter
 
 

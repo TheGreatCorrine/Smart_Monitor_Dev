@@ -12,8 +12,8 @@ import yaml
 from datetime import datetime
 
 from backend.app.usecases.Monitor import MonitorService, default_alarm_handler
-from backend.app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
-from backend.app.entities.Record import Record
+from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
+from backend.app.entities.record import Record
 
 
 class TestMonitorIntegration:

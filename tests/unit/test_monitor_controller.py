@@ -9,9 +9,9 @@ from datetime import datetime
 from pathlib import Path
 
 from backend.app.controllers.MonitorController import MonitorController
-from backend.app.entities.Record import Record
+from backend.app.entities.record import Record
 from backend.app.entities.AlarmEvent import AlarmEvent
-from backend.app.entities.Rule import Severity
+from backend.app.entities.rule import Severity
 
 
 class TestMonitorController:

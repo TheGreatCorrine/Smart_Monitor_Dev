@@ -10,9 +10,9 @@ from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import logging
 
-from ..entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+from ..entities.rule import Rule, Condition, ConditionType, Operator, Severity
 from ..entities.AlarmEvent import AlarmEvent
-from ..entities.Record import Record
+from ..entities.record import Record
 from . import IRuleEngine
 from .AlarmService import AlarmService
 

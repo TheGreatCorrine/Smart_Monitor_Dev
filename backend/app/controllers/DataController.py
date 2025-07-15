@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 import logging
 
-from ..entities.Record import Record
+from ..entities.record import Record
 from ..infra.datastore.DatParser import iter_new_records
 
 

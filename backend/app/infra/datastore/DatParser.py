@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List
 from collections import namedtuple
 
-from ...entities.Record import Record
+from ...entities.record import Record
 from .RecordRepository import RecordFactory
 
 # ── 常量 & 解析布局（沿用你原稿） ─────────────────────────────────────────

@@ -10,8 +10,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 import pytest
 from datetime import datetime, timedelta
 
-from backend.app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
-from backend.app.entities.Record import Record
+from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
+from backend.app.entities.record import Record
 from backend.app.services.RuleEngineService import RuleEngine
 
 

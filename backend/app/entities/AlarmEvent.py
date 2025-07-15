@@ -10,7 +10,7 @@ from typing import Dict, Optional
 from enum import Enum
 from datetime import datetime
 
-from .Rule import Severity
+from .rule import Severity
 
 
 class AlarmStatus(Enum):

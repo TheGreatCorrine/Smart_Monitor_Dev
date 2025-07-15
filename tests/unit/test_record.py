@@ -11,7 +11,7 @@ import pytest
 import dataclasses
 from datetime import datetime, timezone
 
-from backend.app.entities.Record import Record
+from backend.app.entities.record import Record
 
 # ---------- helpers -------------------------------------------------
 RAW_SAMPLE = {

@@ -16,8 +16,8 @@ sys.path.insert(0, str(backend_path))
 from datetime import datetime, timedelta
 import logging
 
-from backend.app.entities.Record import Record
-from backend.app.entities.Rule import Rule, Condition, ConditionType, Operator, Severity
+from backend.app.entities.record import Record
+from backend.app.entities.rule import Rule, Condition, ConditionType, Operator, Severity
 from backend.app.services.RuleEngineService import RuleEngine
 from backend.app.usecases.Monitor import MonitorService, default_alarm_handler
 
