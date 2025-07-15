@@ -293,9 +293,7 @@ class MonitorService:
             self.monitoring_stats['current_file_path'] = str(file_path)
             self.monitoring_stats['last_processed_time'] = datetime.now()
             
-            # 处理文件中的新记录
-            # 注意：这里需要实现增量处理逻辑
-            # 暂时使用完整处理方式
+            # 处理文件中的新记录（增量处理）
             if self.monitoring_stats.get('run_id'):
                 alarms, record_count = self.process_data_file(str(file_path), self.monitoring_stats['run_id'])
                 if record_count > 0:  # 只在有实际处理记录时才更新统计
@@ -323,15 +321,13 @@ class MonitorService:
         
         while not self.stop_monitoring_event.is_set():
             try:
-                # 检查文件提供者状态
+                # 检查文件提供者状态（只检查，不处理文件）
                 if self.file_provider and self.file_provider.is_file_available():
                     file_path = self.file_provider.get_file_path()
                     if file_path:
-                        # 处理文件
-                        alarms, record_count = self.process_data_file(str(file_path), run_id)
-                        if record_count > 0:  # 只在有实际处理记录时才更新统计
-                            self.monitoring_stats['total_records_processed'] += record_count
-                            self.monitoring_stats['total_alarms_generated'] += len(alarms)
+                        # 只更新状态，不重复处理文件
+                        self.monitoring_stats['current_file_path'] = str(file_path)
+                        self.monitoring_stats['last_processed_time'] = datetime.now()
                 
                 # 等待一段时间再检查
                 self.stop_monitoring_event.wait(5)  # 每5秒检查一次

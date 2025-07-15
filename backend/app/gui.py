@@ -381,6 +381,11 @@ class SmartMonitorGUI:
             # 清理旧的临时文件和offset记录
             self._cleanup_temp_files()
             
+            # 重置session统计
+            self.session_start_time = datetime.now()
+            self.session_total_records = 0
+            self.session_total_alarms = 0
+            
             # 初始化监控服务
             self.monitor_service.rule_loader.config_path = Path(config_file)
             self.monitor_service.initialize()
@@ -396,10 +401,6 @@ class SmartMonitorGUI:
             
             # 开始持续监控
             if self.monitor_service.start_continuous_monitoring(run_id):
-                # 记录session开始时间
-                self.session_start_time = datetime.now()
-                self.session_total_records = 0
-                self.session_total_alarms = 0
                 
                 # 更新界面状态
                 self.start_button.config(state='disabled')

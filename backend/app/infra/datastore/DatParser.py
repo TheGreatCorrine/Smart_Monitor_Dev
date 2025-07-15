@@ -141,10 +141,22 @@ def iter_new_records(path: Path, run_id: str):
     start = get_offset(path)
     file_size = path.stat().st_size if path.exists() else 0
     
+    // TODO: 我总觉得这个逻辑不太好，这部分应该放在别的地方处理
+    # 检查offset是否超过文件大小，如果是则重置为0
+    if start >= file_size:
+        start = 0
+        save_offset(path, start)
+    
     # 添加调试信息
     import logging
     logger = logging.getLogger(__name__)
-    logger.info(f"DatParser: 文件={path}, 当前offset={start}, 文件大小={file_size}, 可读字节数={file_size - start}")
+    readable_bytes = max(0, file_size - start)  # 确保不为负数
+    logger.info(f"DatParser: 文件={path}, 当前offset={start}, 文件大小={file_size}, 可读字节数={readable_bytes}")
+    
+    # 如果没有可读数据，直接返回
+    if readable_bytes == 0:
+        logger.info(f"DatParser: 没有新数据可读")
+        return
     
     with path.open("rb") as fd:
         fd.seek(start)
