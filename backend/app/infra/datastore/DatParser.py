@@ -141,7 +141,7 @@ def iter_new_records(path: Path, run_id: str):
     start = get_offset(path)
     file_size = path.stat().st_size if path.exists() else 0
     
-    // TODO: 我总觉得这个逻辑不太好，这部分应该放在别的地方处理
+    # TODO: 我总觉得这个逻辑不太好，这部分应该放在别的地方处理
     # 检查offset是否超过文件大小，如果是则重置为0
     if start >= file_size:
         start = 0
