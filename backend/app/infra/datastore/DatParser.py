@@ -70,8 +70,8 @@ RECORD_SIZE = RECORD_BYTES
 DIGITAL_MAP = {
     76: ["DI1","DI2","DI3","DI4","DO1","DO2","DO3","DO4"],
     77: ["DO5","DO6","DO7","DO8","DO9","DO10","DO11","unused1"],
-    122:["DE1","DE2","DE3","DE4","DE5","DE6","DE7","DE8"],
-    155:["DE9","DE10","DE11","DE12","DE13","DE14","DE15","unused2"],
+    122:["DE1","DE2","DE3","DE4","DE5","DE6","DE7","unused2"],
+    155:["DE8","DE9","DE10","DE11","DE12","DE13","DE14","unused3"],
 }
 DIGITAL_NAMES = sum(DIGITAL_MAP.values(), [])
 

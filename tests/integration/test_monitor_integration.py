@@ -98,7 +98,7 @@ class TestMonitorIntegration:
                     type=ConditionType.THRESHOLD,
                     sensor="温度",
                     operator=Operator.GREATER_THAN,
-                    value=30.0,
+                    value=5.0,
                     duration_minutes=1
                 )
             ],
