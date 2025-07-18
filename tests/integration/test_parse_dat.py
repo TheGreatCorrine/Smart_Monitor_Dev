@@ -6,10 +6,12 @@ tests/integration/test_parse_dat.py
 使用 MPL6.dat 文件并结构化打印结果
 """
 import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from pathlib import Path
 
 # 添加backend目录到Python路径，方便IDE直接运行
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "backend"))
+# sys.path.insert(0, str(Path(__file__).parent.parent.parent / "backend"))
 
 import json
 from datetime import datetime
