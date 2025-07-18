@@ -106,7 +106,7 @@ channel_categories:
         tag: "蒸发器温度"
         description: "冷藏蒸发器温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [-30.0, 10.0]
         is_default: false
 
       - subtype_id: "7"
@@ -114,7 +114,7 @@ channel_categories:
         tag: "蒸发器温度"
         description: "冷冻蒸发器温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [-30.0, 10.0]
         is_default: false
 
       - subtype_id: "8"
@@ -122,7 +122,7 @@ channel_categories:
         tag: "系统温度"
         description: "排气温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [40.0, 80.0]
         is_default: false
 
       - subtype_id: "9"
@@ -130,7 +130,7 @@ channel_categories:
         tag: "系统温度"
         description: "冷凝器温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [30.0, 60.0]
         is_default: false
 
       - subtype_id: "10"
@@ -138,7 +138,7 @@ channel_categories:
         tag: "系统温度"
         description: "防凝器温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [20.0, 50.0]
         is_default: false
 
       - subtype_id: "11"
@@ -146,7 +146,7 @@ channel_categories:
         tag: "系统温度"
         description: "回气管温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [-10.0, 20.0]
         is_default: false
 
       - subtype_id: "12"
@@ -154,7 +154,7 @@ channel_categories:
         tag: "环境温度"
         description: "冰箱两侧环境温度点"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [15.0, 35.0]
         is_default: false
 
       - subtype_id: "13"
@@ -162,7 +162,7 @@ channel_categories:
         tag: "环境温度"
         description: "冰箱两侧环境温度点"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [15.0, 35.0]
         is_default: false
 
       - subtype_id: "14"
@@ -170,7 +170,7 @@ channel_categories:
         tag: "M包温度"
         description: "冷冻负载包温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [-25.0, -15.0]
         is_default: false
 
       - subtype_id: "15"
@@ -178,7 +178,7 @@ channel_categories:
         tag: "M包温度"
         description: "冷冻压仓负载温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [-25.0, -15.0]
         is_default: false
 
       - subtype_id: "16"
@@ -186,7 +186,7 @@ channel_categories:
         tag: "M包温度"
         description: "冷藏负载包温度"
         unit: "°C"
-        typical_range: [-3.0, 1.0]
+        typical_range: [2.0, 8.0]
         is_default: false
 
   # 大类4: TE1~TE14数字温度
@@ -254,56 +254,56 @@ channel_categories:
         label: "RC evap sensor"
         tag: "蒸发器"
         description: "冷藏蒸发器温度传感器"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [-30.0, 10.0]
         is_default: true
 
       - subtype_id: "7"
         label: "FC evap sensor"
         tag: "蒸发器"
         description: "冷冻蒸发器温度传感器"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [-30.0, 10.0]
         is_default: true
 
       - subtype_id: "8"
         label: "VFC evap sensor"
         tag: "蒸发器"
         description: "VFC蒸发器温度传感器"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [-30.0, 10.0]
         is_default: true
 
       - subtype_id: "9"
         label: "Temp RC"
         tag: "间室"
         description: "冷藏室温度"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [2.0, 8.0]
         is_default: true
 
       - subtype_id: "10"
         label: "Temp FC"
         tag: "间室"
         description: "冷冻室温度"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [-25.0, -15.0]
         is_default: true
 
       - subtype_id: "11"
         label: "Temp VFC"
         tag: "间室"
         description: "VFC温度"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [-20.0, 5.0]
         is_default: true
 
       - subtype_id: "12"
         label: "Temp VTC"
         tag: "间室"
         description: "变温室温度"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [-15.0, 10.0]
         is_default: true
 
       - subtype_id: "13"
@@ -311,31 +311,31 @@ channel_categories:
         tag: "环境温湿度"
         description: "环境湿度"
         unit: "%"
-        typical_range: [0.0, 100.0]
+        typical_range: [30.0, 80.0]
         is_default: true
 
       - subtype_id: "14"
         label: "Amb Temp"
         tag: "环境温湿度"
         description: "环境温度"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "°C"
+        typical_range: [15.0, 35.0]
         is_default: true
 
       - subtype_id: "15"
         label: "FC Defrost phase"
         tag: "化霜"
         description: "冷冻化霜阶段"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "phase"
+        typical_range: [0.0, 10.0]
         is_default: true
 
       - subtype_id: "16"
         label: "VFC Defrost phase"
         tag: "化霜"
         description: "VFC化霜阶段"
-        unit: "%"
-        typical_range: [0.0, 100.0]
+        unit: "phase"
+        typical_range: [0.0, 10.0]
         is_default: true
 
   # 大类5: DE1~DE14数字量
@@ -358,7 +358,6 @@ channel_categories:
       - DE13
       - DE14
     subtypes:
-      # 临时占位符，等待具体细分类型
       - subtype_id: "1"
         label: "RC Defrost heater"
         tag: "加热丝"
@@ -485,11 +484,4 @@ channel_categories:
         description: "冷冻门开关右"
         unit: "bool"
         typical_range: [0.0, 1.0]
-        is_default: false
-
-# 默认配置模板
-# 用户可以基于此模板快速创建测试会话配置
-default_configuration:
-  config_name: "标准冰箱测试配置"
-  description: "冰箱测试的标准channel配置模板"
-  # TODO: 配置每个channel的默认选择 
+        is_default: false 
