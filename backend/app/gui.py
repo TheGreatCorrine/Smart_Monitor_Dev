@@ -13,10 +13,12 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any
+import json
 
 from .usecases.Monitor import MonitorService
 from .controllers.MonitorController import MonitorController
 from .infra.fileprovider import SimulatedFileProvider, LocalFileProvider
+from .services.ChannelConfigurationService import ChannelConfigurationService
 
 
 class SmartMonitorGUI:
@@ -40,6 +42,12 @@ class SmartMonitorGUI:
         self.session_start_time: Optional[datetime] = None
         self.session_total_records = 0
         self.session_total_alarms = 0
+        
+        # Label匹配相关
+        self.channel_labels = {}
+        self.label_mode = False
+        self.label_config_path = Path("config/label_channel_match.yaml")
+        self.label_selection_path = Path("label_selection.json")
         
         # 消息队列用于线程间通信
         self.message_queue = queue.Queue()
@@ -66,33 +74,42 @@ class SmartMonitorGUI:
     def create_widgets(self):
         """创建界面组件"""
         # 创建主框架
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.main_frame = ttk.Frame(self.root, padding="10")
+        self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         # 配置网格权重
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-        main_frame.rowconfigure(2, weight=1)
+        self.main_frame.columnconfigure(1, weight=1)
+        self.main_frame.rowconfigure(2, weight=1)
         
-        # 1. 文件选择区域
-        self.create_file_selector(main_frame)
+        # 创建第一页（文件选择和label匹配）
+        self.create_page1()
         
-        # 2. 控制按钮区域
-        self.create_control_panel(main_frame)
+        # 创建第二页（控制面板和监控状态）
+        self.create_page2()
         
-        # 3. 监控状态区域
-        self.create_status_panel(main_frame)
-        
-        # 4. 告警表格区域
-        self.create_alarm_table(main_frame)
-        
-        # 5. 日志显示区域
-        self.create_log_viewer(main_frame)
+        # 默认显示第一页
+        self.show_page1()
     
-    def create_file_selector(self, parent):
-        """创建文件选择器"""
-        file_frame = ttk.LabelFrame(parent, text="📁 文件选择", padding="10")
+    def create_page1(self):
+        """创建第一页：文件选择和label匹配"""
+        self.page1_frame = ttk.Frame(self.main_frame)
+        
+        # 上半部分：文件选择
+        self.create_file_selector_page1()
+        
+        # 下半部分：label匹配
+        self.create_label_matcher()
+        
+        # 确认按钮
+        self.confirm_button = ttk.Button(self.page1_frame, text="✅ 确认并进入监控", 
+                                        command=self.confirm_and_go_to_page2)
+        self.confirm_button.grid(row=2, column=0, columnspan=2, pady=20)
+    
+    def create_file_selector_page1(self):
+        """创建第一页的文件选择器"""
+        file_frame = ttk.LabelFrame(self.page1_frame, text="📁 文件选择", padding="10")
         file_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # 数据文件选择
@@ -122,6 +139,223 @@ class SmartMonitorGUI:
         self.workstation_id_entry.grid(row=3, column=1, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         
         file_frame.columnconfigure(1, weight=1)
+    
+    def create_label_matcher(self):
+        """创建label匹配区域"""
+        label_frame = ttk.LabelFrame(self.page1_frame, text="🏷️ Label匹配", padding="10")
+        label_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        
+        # Label匹配选择
+        ttk.Label(label_frame, text="是否需要匹配labels？").grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
+        
+        # 选择按钮
+        button_frame = ttk.Frame(label_frame)
+        button_frame.grid(row=1, column=0, sticky=tk.W, pady=(0, 10))
+        
+        self.label_choice_var = tk.StringVar(value="3")
+        ttk.Radiobutton(button_frame, text="是，重新选择labels", 
+                       variable=self.label_choice_var, value="1", 
+                       command=self.on_label_choice_change).grid(row=0, column=0, sticky=tk.W)
+        ttk.Radiobutton(button_frame, text="加载上一次label选择记录", 
+                       variable=self.label_choice_var, value="2", 
+                       command=self.on_label_choice_change).grid(row=1, column=0, sticky=tk.W)
+        ttk.Radiobutton(button_frame, text="否，直接用原始channel id", 
+                       variable=self.label_choice_var, value="3", 
+                       command=self.on_label_choice_change).grid(row=2, column=0, sticky=tk.W)
+        
+        # Label选择区域
+        self.label_selection_frame = ttk.Frame(label_frame)
+        self.label_selection_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        # 创建滚动区域用于label选择
+        self.label_canvas = tk.Canvas(self.label_selection_frame, height=300)
+        self.label_scrollbar = ttk.Scrollbar(self.label_selection_frame, orient="vertical", command=self.label_canvas.yview)
+        self.label_scrollable_frame = ttk.Frame(self.label_canvas)
+        
+        self.label_scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.label_canvas.configure(scrollregion=self.label_canvas.bbox("all"))
+        )
+        
+        self.label_canvas.create_window((0, 0), window=self.label_scrollable_frame, anchor="nw")
+        self.label_canvas.configure(yscrollcommand=self.label_scrollbar.set)
+        
+        # 添加鼠标滚轮支持
+        def _on_mousewheel(event):
+            self.label_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        self.label_canvas.bind("<MouseWheel>", _on_mousewheel)
+        
+        self.label_canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.label_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        
+        label_frame.columnconfigure(0, weight=1)
+        label_frame.rowconfigure(2, weight=1)
+        self.label_selection_frame.columnconfigure(0, weight=1)
+        self.label_selection_frame.rowconfigure(0, weight=1)
+        
+        # 初始状态
+        self.on_label_choice_change()
+    
+    def create_page2(self):
+        """创建第二页：控制面板和监控状态"""
+        self.page2_frame = ttk.Frame(self.main_frame)
+        
+        # 返回按钮
+        back_button = ttk.Button(self.page2_frame, text="⬅️ 返回文件选择", command=self.show_page1)
+        back_button.grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=(0, 10))
+        
+        # 控制按钮区域
+        self.create_control_panel(self.page2_frame)
+        
+        # 监控状态区域
+        self.create_status_panel(self.page2_frame)
+        
+        # 告警表格区域
+        self.create_alarm_table(self.page2_frame)
+        
+        # 日志显示区域
+        self.create_log_viewer(self.page2_frame)
+    
+    def show_page1(self):
+        """显示第一页"""
+        self.page2_frame.grid_remove()
+        self.page1_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
+    
+    def show_page2(self):
+        """显示第二页"""
+        self.page1_frame.grid_remove()
+        self.page2_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
+    
+    def on_label_choice_change(self):
+        """当label选择改变时"""
+        choice = self.label_choice_var.get()
+        
+        # 清空label选择区域
+        for widget in self.label_scrollable_frame.winfo_children():
+            widget.destroy()
+        
+        if choice == "1":
+            # 重新选择labels
+            self.label_mode = True
+            self.load_label_configuration()
+            self.create_label_selection_ui()
+        elif choice == "2":
+            # 加载上一次label选择记录
+            self.label_mode = True
+            self.load_last_label_selection()
+        else:
+            # 跳过label匹配
+            self.label_mode = False
+            self.channel_labels = {}
+            ttk.Label(self.label_scrollable_frame, text="✅ 将使用原始channel id").grid(row=0, column=0, sticky=tk.W)
+    
+    def load_label_configuration(self):
+        """加载label配置"""
+        try:
+            self.channel_config_service = ChannelConfigurationService(str(self.label_config_path))
+            self.channel_config_service.load_configuration()
+            self.config = self.channel_config_service.get_configuration_for_ui()
+        except Exception as e:
+            messagebox.showerror("错误", f"加载label配置失败: {e}")
+            self.config = {'categories': {}}
+    
+    def create_label_selection_ui(self):
+        """创建label选择界面"""
+        row = 0
+        for category_key, category in self.config['categories'].items():
+            # 分类标题
+            ttk.Label(self.label_scrollable_frame, text=f"【{category['category_name']}】{category['category_description']}", 
+                     font=('Arial', 10, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(10, 5))
+            row += 1
+            
+            for ch in category['channels']:
+                ch_id = ch['channel_id']
+                
+                # 通道标题
+                ttk.Label(self.label_scrollable_frame, text=f"  通道: {ch_id}", 
+                         font=('Arial', 9, 'bold')).grid(row=row, column=0, sticky=tk.W, padx=(20, 0))
+                row += 1
+                
+                # 创建单选按钮
+                label_var = tk.StringVar(value=ch.get('default_subtype_id', ''))
+                self.channel_labels[ch_id] = label_var
+                
+                for idx, st in enumerate(ch['available_subtypes']):
+                    default_mark = "(默认)" if st['is_default'] else ""
+                    ttk.Radiobutton(self.label_scrollable_frame, 
+                                   text=f"    {st['label']} {st['tag']} {default_mark}",
+                                   variable=label_var, 
+                                   value=st['subtype_id']).grid(row=row, column=0, sticky=tk.W, padx=(40, 0))
+                    row += 1
+                
+                row += 1  # 添加空行
+    
+    def load_last_label_selection(self):
+        """加载上一次label选择记录"""
+        if not self.label_selection_path.exists():
+            messagebox.showwarning("警告", "没有找到上一次label选择记录，将重新选择。")
+            self.label_choice_var.set("1")
+            self.on_label_choice_change()
+            return
+        
+        try:
+            with open(self.label_selection_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            self.channel_labels = data['channel_labels']
+            ttk.Label(self.label_scrollable_frame, 
+                     text=f"✅ 已加载上一次label选择记录 (时间: {data.get('timestamp', '未知')})").grid(row=0, column=0, sticky=tk.W)
+            
+        except Exception as e:
+            messagebox.showerror("错误", f"加载label选择记录失败: {e}")
+            self.label_choice_var.set("1")
+            self.on_label_choice_change()
+    
+    def confirm_and_go_to_page2(self):
+        """确认并跳转到第二页"""
+        # 验证文件选择
+        if not self.dat_file_var.get():
+            messagebox.showerror("错误", "请选择数据文件")
+            return
+        
+        if not Path(self.dat_file_var.get()).exists():
+            messagebox.showerror("错误", "数据文件不存在")
+            return
+        
+        # 保存label选择（如果选择了label匹配）
+        if self.label_mode and self.label_choice_var.get() == "1":
+            try:
+                # 收集label选择
+                selected_labels = {}
+                for ch_id, var in self.channel_labels.items():
+                    selected_labels[ch_id] = var.get()
+                
+                # 保存到文件
+                with open(self.label_selection_path, 'w', encoding='utf-8') as f:
+                    json.dump({
+                        "timestamp": datetime.now().isoformat(),
+                        "channel_labels": selected_labels
+                    }, f, ensure_ascii=False, indent=2)
+                
+                self.channel_labels = selected_labels
+                
+            except Exception as e:
+                messagebox.showerror("错误", f"保存label选择失败: {e}")
+                return
+        
+        # 跳转到第二页
+        self.show_page2()
+        
+        # 初始化监控服务
+        try:
+            self.monitor_service.rule_loader.config_path = Path(self.config_file_var.get())
+            self.monitor_service.initialize()
+        except Exception as e:
+            messagebox.showerror("错误", f"初始化监控服务失败: {e}")
+            return
+    
+
     
     def create_control_panel(self, parent):
         """创建控制面板"""
