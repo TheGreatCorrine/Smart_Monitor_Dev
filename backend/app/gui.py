@@ -30,6 +30,153 @@ class SmartMonitorGUI:
         self.root.geometry("1200x800")
         self.root.configure(bg='#f0f0f0')
         
+        # 语言设置
+        self.current_language = "zh"  # zh: 中文, en: 英文
+        self.texts = {
+            "zh": {
+                "title": "🔍 冰箱测试异常状态智能监测系统",
+                "file_selection": "📁 文件选择",
+                "data_file": "数据文件:",
+                "config_file": "配置文件:",
+                "run_id": "运行ID:",
+                "workstation_id": "工作站ID:",
+                "browse": "浏览",
+                "label_matching": "🏷️ Label匹配",
+                "label_question": "是否需要匹配labels？",
+                "label_option1": "是，重新选择labels",
+                "label_option2": "加载上一次label选择记录",
+                "label_option3": "否，直接用原始channel id",
+                "confirm_button": "✅ 确认并进入监控",
+                "back_button": "⬅️ 返回文件选择",
+                "control_panel": "🎮 控制面板",
+                "start_monitor": "🚀 开始监控",
+                "stop": "⏹️ 停止",
+                "start_simulation": "🎭 开始模拟",
+                "clear_results": "🗑️ 清空结果",
+                "monitor_status": "📊 监控状态",
+                "waiting": "等待开始...",
+                "records": "记录数:",
+                "alarms": "告警数:",
+                "processing_time": "处理时间:",
+                "processing_speed": "处理速度:",
+                "alarm_events": "🚨 告警事件",
+                "log_output": "📝 日志输出",
+                "error": "错误",
+                "warning": "警告",
+                "success": "成功",
+                "info": "信息",
+                "select_data_file": "选择数据文件",
+                "select_config_file": "选择配置文件",
+                "no_label_record": "没有找到上一次label选择记录，将重新选择。",
+                "loaded_label_record": "✅ 已加载上一次label选择记录 (时间: {})",
+                "will_use_raw_channel": "✅ 将使用原始channel id",
+                "please_select_data_file": "请选择数据文件",
+                "data_file_not_exist": "数据文件不存在",
+                "config_file_not_exist": "配置文件不存在",
+                "please_select_config_file": "请选择配置文件",
+                "please_input_run_id": "请输入运行ID",
+                "please_input_workstation_id": "请输入工作站ID",
+                "save_label_failed": "保存label选择失败: {}",
+                "init_monitor_failed": "初始化监控服务失败: {}",
+                "load_label_config_failed": "加载label配置失败: {}",
+                "load_label_record_failed": "加载label选择记录失败: {}",
+                "processing": "正在处理...",
+                "processing_complete": "处理完成",
+                "processing_failed": "处理失败: {}",
+                "simulation_running": "模拟监控运行中...",
+                "simulation_failed": "模拟失败: {}",
+                "simulation_started": "模拟已启动！\n工作站ID: {}\n每10秒推送一个record",
+                "simulation_start_failed": "启动模拟失败",
+                "stopped": "已停止",
+                "no_anomaly": "无异常告警",
+                "records_per_second": "记录/秒",
+                "time_unknown": "未知",
+                "auto_inferred_workstation": "自动推断工作站ID: {} (来自文件名: {})",
+                "deleted_temp_file": "已删除临时文件: {}",
+                "cleaned_offset_record": "已清理offset记录: {}",
+                "cleanup_temp_failed": "清理临时文件失败: {}",
+                "cleanup_offset_failed": "清理offset记录失败: {}",
+                "channel": "通道",
+                "default": "(默认)",
+                "time": "时间",
+                "severity": "严重程度",
+                "rule": "规则",
+                "description": "描述",
+                "sensor_values": "传感器值"
+            },
+            "en": {
+                "title": "🔍 Smart Refrigerator Test Anomaly Monitoring System",
+                "file_selection": "📁 File Selection",
+                "data_file": "Data File:",
+                "config_file": "Config File:",
+                "run_id": "Run ID:",
+                "workstation_id": "Workstation ID:",
+                "browse": "Browse",
+                "label_matching": "🏷️ Label Matching",
+                "label_question": "Do you need to match labels?",
+                "label_option1": "Yes, select labels again",
+                "label_option2": "Load previous label selection",
+                "label_option3": "No, use raw channel ID",
+                "confirm_button": "✅ Confirm and Enter Monitoring",
+                "back_button": "⬅️ Back to File Selection",
+                "control_panel": "🎮 Control Panel",
+                "start_monitor": "🚀 Start Monitoring",
+                "stop": "⏹️ Stop",
+                "start_simulation": "🎭 Start Simulation",
+                "clear_results": "🗑️ Clear Results",
+                "monitor_status": "📊 Monitor Status",
+                "waiting": "Waiting to start...",
+                "records": "Records:",
+                "alarms": "Alarms:",
+                "processing_time": "Processing Time:",
+                "processing_speed": "Processing Speed:",
+                "alarm_events": "🚨 Alarm Events",
+                "log_output": "📝 Log Output",
+                "error": "Error",
+                "warning": "Warning",
+                "success": "Success",
+                "info": "Info",
+                "select_data_file": "Select Data File",
+                "select_config_file": "Select Config File",
+                "no_label_record": "No previous label selection record found, will select again.",
+                "loaded_label_record": "✅ Loaded previous label selection record (Time: {})",
+                "will_use_raw_channel": "✅ Will use raw channel ID",
+                "please_select_data_file": "Please select data file",
+                "data_file_not_exist": "Data file does not exist",
+                "config_file_not_exist": "Config file does not exist",
+                "please_select_config_file": "Please select config file",
+                "please_input_run_id": "Please input run ID",
+                "please_input_workstation_id": "Please input workstation ID",
+                "save_label_failed": "Failed to save label selection: {}",
+                "init_monitor_failed": "Failed to initialize monitor service: {}",
+                "load_label_config_failed": "Failed to load label configuration: {}",
+                "load_label_record_failed": "Failed to load label selection record: {}",
+                "processing": "Processing...",
+                "processing_complete": "Processing complete",
+                "processing_failed": "Processing failed: {}",
+                "simulation_running": "Simulation monitoring running...",
+                "simulation_failed": "Simulation failed: {}",
+                "simulation_started": "Simulation started!\nWorkstation ID: {}\nPush one record every 10 seconds",
+                "simulation_start_failed": "Failed to start simulation",
+                "stopped": "Stopped",
+                "no_anomaly": "No anomaly alarms",
+                "records_per_second": "records/sec",
+                "time_unknown": "Unknown",
+                "auto_inferred_workstation": "Auto inferred workstation ID: {} (from filename: {})",
+                "deleted_temp_file": "Deleted temp file: {}",
+                "cleaned_offset_record": "Cleaned offset record: {}",
+                "cleanup_temp_failed": "Failed to cleanup temp files: {}",
+                "cleanup_offset_failed": "Failed to cleanup offset records: {}",
+                "channel": "Channel",
+                "default": "(Default)",
+                "time": "Time",
+                "severity": "Severity",
+                "rule": "Rule",
+                "description": "Description",
+                "sensor_values": "Sensor Values"
+            }
+        }
+        
         # 初始化组件
         self.monitor_service = MonitorService()
         self.monitor_controller = MonitorController(self.monitor_service)
@@ -63,6 +210,195 @@ class SmartMonitorGUI:
         
         # 启动状态更新定时器
         self.update_status()
+    
+    def get_text(self, key, *args):
+        """获取当前语言的文本"""
+        text = self.texts[self.current_language].get(key, key)
+        if args:
+            return text.format(*args)
+        return text
+    
+    def toggle_language(self):
+        """切换语言"""
+        self.current_language = "en" if self.current_language == "zh" else "zh"
+        self.update_ui_language()
+    
+    def update_ui_language(self):
+        """更新界面语言"""
+        # 更新窗口标题
+        self.root.title(self.get_text("title"))
+        
+        # 更新第一页
+        if hasattr(self, 'page1_frame') and self.page1_frame.winfo_exists():
+            self.update_page1_language()
+        
+        # 更新第二页
+        if hasattr(self, 'page2_frame') and self.page2_frame.winfo_exists():
+            self.update_page2_language()
+    
+    def update_page1_language(self):
+        """更新第一页语言"""
+        # 更新文件选择区域
+        for widget in self.page1_frame.winfo_children():
+            if isinstance(widget, ttk.LabelFrame):
+                if "📁" in widget.cget("text"):
+                    widget.configure(text=self.get_text("file_selection"))
+                elif "🏷️" in widget.cget("text"):
+                    widget.configure(text=self.get_text("label_matching"))
+                
+                # 更新文件选择区域内的标签文本
+                for child in widget.winfo_children():
+                    if isinstance(child, ttk.Label):
+                        text = child.cget("text")
+                        if "数据文件:" in text:
+                            child.configure(text=self.get_text("data_file"))
+                        elif "配置文件:" in text:
+                            child.configure(text=self.get_text("config_file"))
+                        elif "运行ID:" in text:
+                            child.configure(text=self.get_text("run_id"))
+                        elif "工作站ID:" in text:
+                            child.configure(text=self.get_text("workstation_id"))
+                    elif isinstance(child, ttk.Button):
+                        text = child.cget("text")
+                        if "浏览" in text:
+                            child.configure(text=self.get_text("browse"))
+        
+        # 更新label选择区域
+        if hasattr(self, 'label_scrollable_frame'):
+            for widget in self.label_scrollable_frame.winfo_children():
+                if isinstance(widget, ttk.Label):
+                    text = widget.cget("text")
+                    if "是否需要匹配labels？" in text:
+                        widget.configure(text=self.get_text("label_question"))
+                    elif "将使用原始channel id" in text:
+                        widget.configure(text=self.get_text("will_use_raw_channel"))
+                    elif "已加载上一次label选择记录" in text:
+                        widget.configure(text=self.get_text("loaded_label_record", self.get_text("time_unknown")))
+        
+        # 更新确认按钮文本
+        if hasattr(self, 'confirm_button'):
+            self.confirm_button.configure(text=self.get_text("confirm_button"))
+        
+        # 更新label匹配区域的文本
+        for widget in self.page1_frame.winfo_children():
+            if isinstance(widget, ttk.LabelFrame):
+                # 找到label question
+                for child in widget.winfo_children():
+                    if isinstance(child, ttk.Label):
+                        text = child.cget("text")
+                        if "是否需要匹配labels？" in text:
+                            child.configure(text=self.get_text("label_question"))
+                        elif "将使用原始channel id" in text:
+                            child.configure(text=self.get_text("will_use_raw_channel"))
+                        elif "已加载上一次label选择记录" in text:
+                            child.configure(text=self.get_text("loaded_label_record", self.get_text("time_unknown")))
+        
+        # 更新radio button文本
+        if hasattr(self, 'label_choice_var'):
+            # 找到并更新radio button文本
+            for widget in self.page1_frame.winfo_children():
+                if isinstance(widget, ttk.LabelFrame):
+                    # 找到label frame中的button_frame
+                    for child in widget.winfo_children():
+                        if isinstance(child, ttk.Frame):
+                            # 更新radio button文本
+                            for radio in child.winfo_children():
+                                if isinstance(radio, ttk.Radiobutton):
+                                    value = radio.cget("value")
+                                    if value == "1":
+                                        radio.configure(text=self.get_text("label_option1"))
+                                    elif value == "2":
+                                        radio.configure(text=self.get_text("label_option2"))
+                                    elif value == "3":
+                                        radio.configure(text=self.get_text("label_option3"))
+    
+    def update_page2_language(self):
+        """更新第二页语言"""
+        # 更新控制面板
+        for widget in self.page2_frame.winfo_children():
+            if isinstance(widget, ttk.LabelFrame):
+                if "🎮" in widget.cget("text"):
+                    widget.configure(text=self.get_text("control_panel"))
+                elif "📊" in widget.cget("text"):
+                    widget.configure(text=self.get_text("monitor_status"))
+                elif "🚨" in widget.cget("text"):
+                    widget.configure(text=self.get_text("alarm_events"))
+                elif "📝" in widget.cget("text"):
+                    widget.configure(text=self.get_text("log_output"))
+                
+                # 更新控制面板内的按钮文本
+                for child in widget.winfo_children():
+                    if isinstance(child, ttk.Frame):
+                        for button in child.winfo_children():
+                            if isinstance(button, ttk.Button):
+                                text = button.cget("text")
+                                if "🚀 开始监控" in text or "🚀 Start Monitoring" in text:
+                                    button.configure(text=self.get_text("start_monitor"))
+                                elif "⏹️ 停止" in text or "⏹️ Stop" in text:
+                                    button.configure(text=self.get_text("stop"))
+                                elif "🎭 开始模拟" in text or "🎭 Start Simulation" in text:
+                                    button.configure(text=self.get_text("start_simulation"))
+                                elif "🗑️ 清空结果" in text or "🗑️ Clear Results" in text:
+                                    button.configure(text=self.get_text("clear_results"))
+                
+                # 更新状态面板内的标签文本
+                for child in widget.winfo_children():
+                    if isinstance(child, ttk.Frame):
+                        for label in child.winfo_children():
+                            if isinstance(label, ttk.Label):
+                                text = label.cget("text")
+                                if "记录数:" in text or "Records:" in text:
+                                    label.configure(text=self.get_text("records"))
+                                elif "告警数:" in text or "Alarms:" in text:
+                                    label.configure(text=self.get_text("alarms"))
+                                elif "处理时间:" in text or "Processing Time:" in text:
+                                    label.configure(text=self.get_text("processing_time"))
+                                elif "处理速度:" in text or "Processing Speed:" in text:
+                                    label.configure(text=self.get_text("processing_speed"))
+        
+        # 更新返回按钮文本
+        for widget in self.page2_frame.winfo_children():
+            if isinstance(widget, ttk.Frame):
+                for button in widget.winfo_children():
+                    if isinstance(button, ttk.Button):
+                        text = button.cget("text")
+                        if "⬅️ 返回文件选择" in text or "⬅️ Back to File Selection" in text:
+                            button.configure(text=self.get_text("back_button"))
+        
+        # 更新状态文本变量
+        if hasattr(self, 'status_text'):
+            current_status = self.status_text.get()
+            if current_status == "等待开始..." or current_status == "Waiting to start...":
+                self.status_text.set(self.get_text("waiting"))
+            elif current_status == "已停止" or current_status == "Stopped":
+                self.status_text.set(self.get_text("stopped"))
+            elif current_status == "正在处理..." or current_status == "Processing...":
+                self.status_text.set(self.get_text("processing"))
+            elif current_status == "处理完成" or current_status == "Processing complete":
+                self.status_text.set(self.get_text("processing_complete"))
+            elif "模拟运行中" in current_status or "Simulation monitoring running" in current_status:
+                self.status_text.set(self.get_text("simulation_running"))
+        
+        # 更新处理速度文本
+        if hasattr(self, 'speed_var'):
+            current_speed = self.speed_var.get()
+            if "记录/秒" in current_speed:
+                # 提取数字部分
+                import re
+                match = re.search(r'(\d+\.?\d*)', current_speed)
+                if match:
+                    speed_value = match.group(1)
+                    self.speed_var.set(f"{speed_value} {self.get_text('records_per_second')}")
+            elif "records/sec" in current_speed:
+                # 提取数字部分
+                import re
+                match = re.search(r'(\d+\.?\d*)', current_speed)
+                if match:
+                    speed_value = match.group(1)
+                    self.speed_var.set(f"{speed_value} {self.get_text('records_per_second')}")
+        
+        # 更新告警表格列标题
+        self.update_alarm_table_headers()
     
     def setup_logging(self):
         """设置日志"""
@@ -102,38 +438,45 @@ class SmartMonitorGUI:
         # 下半部分：label匹配
         self.create_label_matcher()
         
-        # 确认按钮
-        self.confirm_button = ttk.Button(self.page1_frame, text="✅ 确认并进入监控", 
+        # 确认按钮和语言切换按钮
+        button_frame = ttk.Frame(self.page1_frame)
+        button_frame.grid(row=2, column=0, columnspan=2, pady=20)
+        
+        self.confirm_button = ttk.Button(button_frame, text=self.get_text("confirm_button"), 
                                         command=self.confirm_and_go_to_page2)
-        self.confirm_button.grid(row=2, column=0, columnspan=2, pady=20)
+        self.confirm_button.grid(row=0, column=0)
+        
+        # 语言切换按钮
+        lang_button = ttk.Button(button_frame, text="🌐 中/EN", command=self.toggle_language)
+        lang_button.grid(row=0, column=1, padx=(10, 0))
     
     def create_file_selector_page1(self):
         """创建第一页的文件选择器"""
-        file_frame = ttk.LabelFrame(self.page1_frame, text="📁 文件选择", padding="10")
+        file_frame = ttk.LabelFrame(self.page1_frame, text=self.get_text("file_selection"), padding="10")
         file_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # 数据文件选择
-        ttk.Label(file_frame, text="数据文件:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
+        ttk.Label(file_frame, text=self.get_text("data_file")).grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
         self.dat_file_var = tk.StringVar()
         self.dat_entry = ttk.Entry(file_frame, textvariable=self.dat_file_var, width=50)
         self.dat_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 5))
-        ttk.Button(file_frame, text="浏览", command=self.browse_dat_file).grid(row=0, column=2)
+        ttk.Button(file_frame, text=self.get_text("browse"), command=self.browse_dat_file).grid(row=0, column=2)
         
         # 配置文件选择
-        ttk.Label(file_frame, text="配置文件:").grid(row=1, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        ttk.Label(file_frame, text=self.get_text("config_file")).grid(row=1, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         self.config_file_var = tk.StringVar(value="config/rules.yaml")
         self.config_entry = ttk.Entry(file_frame, textvariable=self.config_file_var, width=50)
         self.config_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
-        ttk.Button(file_frame, text="浏览", command=self.browse_config_file).grid(row=1, column=2, pady=(10, 0))
+        ttk.Button(file_frame, text=self.get_text("browse"), command=self.browse_config_file).grid(row=1, column=2, pady=(10, 0))
         
         # 运行ID
-        ttk.Label(file_frame, text="运行ID:").grid(row=2, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        ttk.Label(file_frame, text=self.get_text("run_id")).grid(row=2, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         self.run_id_var = tk.StringVar()
         self.run_id_entry = ttk.Entry(file_frame, textvariable=self.run_id_var, width=50)
         self.run_id_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
         
         # 工作站ID
-        ttk.Label(file_frame, text="工作站ID:").grid(row=3, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        ttk.Label(file_frame, text=self.get_text("workstation_id")).grid(row=3, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         self.workstation_id_var = tk.StringVar()
         self.workstation_id_entry = ttk.Entry(file_frame, textvariable=self.workstation_id_var, width=10)
         self.workstation_id_entry.grid(row=3, column=1, sticky=tk.W, padx=(0, 5), pady=(10, 0))
@@ -142,24 +485,24 @@ class SmartMonitorGUI:
     
     def create_label_matcher(self):
         """创建label匹配区域"""
-        label_frame = ttk.LabelFrame(self.page1_frame, text="🏷️ Label匹配", padding="10")
+        label_frame = ttk.LabelFrame(self.page1_frame, text=self.get_text("label_matching"), padding="10")
         label_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
         
         # Label匹配选择
-        ttk.Label(label_frame, text="是否需要匹配labels？").grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
+        ttk.Label(label_frame, text=self.get_text("label_question")).grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
         
         # 选择按钮
         button_frame = ttk.Frame(label_frame)
         button_frame.grid(row=1, column=0, sticky=tk.W, pady=(0, 10))
         
         self.label_choice_var = tk.StringVar(value="3")
-        ttk.Radiobutton(button_frame, text="是，重新选择labels", 
+        ttk.Radiobutton(button_frame, text=self.get_text("label_option1"), 
                        variable=self.label_choice_var, value="1", 
                        command=self.on_label_choice_change).grid(row=0, column=0, sticky=tk.W)
-        ttk.Radiobutton(button_frame, text="加载上一次label选择记录", 
+        ttk.Radiobutton(button_frame, text=self.get_text("label_option2"), 
                        variable=self.label_choice_var, value="2", 
                        command=self.on_label_choice_change).grid(row=1, column=0, sticky=tk.W)
-        ttk.Radiobutton(button_frame, text="否，直接用原始channel id", 
+        ttk.Radiobutton(button_frame, text=self.get_text("label_option3"), 
                        variable=self.label_choice_var, value="3", 
                        command=self.on_label_choice_change).grid(row=2, column=0, sticky=tk.W)
         
@@ -201,9 +544,18 @@ class SmartMonitorGUI:
         """创建第二页：控制面板和监控状态"""
         self.page2_frame = ttk.Frame(self.main_frame)
         
-        # 返回按钮
-        back_button = ttk.Button(self.page2_frame, text="⬅️ 返回文件选择", command=self.show_page1)
-        back_button.grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=(0, 10))
+        # 返回按钮和语言切换按钮
+        button_frame = ttk.Frame(self.page2_frame)
+        button_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
+        
+        back_button = ttk.Button(button_frame, text=self.get_text("back_button"), command=self.show_page1)
+        back_button.grid(row=0, column=0, sticky=tk.W)
+        
+        # 语言切换按钮
+        lang_button = ttk.Button(button_frame, text="🌐 中/EN", command=self.toggle_language)
+        lang_button.grid(row=0, column=1, sticky=tk.E)
+        
+        button_frame.columnconfigure(1, weight=1)
         
         # 控制按钮区域
         self.create_control_panel(self.page2_frame)
@@ -248,7 +600,7 @@ class SmartMonitorGUI:
             # 跳过label匹配
             self.label_mode = False
             self.channel_labels = {}
-            ttk.Label(self.label_scrollable_frame, text="✅ 将使用原始channel id").grid(row=0, column=0, sticky=tk.W)
+            ttk.Label(self.label_scrollable_frame, text=self.get_text("will_use_raw_channel")).grid(row=0, column=0, sticky=tk.W)
     
     def load_label_configuration(self):
         """加载label配置"""
@@ -257,7 +609,7 @@ class SmartMonitorGUI:
             self.channel_config_service.load_configuration()
             self.config = self.channel_config_service.get_configuration_for_ui()
         except Exception as e:
-            messagebox.showerror("错误", f"加载label配置失败: {e}")
+            messagebox.showerror(self.get_text("error"), self.get_text("load_label_config_failed", str(e)))
             self.config = {'categories': {}}
     
     def create_label_selection_ui(self):
@@ -273,7 +625,7 @@ class SmartMonitorGUI:
                 ch_id = ch['channel_id']
                 
                 # 通道标题
-                ttk.Label(self.label_scrollable_frame, text=f"  通道: {ch_id}", 
+                ttk.Label(self.label_scrollable_frame, text=f"  {self.get_text('channel')}: {ch_id}", 
                          font=('Arial', 9, 'bold')).grid(row=row, column=0, sticky=tk.W, padx=(20, 0))
                 row += 1
                 
@@ -282,7 +634,7 @@ class SmartMonitorGUI:
                 self.channel_labels[ch_id] = label_var
                 
                 for idx, st in enumerate(ch['available_subtypes']):
-                    default_mark = "(默认)" if st['is_default'] else ""
+                    default_mark = self.get_text("default") if st['is_default'] else ""
                     ttk.Radiobutton(self.label_scrollable_frame, 
                                    text=f"    {st['label']} {st['tag']} {default_mark}",
                                    variable=label_var, 
@@ -294,7 +646,7 @@ class SmartMonitorGUI:
     def load_last_label_selection(self):
         """加载上一次label选择记录"""
         if not self.label_selection_path.exists():
-            messagebox.showwarning("警告", "没有找到上一次label选择记录，将重新选择。")
+            messagebox.showwarning(self.get_text("warning"), self.get_text("no_label_record"))
             self.label_choice_var.set("1")
             self.on_label_choice_change()
             return
@@ -305,10 +657,10 @@ class SmartMonitorGUI:
             
             self.channel_labels = data['channel_labels']
             ttk.Label(self.label_scrollable_frame, 
-                     text=f"✅ 已加载上一次label选择记录 (时间: {data.get('timestamp', '未知')})").grid(row=0, column=0, sticky=tk.W)
+                     text=self.get_text("loaded_label_record", data.get('timestamp', self.get_text("time_unknown")))).grid(row=0, column=0, sticky=tk.W)
             
         except Exception as e:
-            messagebox.showerror("错误", f"加载label选择记录失败: {e}")
+            messagebox.showerror(self.get_text("error"), self.get_text("load_label_record_failed", str(e)))
             self.label_choice_var.set("1")
             self.on_label_choice_change()
     
@@ -316,11 +668,11 @@ class SmartMonitorGUI:
         """确认并跳转到第二页"""
         # 验证文件选择
         if not self.dat_file_var.get():
-            messagebox.showerror("错误", "请选择数据文件")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_select_data_file"))
             return
         
         if not Path(self.dat_file_var.get()).exists():
-            messagebox.showerror("错误", "数据文件不存在")
+            messagebox.showerror(self.get_text("error"), self.get_text("data_file_not_exist"))
             return
         
         # 保存label选择（如果选择了label匹配）
@@ -341,7 +693,7 @@ class SmartMonitorGUI:
                 self.channel_labels = selected_labels
                 
             except Exception as e:
-                messagebox.showerror("错误", f"保存label选择失败: {e}")
+                messagebox.showerror(self.get_text("error"), self.get_text("save_label_failed", str(e)))
                 return
         
         # 跳转到第二页
@@ -352,30 +704,30 @@ class SmartMonitorGUI:
             self.monitor_service.rule_loader.config_path = Path(self.config_file_var.get())
             self.monitor_service.initialize()
         except Exception as e:
-            messagebox.showerror("错误", f"初始化监控服务失败: {e}")
+            messagebox.showerror(self.get_text("error"), self.get_text("init_monitor_failed", str(e)))
             return
     
 
     
     def create_control_panel(self, parent):
         """创建控制面板"""
-        control_frame = ttk.LabelFrame(parent, text="🎮 控制面板", padding="10")
+        control_frame = ttk.LabelFrame(parent, text=self.get_text("control_panel"), padding="10")
         control_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # 按钮区域
         button_frame = ttk.Frame(control_frame)
         button_frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
         
-        self.start_button = ttk.Button(button_frame, text="🚀 开始监控", command=self.start_monitoring)
+        self.start_button = ttk.Button(button_frame, text=self.get_text("start_monitor"), command=self.start_monitoring)
         self.start_button.grid(row=0, column=0, padx=(0, 10))
         
-        self.stop_button = ttk.Button(button_frame, text="⏹️ 停止", command=self.stop_monitoring, state='disabled')
+        self.stop_button = ttk.Button(button_frame, text=self.get_text("stop"), command=self.stop_monitoring, state='disabled')
         self.stop_button.grid(row=0, column=1, padx=(0, 10))
         
-        self.simulate_button = ttk.Button(button_frame, text="🎭 开始模拟", command=self.start_simulation)
+        self.simulate_button = ttk.Button(button_frame, text=self.get_text("start_simulation"), command=self.start_simulation)
         self.simulate_button.grid(row=0, column=2, padx=(0, 10))
         
-        self.clear_button = ttk.Button(button_frame, text="🗑️ 清空结果", command=self.clear_results)
+        self.clear_button = ttk.Button(button_frame, text=self.get_text("clear_results"), command=self.clear_results)
         self.clear_button.grid(row=0, column=3, padx=(0, 10))
         
         # 进度条
@@ -387,48 +739,50 @@ class SmartMonitorGUI:
     
     def create_status_panel(self, parent):
         """创建状态面板"""
-        status_frame = ttk.LabelFrame(parent, text="📊 监控状态", padding="10")
+        status_frame = ttk.LabelFrame(parent, text=self.get_text("monitor_status"), padding="10")
         status_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 5))
         
         # 状态信息
-        self.status_text = tk.StringVar(value="等待开始...")
+        self.status_text = tk.StringVar(value=self.get_text("waiting"))
         ttk.Label(status_frame, textvariable=self.status_text, font=('Arial', 10, 'bold')).grid(row=0, column=0, sticky=tk.W)
         
         # 统计信息
         stats_frame = ttk.Frame(status_frame)
         stats_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
         
-        ttk.Label(stats_frame, text="记录数:").grid(row=0, column=0, sticky=tk.W)
+        ttk.Label(stats_frame, text=self.get_text("records")).grid(row=0, column=0, sticky=tk.W)
         self.records_var = tk.StringVar(value="0")
         ttk.Label(stats_frame, textvariable=self.records_var, font=('Arial', 9, 'bold')).grid(row=0, column=1, sticky=tk.W, padx=(5, 0))
         
-        ttk.Label(stats_frame, text="告警数:").grid(row=1, column=0, sticky=tk.W)
+        ttk.Label(stats_frame, text=self.get_text("alarms")).grid(row=1, column=0, sticky=tk.W)
         self.alarms_var = tk.StringVar(value="0")
         ttk.Label(stats_frame, textvariable=self.alarms_var, font=('Arial', 9, 'bold')).grid(row=1, column=1, sticky=tk.W, padx=(5, 0))
         
-        ttk.Label(stats_frame, text="处理时间:").grid(row=2, column=0, sticky=tk.W)
+        ttk.Label(stats_frame, text=self.get_text("processing_time")).grid(row=2, column=0, sticky=tk.W)
         self.time_var = tk.StringVar(value="0.00s")
         ttk.Label(stats_frame, textvariable=self.time_var, font=('Arial', 9, 'bold')).grid(row=2, column=1, sticky=tk.W, padx=(5, 0))
         
-        ttk.Label(stats_frame, text="处理速度:").grid(row=3, column=0, sticky=tk.W)
-        self.speed_var = tk.StringVar(value="0 记录/秒")
+        ttk.Label(stats_frame, text=self.get_text("processing_speed")).grid(row=3, column=0, sticky=tk.W)
+        self.speed_var = tk.StringVar(value=f"0 {self.get_text('records_per_second')}")
         ttk.Label(stats_frame, textvariable=self.speed_var, font=('Arial', 9, 'bold')).grid(row=3, column=1, sticky=tk.W, padx=(5, 0))
         
         status_frame.columnconfigure(0, weight=1)
     
     def create_alarm_table(self, parent):
         """创建告警表格"""
-        alarm_frame = ttk.LabelFrame(parent, text="🚨 告警事件", padding="10")
+        alarm_frame = ttk.LabelFrame(parent, text=self.get_text("alarm_events"), padding="10")
         alarm_frame.grid(row=2, column=1, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(5, 0))
         
         # 创建表格
-        columns = ('时间', '严重程度', '规则', '描述', '传感器值')
-        self.alarm_tree = ttk.Treeview(alarm_frame, columns=columns, show='headings', height=10)
+        self.alarm_columns = ('时间', '严重程度', '规则', '描述', '传感器值')
+        self.alarm_tree = ttk.Treeview(alarm_frame, columns=self.alarm_columns, show='headings', height=10)
         
         # 设置列标题
-        for col in columns:
-            self.alarm_tree.heading(col, text=col)
-            self.alarm_tree.column(col, width=150)
+        self.update_alarm_table_headers()
+        
+        # 添加滚动条
+        alarm_scrollbar = ttk.Scrollbar(alarm_frame, orient=tk.VERTICAL, command=self.alarm_tree.yview)
+        self.alarm_tree.configure(yscrollcommand=alarm_scrollbar.set)
         
         # 添加滚动条
         alarm_scrollbar = ttk.Scrollbar(alarm_frame, orient=tk.VERTICAL, command=self.alarm_tree.yview)
@@ -442,7 +796,7 @@ class SmartMonitorGUI:
     
     def create_log_viewer(self, parent):
         """创建日志查看器"""
-        log_frame = ttk.LabelFrame(parent, text="📝 日志输出", padding="10")
+        log_frame = ttk.LabelFrame(parent, text=self.get_text("log_output"), padding="10")
         log_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
         
         self.log_text = scrolledtext.ScrolledText(log_frame, height=8, font=('Consolas', 9))
@@ -458,7 +812,7 @@ class SmartMonitorGUI:
     def browse_dat_file(self):
         """浏览数据文件"""
         filename = filedialog.askopenfilename(
-            title="选择数据文件",
+            title=self.get_text("select_data_file"),
             filetypes=[("DAT files", "*.dat"), ("All files", "*.*")]
         )
         if filename:
@@ -478,12 +832,12 @@ class SmartMonitorGUI:
                 if match:
                     workstation_id = match.group(1)
                     self.workstation_id_var.set(workstation_id)
-                    print(f"自动推断工作站ID: {workstation_id} (来自文件名: {path.stem})")
+                    print(self.get_text("auto_inferred_workstation", workstation_id, path.stem))
     
     def browse_config_file(self):
         """浏览配置文件"""
         filename = filedialog.askopenfilename(
-            title="选择配置文件",
+            title=self.get_text("select_config_file"),
             filetypes=[("YAML files", "*.yaml"), ("YML files", "*.yml"), ("All files", "*.*")]
         )
         if filename:
@@ -497,24 +851,24 @@ class SmartMonitorGUI:
         run_id = self.run_id_var.get().strip()
         
         if not dat_file:
-            messagebox.showerror("错误", "请选择数据文件")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_select_data_file"))
             return
         
         if not config_file:
-            messagebox.showerror("错误", "请选择配置文件")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_select_config_file"))
             return
         
         if not run_id:
-            messagebox.showerror("错误", "请输入运行ID")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_input_run_id"))
             return
         
         # 检查文件是否存在
         if not Path(dat_file).exists():
-            messagebox.showerror("错误", f"数据文件不存在: {dat_file}")
+            messagebox.showerror(self.get_text("error"), self.get_text("data_file_not_exist", dat_file))
             return
         
         if not Path(config_file).exists():
-            messagebox.showerror("错误", f"配置文件不存在: {config_file}")
+            messagebox.showerror(self.get_text("error"), self.get_text("config_file_not_exist", config_file))
             return
         
         # 清空之前的结果
@@ -523,7 +877,7 @@ class SmartMonitorGUI:
         # 更新界面状态
         self.start_button.config(state='disabled')
         self.stop_button.config(state='normal')
-        self.status_text.set("正在处理...")
+        self.status_text.set(self.get_text("processing"))
         self.progress_var.set(0)
         
         # 记录session开始时间
@@ -557,7 +911,7 @@ class SmartMonitorGUI:
         self.session_total_records = 0
         self.session_total_alarms = 0
         
-        self.status_text.set("已停止")
+        self.status_text.set(self.get_text("stopped"))
         self.start_button.config(state='normal')
         self.stop_button.config(state='disabled')
         self.simulate_button.config(state='normal')
@@ -573,7 +927,7 @@ class SmartMonitorGUI:
         self.records_var.set("0")
         self.alarms_var.set("0")
         self.time_var.set("0.00s")
-        self.speed_var.set("0 记录/秒")
+        self.speed_var.set(f"0 {self.get_text('records_per_second')}")
         
         # 清空日志
         self.log_text.delete(1.0, tk.END)
@@ -587,28 +941,28 @@ class SmartMonitorGUI:
         workstation_id = self.workstation_id_var.get().strip()
         
         if not dat_file:
-            messagebox.showerror("错误", "请选择数据文件")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_select_data_file"))
             return
         
         if not config_file:
-            messagebox.showerror("错误", "请选择配置文件")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_select_config_file"))
             return
         
         if not run_id:
-            messagebox.showerror("错误", "请输入运行ID")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_input_run_id"))
             return
         
         if not workstation_id:
-            messagebox.showerror("错误", "请输入工作站ID")
+            messagebox.showerror(self.get_text("error"), self.get_text("please_input_workstation_id"))
             return
         
         # 检查文件是否存在
         if not Path(dat_file).exists():
-            messagebox.showerror("错误", f"数据文件不存在: {dat_file}")
+            messagebox.showerror(self.get_text("error"), self.get_text("data_file_not_exist", dat_file))
             return
         
         if not Path(config_file).exists():
-            messagebox.showerror("错误", f"配置文件不存在: {config_file}")
+            messagebox.showerror(self.get_text("error"), self.get_text("config_file_not_exist", config_file))
             return
         
         try:
@@ -640,15 +994,15 @@ class SmartMonitorGUI:
                 self.start_button.config(state='disabled')
                 self.stop_button.config(state='normal')
                 self.simulate_button.config(state='disabled')
-                self.status_text.set("模拟监控运行中...")
+                self.status_text.set(self.get_text("simulation_running"))
                 self.progress_var.set(50)
                 
-                messagebox.showinfo("成功", f"模拟已启动！\n工作站ID: {workstation_id}\n每10秒推送一个record")
+                messagebox.showinfo(self.get_text("success"), self.get_text("simulation_started", workstation_id))
             else:
-                messagebox.showerror("错误", "启动模拟失败")
+                messagebox.showerror(self.get_text("error"), self.get_text("simulation_start_failed"))
                 
         except Exception as e:
-            messagebox.showerror("错误", f"启动模拟失败: {str(e)}")
+            messagebox.showerror(self.get_text("error"), self.get_text("simulation_failed", str(e)))
             self.status_text.set(f"模拟失败: {str(e)}")
     
     def _monitoring_worker(self, dat_file: str, config_file: str, run_id: str):
@@ -677,18 +1031,18 @@ class SmartMonitorGUI:
             self.records_var.set(str(records_count))
             self.alarms_var.set(str(len(alarms)))
             self.time_var.set(f"{processing_time:.2f}s")
-            self.speed_var.set(f"{speed:.2f} 记录/秒")
+            self.speed_var.set(f"{speed:.2f} {self.get_text('records_per_second')}")
             
             # 更新状态
-            self.status_text.set("处理完成")
+            self.status_text.set(self.get_text("processing_complete"))
             self.progress_var.set(100)
             
             # 显示完成消息
-            messagebox.showinfo("完成", f"处理完成！\n记录数: {records_count}\n告警数: {len(alarms)}")
+            messagebox.showinfo(self.get_text("success"), self.get_text("processing_complete", records_count, len(alarms)))
             
         except Exception as e:
-            self.status_text.set(f"处理失败: {str(e)}")
-            messagebox.showerror("错误", f"处理失败: {str(e)}")
+            self.status_text.set(self.get_text("processing_failed", str(e)))
+            messagebox.showerror(self.get_text("error"), self.get_text("processing_failed", str(e)))
         finally:
             # 恢复界面状态
             self.start_button.config(state='normal')
@@ -755,12 +1109,12 @@ class SmartMonitorGUI:
                 # 计算处理速度（记录/秒）
                 if elapsed_time > 0:
                     speed = self.session_total_records / elapsed_time
-                    self.speed_var.set(f"{speed:.2f} 记录/秒")
+                    self.speed_var.set(f"{speed:.2f} {self.get_text('records_per_second')}")
                 else:
-                    self.speed_var.set("0.00 记录/秒")
+                    self.speed_var.set(f"0.00 {self.get_text('records_per_second')}")
             else:
                 self.time_var.set("0.0s")
-                self.speed_var.set("0.00 记录/秒")
+                self.speed_var.set(f"0.00 {self.get_text('records_per_second')}")
             
             # 更新记录数和告警数
             self.records_var.set(str(self.session_total_records))
@@ -772,10 +1126,26 @@ class SmartMonitorGUI:
                 if fp_status.get('total_records_pushed'):
                     self.status_text.set(f"模拟运行中 - 已推送 {fp_status['total_records_pushed']} 个records")
                 else:
-                    self.status_text.set("模拟运行中...")
+                    self.status_text.set(self.get_text("simulation_running"))
         
         # 每1秒更新一次状态
         self.root.after(1000, self.update_status)
+    
+    def update_alarm_table_headers(self):
+        """更新告警表格列标题"""
+        if hasattr(self, 'alarm_tree'):
+            # 设置列标题
+            headers = [
+                self.get_text("time"),
+                self.get_text("severity"),
+                self.get_text("rule"),
+                self.get_text("description"),
+                self.get_text("sensor_values")
+            ]
+            
+            for i, col in enumerate(self.alarm_columns):
+                self.alarm_tree.heading(col, text=headers[i])
+                self.alarm_tree.column(col, width=150)
     
     def _cleanup_temp_files(self):
         """清理临时文件和offset记录"""
@@ -788,7 +1158,7 @@ class SmartMonitorGUI:
             temp_file = Path(f"data/mpl{workstation_id}_temp.dat")
             if temp_file.exists():
                 temp_file.unlink()
-                print(f"已删除临时文件: {temp_file}")
+                print(self.get_text("deleted_temp_file", temp_file))
             
             # 清理offset记录
             offset_file = Path(".offsets.json")
@@ -803,12 +1173,12 @@ class SmartMonitorGUI:
                         del offsets[temp_file_key]
                         with open(offset_file, 'w') as f:
                             json.dump(offsets, f)
-                        print(f"已清理offset记录: {temp_file_key}")
+                        print(self.get_text("cleaned_offset_record", temp_file_key))
                 except Exception as e:
-                    print(f"清理offset记录失败: {e}")
+                    print(self.get_text("cleanup_offset_failed", str(e)))
             
         except Exception as e:
-            print(f"清理临时文件失败: {e}")
+            print(self.get_text("cleanup_temp_failed", str(e)))
     
     def run(self):
         """运行GUI应用"""
