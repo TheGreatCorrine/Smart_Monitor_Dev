@@ -5,8 +5,12 @@
 channel_categories:
   # 大类1: 环境温度
   environment_temp:
-    category_name: "环境温度"
-    category_description: "冰箱内外环境温度监测"
+    category_name:
+      zh: "环境温度"
+      en: "Environment Temperature"
+    category_description:
+      zh: "冰箱内外环境温度监测"
+      en: "Fridge inside/outside environment temperature monitoring"
     channels:
       - AT  # 环境温度channel
     subtypes:
@@ -20,8 +24,12 @@ channel_categories:
 
   # 大类2: 整体功率  
   total_power:
-    category_name: "整体功率"
-    category_description: "设备功率消耗监测"
+    category_name:
+      zh: "整体功率"
+      en: "Total Power"
+    category_description:
+      zh: "设备功率消耗监测"
+      en: "Device power consumption monitoring"
     channels:
       - P   # 功率channel
     subtypes:
@@ -35,8 +43,12 @@ channel_categories:
 
   # 大类3: T1~T22温度
   temperature_t:
-    category_name: "主温度传感器"
-    category_description: "T1-T22主要温度传感器监测"
+    category_name:
+      zh: "主温度传感器"
+      en: "Main Temperature Sensors"
+    category_description:
+      zh: "T1-T22主要温度传感器监测"
+      en: "Monitoring of main temperature sensors T1-T22"
     channels:
       - T1
       - T2
@@ -191,8 +203,12 @@ channel_categories:
 
   # 大类4: TE1~TE14数字温度
   temperature_te:
-    category_name: "数字温度传感器"
-    category_description: "TE1-TE14数字温度传感器监测"
+    category_name:
+      zh: "数字温度传感器"
+      en: "Digital Temperature Sensors"
+    category_description:
+      zh: "TE1-TE14数字温度传感器监测"
+      en: "Monitoring of digital temperature sensors TE1-TE14"
     channels:
       - TE1
       - TE2
@@ -340,8 +356,12 @@ channel_categories:
 
   # 大类5: DE1~DE14数字量
   digital_de:
-    category_name: "数字量信号"
-    category_description: "DE1-DE14数字量状态监测"
+    category_name:
+      zh: "数字量信号"
+      en: "Digital Signals"
+    category_description:
+      zh: "DE1-DE14数字量状态监测"
+      en: "Monitoring of digital signal states DE1-DE14"
     channels:
       - DE1
       - DE2
