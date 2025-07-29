@@ -30,153 +30,6 @@ class SmartMonitorGUI:
         self.root.geometry("1200x800")
         self.root.configure(bg='#f0f0f0')
         
-        # Language setting
-        self.current_language = "en"  # zh: Chinese, en: English
-        self.texts = {
-            "zh": {
-                "title": "🔍 冰箱测试异常状态智能监测系统",
-                "file_selection": "📁 文件选择",
-                "data_file": "Data File:",
-                "config_file": "Config File:",
-                "run_id": "Run ID:",
-                "workstation_id": "Workstation ID:",
-                "browse": "Browse",
-                "label_matching": "🏷️ Label Matching",
-                "label_question": "Do you need to match labels?",
-                "label_option1": "Yes, select labels again",
-                "label_option2": "Load previous label selection",
-                "label_option3": "No, use raw channel ID",
-                "confirm_button": "✅ Confirm and Enter Monitoring",
-                "back_button": "⬅️ Back to File Selection",
-                "control_panel": "🎮 Control Panel",
-                "start_monitor": "🚀 Start Monitoring",
-                "stop": "⏹️ Stop",
-                "start_simulation": "🎭 Start Simulation",
-                "clear_results": "🗑️ Clear Results",
-                "monitor_status": "📊 Monitor Status",
-                "waiting": "Waiting to start...",
-                "records": "Records:",
-                "alarms": "Alarms:",
-                "processing_time": "Processing Time:",
-                "processing_speed": "Processing Speed:",
-                "alarm_events": "🚨 Alarm Events",
-                "log_output": "📝 Log Output",
-                "error": "Error",
-                "warning": "Warning",
-                "success": "Success",
-                "info": "Info",
-                "select_data_file": "Select Data File",
-                "select_config_file": "Select Config File",
-                "no_label_record": "No previous label selection record found, will select again.",
-                "loaded_label_record": "✅ Loaded previous label selection record (Time: {})",
-                "will_use_raw_channel": "✅ Will use raw channel ID",
-                "please_select_data_file": "Please select data file",
-                "data_file_not_exist": "Data file does not exist",
-                "config_file_not_exist": "Config file does not exist",
-                "please_select_config_file": "Please select config file",
-                "please_input_run_id": "Please input run ID",
-                "please_input_workstation_id": "Please input workstation ID",
-                "save_label_failed": "Failed to save label selection: {}",
-                "init_monitor_failed": "Failed to initialize monitor service: {}",
-                "load_label_config_failed": "Failed to load label configuration: {}",
-                "load_label_record_failed": "Failed to load label selection record: {}",
-                "processing": "Processing...",
-                "processing_complete": "Processing complete",
-                "processing_failed": "Processing failed: {}",
-                "simulation_running": "Simulation monitoring running...",
-                "simulation_failed": "Simulation failed: {}",
-                "simulation_started": "Simulation started!\nWorkstation ID: {}\nPush one record every 10 seconds",
-                "simulation_start_failed": "Failed to start simulation",
-                "stopped": "Stopped",
-                "no_anomaly": "No anomaly alarms",
-                "records_per_second": "records/sec",
-                "time_unknown": "Unknown",
-                "auto_inferred_workstation": "Auto inferred workstation ID: {} (from filename: {})",
-                "deleted_temp_file": "Deleted temp file: {}",
-                "cleaned_offset_record": "Cleaned offset record: {}",
-                "cleanup_temp_failed": "Failed to cleanup temp files: {}",
-                "cleanup_offset_failed": "Failed to cleanup offset records: {}",
-                "channel": "Channel",
-                "default": "(Default)",
-                "time": "Time",
-                "severity": "Severity",
-                "rule": "Rule",
-                "description": "Description",
-                "sensor_values": "Sensor Values"
-            },
-            "en": {
-                "title": "🔍 Smart Refrigerator Test Anomaly Monitoring System",
-                "file_selection": "📁 File Selection",
-                "data_file": "Data File:",
-                "config_file": "Config File:",
-                "run_id": "Run ID:",
-                "workstation_id": "Workstation ID:",
-                "browse": "Browse",
-                "label_matching": "🏷️ Label Matching",
-                "label_question": "Do you need to match labels?",
-                "label_option1": "Yes, select labels again",
-                "label_option2": "Load previous label selection",
-                "label_option3": "No, use raw channel ID",
-                "confirm_button": "✅ Confirm and Enter Monitoring",
-                "back_button": "⬅️ Back to File Selection",
-                "control_panel": "🎮 Control Panel",
-                "start_monitor": "🚀 Start Monitoring",
-                "stop": "⏹️ Stop",
-                "start_simulation": "🎭 Start Simulation",
-                "clear_results": "🗑️ Clear Results",
-                "monitor_status": "📊 Monitor Status",
-                "waiting": "Waiting to start...",
-                "records": "Records:",
-                "alarms": "Alarms:",
-                "processing_time": "Processing Time:",
-                "processing_speed": "Processing Speed:",
-                "alarm_events": "🚨 Alarm Events",
-                "log_output": "📝 Log Output",
-                "error": "Error",
-                "warning": "Warning",
-                "success": "Success",
-                "info": "Info",
-                "select_data_file": "Select Data File",
-                "select_config_file": "Select Config File",
-                "no_label_record": "No previous label selection record found, will select again.",
-                "loaded_label_record": "✅ Loaded previous label selection record (Time: {})",
-                "will_use_raw_channel": "✅ Will use raw channel ID",
-                "please_select_data_file": "Please select data file",
-                "data_file_not_exist": "Data file does not exist",
-                "config_file_not_exist": "Config file does not exist",
-                "please_select_config_file": "Please select config file",
-                "please_input_run_id": "Please input run ID",
-                "please_input_workstation_id": "Please input workstation ID",
-                "save_label_failed": "Failed to save label selection: {}",
-                "init_monitor_failed": "Failed to initialize monitor service: {}",
-                "load_label_config_failed": "Failed to load label configuration: {}",
-                "load_label_record_failed": "Failed to load label selection record: {}",
-                "processing": "Processing...",
-                "processing_complete": "Processing complete",
-                "processing_failed": "Processing failed: {}",
-                "simulation_running": "Simulation monitoring running...",
-                "simulation_failed": "Simulation failed: {}",
-                "simulation_started": "Simulation started!\nWorkstation ID: {}\nPush one record every 10 seconds",
-                "simulation_start_failed": "Failed to start simulation",
-                "stopped": "Stopped",
-                "no_anomaly": "No anomaly alarms",
-                "records_per_second": "records/sec",
-                "time_unknown": "Unknown",
-                "auto_inferred_workstation": "Auto inferred workstation ID: {} (from filename: {})",
-                "deleted_temp_file": "Deleted temp file: {}",
-                "cleaned_offset_record": "Cleaned offset record: {}",
-                "cleanup_temp_failed": "Failed to cleanup temp files: {}",
-                "cleanup_offset_failed": "Failed to cleanup offset records: {}",
-                "channel": "Channel",
-                "default": "(Default)",
-                "time": "Time",
-                "severity": "Severity",
-                "rule": "Rule",
-                "description": "Description",
-                "sensor_values": "Sensor Values"
-            }
-        }
-        
         # Initialize components
         self.monitor_service = MonitorService()
         self.monitor_controller = MonitorController(self.monitor_service)
@@ -195,6 +48,7 @@ class SmartMonitorGUI:
         self.label_mode = False
         self.label_config_path = Path("config/label_channel_match.yaml")
         self.label_selection_path = Path("label_selection.json")
+        self.config = {'categories': {}}  # Initialize with empty config
         
         # Message queue for inter-thread communication
         self.message_queue = queue.Queue()
@@ -210,195 +64,6 @@ class SmartMonitorGUI:
         
         # Start status update timer
         self.update_status()
-    
-    def get_text(self, key, *args):
-        """Get text in current language"""
-        text = self.texts[self.current_language].get(key, key)
-        if args:
-            return text.format(*args)
-        return text
-    
-    def toggle_language(self):
-        """Toggle language"""
-        self.current_language = "en" if self.current_language == "zh" else "zh"
-        self.update_ui_language()
-    
-    def update_ui_language(self):
-        """Update interface language"""
-        # Update window title
-        self.root.title(self.get_text("title"))
-        
-        # Update first page
-        if hasattr(self, 'page1_frame') and self.page1_frame.winfo_exists():
-            self.update_page1_language()
-        
-        # Update second page
-        if hasattr(self, 'page2_frame') and self.page2_frame.winfo_exists():
-            self.update_page2_language()
-    
-    def update_page1_language(self):
-        """Update first page language"""
-        # Update file selection area
-        for widget in self.page1_frame.winfo_children():
-            if isinstance(widget, ttk.LabelFrame):
-                if "📁" in widget.cget("text"):
-                    widget.configure(text=self.get_text("file_selection"))
-                elif "🏷️" in widget.cget("text"):
-                    widget.configure(text=self.get_text("label_matching"))
-                
-                # Update label text within file selection area
-                for child in widget.winfo_children():
-                    if isinstance(child, ttk.Label):
-                        text = child.cget("text")
-                        if "Data File:" in text:
-                            child.configure(text=self.get_text("data_file"))
-                        elif "Config File:" in text:
-                            child.configure(text=self.get_text("config_file"))
-                        elif "Run ID:" in text:
-                            child.configure(text=self.get_text("run_id"))
-                        elif "Workstation ID:" in text:
-                            child.configure(text=self.get_text("workstation_id"))
-                    elif isinstance(child, ttk.Button):
-                        text = child.cget("text")
-                        if "Browse" in text:
-                            child.configure(text=self.get_text("browse"))
-        
-        # Update label selection area
-        if hasattr(self, 'label_scrollable_frame'):
-            for widget in self.label_scrollable_frame.winfo_children():
-                if isinstance(widget, ttk.Label):
-                    text = widget.cget("text")
-                    if "Do you need to match labels?" in text:
-                        widget.configure(text=self.get_text("label_question"))
-                    elif "Will use raw channel ID" in text:
-                        widget.configure(text=self.get_text("will_use_raw_channel"))
-                    elif "Loaded previous label selection record" in text:
-                        widget.configure(text=self.get_text("loaded_label_record", self.get_text("time_unknown")))
-        
-        # Update confirm button text
-        if hasattr(self, 'confirm_button'):
-            self.confirm_button.configure(text=self.get_text("confirm_button"))
-        
-        # Update label matching area text
-        for widget in self.page1_frame.winfo_children():
-            if isinstance(widget, ttk.LabelFrame):
-                # Find label question
-                for child in widget.winfo_children():
-                    if isinstance(child, ttk.Label):
-                        text = child.cget("text")
-                        if "Do you need to match labels?" in text:
-                            child.configure(text=self.get_text("label_question"))
-                        elif "Will use raw channel ID" in text:
-                            child.configure(text=self.get_text("will_use_raw_channel"))
-                        elif "Loaded previous label selection record" in text:
-                            child.configure(text=self.get_text("loaded_label_record", self.get_text("time_unknown")))
-        
-        # Update radio button text
-        if hasattr(self, 'label_choice_var'):
-            # Find and update radio button text
-            for widget in self.page1_frame.winfo_children():
-                if isinstance(widget, ttk.LabelFrame):
-                    # Find button_frame within label frame
-                    for child in widget.winfo_children():
-                        if isinstance(child, ttk.Frame):
-                            # Update radio button text
-                            for radio in child.winfo_children():
-                                if isinstance(radio, ttk.Radiobutton):
-                                    value = radio.cget("value")
-                                    if value == "1":
-                                        radio.configure(text=self.get_text("label_option1"))
-                                    elif value == "2":
-                                        radio.configure(text=self.get_text("label_option2"))
-                                    elif value == "3":
-                                        radio.configure(text=self.get_text("label_option3"))
-    
-    def update_page2_language(self):
-        """Update second page language"""
-        # Update control panel
-        for widget in self.page2_frame.winfo_children():
-            if isinstance(widget, ttk.LabelFrame):
-                if "🎮" in widget.cget("text"):
-                    widget.configure(text=self.get_text("control_panel"))
-                elif "📊" in widget.cget("text"):
-                    widget.configure(text=self.get_text("monitor_status"))
-                elif "🚨" in widget.cget("text"):
-                    widget.configure(text=self.get_text("alarm_events"))
-                elif "📝" in widget.cget("text"):
-                    widget.configure(text=self.get_text("log_output"))
-                
-                # Update button text within control panel
-                for child in widget.winfo_children():
-                    if isinstance(child, ttk.Frame):
-                        for button in child.winfo_children():
-                            if isinstance(button, ttk.Button):
-                                text = button.cget("text")
-                                if "🚀 Start Monitoring" in text or "🚀 Start Monitoring" in text:
-                                    button.configure(text=self.get_text("start_monitor"))
-                                elif "⏹️ Stop" in text or "⏹️ Stop" in text:
-                                    button.configure(text=self.get_text("stop"))
-                                elif "🎭 Start Simulation" in text or "🎭 Start Simulation" in text:
-                                    button.configure(text=self.get_text("start_simulation"))
-                                elif "🗑️ Clear Results" in text or "🗑️ Clear Results" in text:
-                                    button.configure(text=self.get_text("clear_results"))
-                
-                # Update label text within status panel
-                for child in widget.winfo_children():
-                    if isinstance(child, ttk.Frame):
-                        for label in child.winfo_children():
-                            if isinstance(label, ttk.Label):
-                                text = label.cget("text")
-                                if "Records:" in text or "Records:" in text:
-                                    label.configure(text=self.get_text("records"))
-                                elif "Alarms:" in text or "Alarms:" in text:
-                                    label.configure(text=self.get_text("alarms"))
-                                elif "Processing Time:" in text or "Processing Time:" in text:
-                                    label.configure(text=self.get_text("processing_time"))
-                                elif "Processing Speed:" in text or "Processing Speed:" in text:
-                                    label.configure(text=self.get_text("processing_speed"))
-        
-        # Update back button text
-        for widget in self.page2_frame.winfo_children():
-            if isinstance(widget, ttk.Frame):
-                for button in widget.winfo_children():
-                    if isinstance(button, ttk.Button):
-                        text = button.cget("text")
-                        if "⬅️ Back to File Selection" in text or "⬅️ Back to File Selection" in text:
-                            button.configure(text=self.get_text("back_button"))
-        
-        # Update status text variable
-        if hasattr(self, 'status_text'):
-            current_status = self.status_text.get()
-            if current_status == "Waiting to start..." or current_status == "Waiting to start...":
-                self.status_text.set(self.get_text("waiting"))
-            elif current_status == "Stopped" or current_status == "Stopped":
-                self.status_text.set(self.get_text("stopped"))
-            elif current_status == "Processing..." or current_status == "Processing...":
-                self.status_text.set(self.get_text("processing"))
-            elif current_status == "Processing complete" or current_status == "Processing complete":
-                self.status_text.set(self.get_text("processing_complete"))
-            elif "Simulation running" in current_status or "Simulation monitoring running" in current_status:
-                self.status_text.set(self.get_text("simulation_running"))
-        
-        # Update processing speed text
-        if hasattr(self, 'speed_var'):
-            current_speed = self.speed_var.get()
-            if "records/sec" in current_speed:
-                # Extract number part
-                import re
-                match = re.search(r'(\d+\.?\d*)', current_speed)
-                if match:
-                    speed_value = match.group(1)
-                    self.speed_var.set(f"{speed_value} {self.get_text('records_per_second')}")
-            elif "records/sec" in current_speed:
-                # Extract number part
-                import re
-                match = re.search(r'(\d+\.?\d*)', current_speed)
-                if match:
-                    speed_value = match.group(1)
-                    self.speed_var.set(f"{speed_value} {self.get_text('records_per_second')}")
-        
-        # Update alarm table column headers
-        self.update_alarm_table_headers()
     
     def setup_logging(self):
         """Set up logging"""
@@ -438,73 +103,67 @@ class SmartMonitorGUI:
         # Lower part: label matching
         self.create_label_matcher()
         
-        # Confirm button and language toggle button
+        # Confirm button
         button_frame = ttk.Frame(self.page1_frame)
         button_frame.grid(row=2, column=0, columnspan=2, pady=20)
         
-        self.confirm_button = ttk.Button(button_frame, text=self.get_text("confirm_button"), 
+        self.confirm_button = ttk.Button(button_frame, text="✅ Confirm and Enter Monitoring", 
                                         command=self.confirm_and_go_to_page2)
         self.confirm_button.grid(row=0, column=0)
-        
-        # Language toggle button
-        lang_button = ttk.Button(button_frame, text="🌐 中/EN", command=self.toggle_language)
-        lang_button.grid(row=0, column=1, padx=(10, 0))
     
     def create_file_selector_page1(self):
         """Create file selector for first page"""
-        file_frame = ttk.LabelFrame(self.page1_frame, text=self.get_text("file_selection"), padding="10")
+        file_frame = ttk.LabelFrame(self.page1_frame, text="📁 File Selection", padding="10")
         file_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # Data file selection
-        ttk.Label(file_frame, text=self.get_text("data_file")).grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
+        ttk.Label(file_frame, text="Data File:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
         self.dat_file_var = tk.StringVar()
-        self.dat_entry = ttk.Entry(file_frame, textvariable=self.dat_file_var, width=50)
-        self.dat_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 5))
-        ttk.Button(file_frame, text=self.get_text("browse"), command=self.browse_dat_file).grid(row=0, column=2)
+        self.dat_file_entry = ttk.Entry(file_frame, textvariable=self.dat_file_var, width=50)
+        self.dat_file_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 5))
+        ttk.Button(file_frame, text="Browse", command=self.browse_dat_file).grid(row=0, column=2)
         
         # Config file selection
-        ttk.Label(file_frame, text=self.get_text("config_file")).grid(row=1, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        ttk.Label(file_frame, text="Config File:").grid(row=1, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         self.config_file_var = tk.StringVar(value="config/rules.yaml")
-        self.config_entry = ttk.Entry(file_frame, textvariable=self.config_file_var, width=50)
-        self.config_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
-        ttk.Button(file_frame, text=self.get_text("browse"), command=self.browse_config_file).grid(row=1, column=2, pady=(10, 0))
+        self.config_file_entry = ttk.Entry(file_frame, textvariable=self.config_file_var, width=50)
+        self.config_file_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
+        ttk.Button(file_frame, text="Browse", command=self.browse_config_file).grid(row=1, column=2, pady=(10, 0))
         
         # Run ID
-        ttk.Label(file_frame, text=self.get_text("run_id")).grid(row=2, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        ttk.Label(file_frame, text="Run ID:").grid(row=2, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         self.run_id_var = tk.StringVar()
         self.run_id_entry = ttk.Entry(file_frame, textvariable=self.run_id_var, width=50)
         self.run_id_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
         
         # Workstation ID
-        ttk.Label(file_frame, text=self.get_text("workstation_id")).grid(row=3, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        ttk.Label(file_frame, text="Workstation ID:").grid(row=3, column=0, sticky=tk.W, padx=(0, 5), pady=(10, 0))
         self.workstation_id_var = tk.StringVar()
-        self.workstation_id_entry = ttk.Entry(file_frame, textvariable=self.workstation_id_var, width=10)
-        self.workstation_id_entry.grid(row=3, column=1, sticky=tk.W, padx=(0, 5), pady=(10, 0))
+        self.workstation_id_entry = ttk.Entry(file_frame, textvariable=self.workstation_id_var, width=50)
+        self.workstation_id_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), padx=(0, 5), pady=(10, 0))
         
+        # Configure grid weights
         file_frame.columnconfigure(1, weight=1)
     
     def create_label_matcher(self):
         """Create label matching area"""
-        label_frame = ttk.LabelFrame(self.page1_frame, text=self.get_text("label_matching"), padding="10")
+        label_frame = ttk.LabelFrame(self.page1_frame, text="🏷️ Label Matching", padding="10")
         label_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
         
         # Label matching selection
-        ttk.Label(label_frame, text=self.get_text("label_question")).grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
+        ttk.Label(label_frame, text="Do you need to match labels?").grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
         
         # Selection buttons
         button_frame = ttk.Frame(label_frame)
         button_frame.grid(row=1, column=0, sticky=tk.W, pady=(0, 10))
         
-        self.label_choice_var = tk.StringVar(value="3")
-        ttk.Radiobutton(button_frame, text=self.get_text("label_option1"), 
-                       variable=self.label_choice_var, value="1", 
-                       command=self.on_label_choice_change).grid(row=0, column=0, sticky=tk.W)
-        ttk.Radiobutton(button_frame, text=self.get_text("label_option2"), 
-                       variable=self.label_choice_var, value="2", 
-                       command=self.on_label_choice_change).grid(row=1, column=0, sticky=tk.W)
-        ttk.Radiobutton(button_frame, text=self.get_text("label_option3"), 
-                       variable=self.label_choice_var, value="3", 
-                       command=self.on_label_choice_change).grid(row=2, column=0, sticky=tk.W)
+        self.label_choice_var = tk.StringVar(value="1")
+        ttk.Radiobutton(button_frame, text="Yes, select labels again", variable=self.label_choice_var, value="1",
+                        command=self.on_label_choice_change).grid(row=0, column=0, sticky=tk.W)
+        ttk.Radiobutton(button_frame, text="Load previous label selection", variable=self.label_choice_var, value="2",
+                        command=self.on_label_choice_change).grid(row=1, column=0, sticky=tk.W)
+        ttk.Radiobutton(button_frame, text="No, use raw channel ID", variable=self.label_choice_var, value="3",
+                        command=self.on_label_choice_change).grid(row=2, column=0, sticky=tk.W)
         
         # Label selection area
         self.label_selection_frame = ttk.Frame(label_frame)
@@ -527,11 +186,12 @@ class SmartMonitorGUI:
         def _on_mousewheel(event):
             self.label_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         
-        self.label_canvas.bind("<MouseWheel>", _on_mousewheel)
+        self.label_canvas.bind_all("<MouseWheel>", _on_mousewheel)
         
         self.label_canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         self.label_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
         
+        # Configure grid weights
         label_frame.columnconfigure(0, weight=1)
         label_frame.rowconfigure(2, weight=1)
         self.label_selection_frame.columnconfigure(0, weight=1)
@@ -544,16 +204,12 @@ class SmartMonitorGUI:
         """Create second page: control panel and monitoring status"""
         self.page2_frame = ttk.Frame(self.main_frame)
         
-        # Back button and language toggle button
+        # Back button
         button_frame = ttk.Frame(self.page2_frame)
         button_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
-        back_button = ttk.Button(button_frame, text=self.get_text("back_button"), command=self.show_page1)
+        back_button = ttk.Button(button_frame, text="⬅️ Back to File Selection", command=self.show_page1)
         back_button.grid(row=0, column=0, sticky=tk.W)
-        
-        # Language toggle button
-        lang_button = ttk.Button(button_frame, text="🌐 中/EN", command=self.toggle_language)
-        lang_button.grid(row=0, column=1, sticky=tk.E)
         
         button_frame.columnconfigure(1, weight=1)
         
@@ -600,16 +256,21 @@ class SmartMonitorGUI:
             # Skip label matching
             self.label_mode = False
             self.channel_labels = {}
-            ttk.Label(self.label_scrollable_frame, text=self.get_text("will_use_raw_channel")).grid(row=0, column=0, sticky=tk.W)
+            ttk.Label(self.label_scrollable_frame, text="✅ Will use raw channel ID").grid(row=0, column=0, sticky=tk.W)
     
     def load_label_configuration(self):
         """Load label configuration"""
         try:
             self.channel_config_service = ChannelConfigurationService(str(self.label_config_path))
-            self.channel_config_service.load_configuration()
-            self.config = self.channel_config_service.get_configuration_for_ui()
+            loaded_config = self.channel_config_service.load_configuration()
+            if loaded_config is not None:
+                self.config = loaded_config
+            else:
+                self.config = {'categories': {}}
         except Exception as e:
-            messagebox.showerror(self.get_text("error"), self.get_text("load_label_config_failed", str(e)))
+            messagebox.showerror("Error", f"Failed to load label configuration: {str(e)}")
+            self.label_mode = False
+            # Keep the default empty config instead of setting to None
             self.config = {'categories': {}}
     
     def create_label_selection_ui(self):
@@ -618,27 +279,25 @@ class SmartMonitorGUI:
         for category_key, category in self.config['categories'].items():
             # Category title
             ttk.Label(self.label_scrollable_frame, text=f"【{category['category_name']}】{category['category_description']}", 
-                     font=('Arial', 10, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(10, 5))
+                      font=('Arial', 10, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(10, 5))
             row += 1
             
             for ch in category['channels']:
                 ch_id = ch['channel_id']
                 
                 # Channel title
-                ttk.Label(self.label_scrollable_frame, text=f"  {self.get_text('channel')}: {ch_id}", 
-                         font=('Arial', 9, 'bold')).grid(row=row, column=0, sticky=tk.W, padx=(20, 0))
+                ttk.Label(self.label_scrollable_frame, text=f"  Channel: {ch_id}", 
+                          font=('Arial', 9, 'bold')).grid(row=row, column=0, sticky=tk.W, padx=(20, 0))
                 row += 1
                 
                 # Create radio button
                 label_var = tk.StringVar(value=ch.get('default_subtype_id', ''))
                 self.channel_labels[ch_id] = label_var
                 
-                for idx, st in enumerate(ch['available_subtypes']):
-                    default_mark = self.get_text("default") if st['is_default'] else ""
-                    ttk.Radiobutton(self.label_scrollable_frame, 
-                                   text=f"    {st['label']}",
-                                   variable=label_var, 
-                                   value=st['subtype_id']).grid(row=row, column=0, sticky=tk.W, padx=(40, 0))
+                for st in ch['subtypes']:
+                    default_mark = " (Default)" if st['subtype_id'] == ch.get('default_subtype_id', '') else ""
+                    ttk.Radiobutton(self.label_scrollable_frame, text=st['label'], 
+                                   variable=label_var, value=st['subtype_id']).grid(row=row, column=0, sticky=tk.W, padx=(40, 0))
                     row += 1
                 
                 row += 1  # Add empty line
@@ -646,7 +305,7 @@ class SmartMonitorGUI:
     def load_last_label_selection(self):
         """Load previous label selection record"""
         if not self.label_selection_path.exists():
-            messagebox.showwarning(self.get_text("warning"), self.get_text("no_label_record"))
+            messagebox.showwarning("Warning", "No previous label selection record found, will select again.")
             self.label_choice_var.set("1")
             self.on_label_choice_change()
             return
@@ -655,12 +314,15 @@ class SmartMonitorGUI:
             with open(self.label_selection_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            self.channel_labels = data['channel_labels']
-            ttk.Label(self.label_scrollable_frame, 
-                     text=self.get_text("loaded_label_record", data.get('timestamp', self.get_text("time_unknown")))).grid(row=0, column=0, sticky=tk.W)
+            # Load channel labels
+            for ch_id, label in data['labels'].items():
+                if ch_id in self.channel_labels:
+                    self.channel_labels[ch_id].set(label)
+            
+            ttk.Label(self.label_scrollable_frame, text="✅ Loaded previous label selection record (Time: Unknown)").grid(row=0, column=0, sticky=tk.W)
             
         except Exception as e:
-            messagebox.showerror(self.get_text("error"), self.get_text("load_label_record_failed", str(e)))
+            messagebox.showerror("Error", f"Failed to load label selection record: {str(e)}")
             self.label_choice_var.set("1")
             self.on_label_choice_change()
     
@@ -668,11 +330,28 @@ class SmartMonitorGUI:
         """Confirm and go to second page"""
         # Validate file selection
         if not self.dat_file_var.get():
-            messagebox.showerror(self.get_text("error"), self.get_text("please_select_data_file"))
+            messagebox.showerror("Error", "Please select data file")
             return
         
+        if not self.config_file_var.get():
+            messagebox.showerror("Error", "Please select config file")
+            return
+        
+        if not self.run_id_var.get():
+            messagebox.showerror("Error", "Please input run ID")
+            return
+        
+        if not self.workstation_id_var.get():
+            messagebox.showerror("Error", "Please input workstation ID")
+            return
+        
+        # Check if files exist
         if not Path(self.dat_file_var.get()).exists():
-            messagebox.showerror(self.get_text("error"), self.get_text("data_file_not_exist"))
+            messagebox.showerror("Error", "Data file does not exist")
+            return
+        
+        if not Path(self.config_file_var.get()).exists():
+            messagebox.showerror("Error", "Config file does not exist")
             return
         
         # Save label selection (if label matching is selected)
@@ -686,14 +365,11 @@ class SmartMonitorGUI:
                 # Save to file
                 with open(self.label_selection_path, 'w', encoding='utf-8') as f:
                     json.dump({
-                        "timestamp": datetime.now().isoformat(),
-                        "channel_labels": selected_labels
+                        'timestamp': datetime.now().isoformat(),
+                        'labels': selected_labels
                     }, f, ensure_ascii=False, indent=2)
-                
-                self.channel_labels = selected_labels
-                
             except Exception as e:
-                messagebox.showerror(self.get_text("error"), self.get_text("save_label_failed", str(e)))
+                messagebox.showerror("Error", f"Failed to save label selection: {str(e)}")
                 return
         
         # Go to second page
@@ -704,30 +380,28 @@ class SmartMonitorGUI:
             self.monitor_service.rule_loader.config_path = Path(self.config_file_var.get())
             self.monitor_service.initialize()
         except Exception as e:
-            messagebox.showerror(self.get_text("error"), self.get_text("init_monitor_failed", str(e)))
+            messagebox.showerror("Error", f"Failed to initialize monitor service: {str(e)}")
             return
-    
-
     
     def create_control_panel(self, parent):
         """Create control panel"""
-        control_frame = ttk.LabelFrame(parent, text=self.get_text("control_panel"), padding="10")
+        control_frame = ttk.LabelFrame(parent, text="🎮 Control Panel", padding="10")
         control_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # Button area
         button_frame = ttk.Frame(control_frame)
         button_frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
         
-        self.start_button = ttk.Button(button_frame, text=self.get_text("start_monitor"), command=self.start_monitoring)
+        self.start_button = ttk.Button(button_frame, text="🚀 Start Monitoring", command=self.start_monitoring)
         self.start_button.grid(row=0, column=0, padx=(0, 10))
         
-        self.stop_button = ttk.Button(button_frame, text=self.get_text("stop"), command=self.stop_monitoring, state='disabled')
+        self.stop_button = ttk.Button(button_frame, text="⏹️ Stop", command=self.stop_monitoring, state='disabled')
         self.stop_button.grid(row=0, column=1, padx=(0, 10))
         
-        self.simulate_button = ttk.Button(button_frame, text=self.get_text("start_simulation"), command=self.start_simulation)
+        self.simulate_button = ttk.Button(button_frame, text="🎭 Start Simulation", command=self.start_simulation)
         self.simulate_button.grid(row=0, column=2, padx=(0, 10))
         
-        self.clear_button = ttk.Button(button_frame, text=self.get_text("clear_results"), command=self.clear_results)
+        self.clear_button = ttk.Button(button_frame, text="🗑️ Clear Results", command=self.clear_results)
         self.clear_button.grid(row=0, column=3, padx=(0, 10))
         
         # Progress bar
@@ -739,38 +413,38 @@ class SmartMonitorGUI:
     
     def create_status_panel(self, parent):
         """Create status panel"""
-        status_frame = ttk.LabelFrame(parent, text=self.get_text("monitor_status"), padding="10")
+        status_frame = ttk.LabelFrame(parent, text="📊 Monitor Status", padding="10")
         status_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 5))
         
         # Status information
-        self.status_text = tk.StringVar(value=self.get_text("waiting"))
+        self.status_text = tk.StringVar(value="Waiting to start...")
         ttk.Label(status_frame, textvariable=self.status_text, font=('Arial', 10, 'bold')).grid(row=0, column=0, sticky=tk.W)
         
         # Statistics
         stats_frame = ttk.Frame(status_frame)
         stats_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
         
-        ttk.Label(stats_frame, text=self.get_text("records")).grid(row=0, column=0, sticky=tk.W)
+        ttk.Label(stats_frame, text="Records:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
         self.records_var = tk.StringVar(value="0")
-        ttk.Label(stats_frame, textvariable=self.records_var, font=('Arial', 9, 'bold')).grid(row=0, column=1, sticky=tk.W, padx=(5, 0))
+        ttk.Label(stats_frame, textvariable=self.records_var).grid(row=0, column=1, sticky=tk.W, padx=(0, 20))
         
-        ttk.Label(stats_frame, text=self.get_text("alarms")).grid(row=1, column=0, sticky=tk.W)
+        ttk.Label(stats_frame, text="Alarms:").grid(row=0, column=2, sticky=tk.W, padx=(0, 5))
         self.alarms_var = tk.StringVar(value="0")
-        ttk.Label(stats_frame, textvariable=self.alarms_var, font=('Arial', 9, 'bold')).grid(row=1, column=1, sticky=tk.W, padx=(5, 0))
+        ttk.Label(stats_frame, textvariable=self.alarms_var).grid(row=0, column=3, sticky=tk.W, padx=(0, 20))
         
-        ttk.Label(stats_frame, text=self.get_text("processing_time")).grid(row=2, column=0, sticky=tk.W)
+        ttk.Label(stats_frame, text="Processing Time:").grid(row=1, column=0, sticky=tk.W, padx=(0, 5), pady=(5, 0))
         self.time_var = tk.StringVar(value="0.00s")
-        ttk.Label(stats_frame, textvariable=self.time_var, font=('Arial', 9, 'bold')).grid(row=2, column=1, sticky=tk.W, padx=(5, 0))
+        ttk.Label(stats_frame, textvariable=self.time_var).grid(row=1, column=1, sticky=tk.W, padx=(0, 20), pady=(5, 0))
         
-        ttk.Label(stats_frame, text=self.get_text("processing_speed")).grid(row=3, column=0, sticky=tk.W)
-        self.speed_var = tk.StringVar(value=f"0 {self.get_text('records_per_second')}")
-        ttk.Label(stats_frame, textvariable=self.speed_var, font=('Arial', 9, 'bold')).grid(row=3, column=1, sticky=tk.W, padx=(5, 0))
+        ttk.Label(stats_frame, text="Processing Speed:").grid(row=1, column=2, sticky=tk.W, padx=(0, 5), pady=(5, 0))
+        self.speed_var = tk.StringVar(value="0 records/sec")
+        ttk.Label(stats_frame, textvariable=self.speed_var).grid(row=1, column=3, sticky=tk.W, pady=(5, 0))
         
         status_frame.columnconfigure(0, weight=1)
     
     def create_alarm_table(self, parent):
         """Create alarm table"""
-        alarm_frame = ttk.LabelFrame(parent, text=self.get_text("alarm_events"), padding="10")
+        alarm_frame = ttk.LabelFrame(parent, text="🚨 Alarm Events", padding="10")
         alarm_frame.grid(row=2, column=1, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(5, 0))
         
         # Create table
@@ -796,10 +470,11 @@ class SmartMonitorGUI:
     
     def create_log_viewer(self, parent):
         """Create log viewer"""
-        log_frame = ttk.LabelFrame(parent, text=self.get_text("log_output"), padding="10")
+        log_frame = ttk.LabelFrame(parent, text="📝 Log Output", padding="10")
         log_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
         
-        self.log_text = scrolledtext.ScrolledText(log_frame, height=8, font=('Consolas', 9))
+        # Create text widget with scrollbar
+        self.log_text = scrolledtext.ScrolledText(log_frame, height=8, wrap=tk.WORD)
         self.log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         log_frame.columnconfigure(0, weight=1)
@@ -812,7 +487,7 @@ class SmartMonitorGUI:
     def browse_dat_file(self):
         """Browse data file"""
         filename = filedialog.askopenfilename(
-            title=self.get_text("select_data_file"),
+            title="Select Data File",
             filetypes=[("DAT files", "*.dat"), ("All files", "*.*")]
         )
         if filename:
@@ -832,13 +507,13 @@ class SmartMonitorGUI:
                 if match:
                     workstation_id = match.group(1)
                     self.workstation_id_var.set(workstation_id)
-                    print(self.get_text("auto_inferred_workstation", workstation_id, path.stem))
+                    print(f"Auto inferred workstation ID: {workstation_id} (from filename: {path.stem})")
     
     def browse_config_file(self):
         """Browse config file"""
         filename = filedialog.askopenfilename(
-            title=self.get_text("select_config_file"),
-            filetypes=[("YAML files", "*.yaml"), ("YML files", "*.yml"), ("All files", "*.*")]
+            title="Select Config File",
+            filetypes=[("YAML files", "*.yaml"), ("All files", "*.*")]
         )
         if filename:
             self.config_file_var.set(filename)
@@ -849,26 +524,19 @@ class SmartMonitorGUI:
         dat_file = self.dat_file_var.get().strip()
         config_file = self.config_file_var.get().strip()
         run_id = self.run_id_var.get().strip()
+        workstation_id = self.workstation_id_var.get().strip()
         
-        if not dat_file:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_select_data_file"))
-            return
-        
-        if not config_file:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_select_config_file"))
-            return
-        
-        if not run_id:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_input_run_id"))
+        if not dat_file or not config_file or not run_id or not workstation_id:
+            messagebox.showerror("Error", "Please fill in all required fields")
             return
         
         # Check if file exists
         if not Path(dat_file).exists():
-            messagebox.showerror(self.get_text("error"), self.get_text("data_file_not_exist", dat_file))
+            messagebox.showerror("Error", f"Data file does not exist: {dat_file}")
             return
         
         if not Path(config_file).exists():
-            messagebox.showerror(self.get_text("error"), self.get_text("config_file_not_exist", config_file))
+            messagebox.showerror("Error", f"Config file does not exist: {config_file}")
             return
         
         # Clear previous results
@@ -877,7 +545,7 @@ class SmartMonitorGUI:
         # Update interface status
         self.start_button.config(state='disabled')
         self.stop_button.config(state='normal')
-        self.status_text.set(self.get_text("processing"))
+        self.status_text.set("Processing...")
         self.progress_var.set(0)
         
         # Record session start time
@@ -888,9 +556,9 @@ class SmartMonitorGUI:
         # Process in background thread
         self.monitoring_thread = threading.Thread(
             target=self._monitoring_worker,
-            args=(dat_file, config_file, run_id),
-            daemon=True
+            args=(dat_file, config_file, run_id)
         )
+        self.monitoring_thread.daemon = True
         self.monitoring_thread.start()
     
     def stop_monitoring(self):
@@ -911,10 +579,10 @@ class SmartMonitorGUI:
         self.session_total_records = 0
         self.session_total_alarms = 0
         
-        self.status_text.set(self.get_text("stopped"))
+        # Update interface status
         self.start_button.config(state='normal')
         self.stop_button.config(state='disabled')
-        self.simulate_button.config(state='normal')
+        self.status_text.set("Stopped")
         self.progress_var.set(0)
     
     def clear_results(self):
@@ -927,7 +595,7 @@ class SmartMonitorGUI:
         self.records_var.set("0")
         self.alarms_var.set("0")
         self.time_var.set("0.00s")
-        self.speed_var.set(f"0 {self.get_text('records_per_second')}")
+        self.speed_var.set("0 records/sec")
         
         # Clear log
         self.log_text.delete(1.0, tk.END)
@@ -940,29 +608,17 @@ class SmartMonitorGUI:
         run_id = self.run_id_var.get().strip()
         workstation_id = self.workstation_id_var.get().strip()
         
-        if not dat_file:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_select_data_file"))
-            return
-        
-        if not config_file:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_select_config_file"))
-            return
-        
-        if not run_id:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_input_run_id"))
-            return
-        
-        if not workstation_id:
-            messagebox.showerror(self.get_text("error"), self.get_text("please_input_workstation_id"))
+        if not dat_file or not config_file or not run_id or not workstation_id:
+            messagebox.showerror("Error", "Please fill in all required fields")
             return
         
         # Check if file exists
         if not Path(dat_file).exists():
-            messagebox.showerror(self.get_text("error"), self.get_text("data_file_not_exist", dat_file))
+            messagebox.showerror("Error", f"Data file does not exist: {dat_file}")
             return
         
         if not Path(config_file).exists():
-            messagebox.showerror(self.get_text("error"), self.get_text("config_file_not_exist", config_file))
+            messagebox.showerror("Error", f"Config file does not exist: {config_file}")
             return
         
         try:
@@ -989,20 +645,20 @@ class SmartMonitorGUI:
             
             # Start continuous monitoring
             if self.monitor_service.start_continuous_monitoring(run_id):
-                
                 # Update interface status
                 self.start_button.config(state='disabled')
                 self.stop_button.config(state='normal')
-                self.simulate_button.config(state='disabled')
-                self.status_text.set(self.get_text("simulation_running"))
-                self.progress_var.set(50)
+                self.status_text.set("Simulation monitoring running...")
+                self.progress_var.set(0)
                 
-                messagebox.showinfo(self.get_text("success"), self.get_text("simulation_started", workstation_id))
+                # Show success message
+                messagebox.showinfo("Success", f"Simulation started!\nWorkstation ID: {workstation_id}\nPush one record every 10 seconds")
             else:
-                messagebox.showerror(self.get_text("error"), self.get_text("simulation_start_failed"))
-                
+                messagebox.showerror("Error", "Failed to start simulation")
+                self.status_text.set("Simulation failed")
+        
         except Exception as e:
-            messagebox.showerror(self.get_text("error"), self.get_text("simulation_failed", str(e)))
+            messagebox.showerror("Error", f"Simulation failed: {str(e)}")
             self.status_text.set(f"Simulation failed: {str(e)}")
     
     def _monitoring_worker(self, dat_file: str, config_file: str, run_id: str):
@@ -1024,6 +680,7 @@ class SmartMonitorGUI:
             self.session_total_records = records_count
             self.session_total_alarms = len(alarms)
             
+            # Calculate processing time and speed
             processing_time = (end_time - start_time).total_seconds()
             speed = records_count / processing_time if processing_time > 0 else 0
             
@@ -1031,18 +688,17 @@ class SmartMonitorGUI:
             self.records_var.set(str(records_count))
             self.alarms_var.set(str(len(alarms)))
             self.time_var.set(f"{processing_time:.2f}s")
-            self.speed_var.set(f"{speed:.2f} {self.get_text('records_per_second')}")
+            self.speed_var.set(f"{speed:.2f} records/sec")
             
             # Update status
-            self.status_text.set(self.get_text("processing_complete"))
+            self.status_text.set("Processing complete")
             self.progress_var.set(100)
             
             # Display completion message
-            messagebox.showinfo(self.get_text("success"), self.get_text("processing_complete", records_count, len(alarms)))
+            messagebox.showinfo("Success", f"Processing complete! {records_count} records processed, {len(alarms)} alarms generated.")
             
         except Exception as e:
-            self.status_text.set(self.get_text("processing_failed", str(e)))
-            messagebox.showerror(self.get_text("error"), self.get_text("processing_failed", str(e)))
+            messagebox.showerror("Error", f"Processing failed: {str(e)}")
         finally:
             # Restore interface status
             self.start_button.config(state='normal')
@@ -1058,11 +714,11 @@ class SmartMonitorGUI:
         severity_icons = {
             "low": "🔵",
             "medium": "🟡", 
-            "high": "🟠",
-            "critical": "🔴"
+            "high": "🔴",
+            "critical": "💀"
         }
         
-        icon = severity_icons.get(alarm.severity.value, "⚪")
+        icon = severity_icons.get(alarm.severity.value.lower(), "⚪")
         severity_display = f"{icon} {alarm.severity.value.upper()}"
         
         # Truncate sensor value display
@@ -1070,11 +726,11 @@ class SmartMonitorGUI:
         if len(str(alarm.sensor_values)) > 50:
             sensor_values_str += "..."
         
-        self.alarm_tree.insert('', 'end', values=(
-            alarm.timestamp.strftime('%H:%M:%S'),
+        self.alarm_tree.insert("", "end", values=(
+            alarm.timestamp.strftime("%H:%M:%S"),
             severity_display,
             alarm.rule_name,
-            alarm.description[:30] + "..." if len(alarm.description) > 30 else alarm.description,
+            alarm.description,
             sensor_values_str
         ))
     
@@ -1082,8 +738,8 @@ class SmartMonitorGUI:
         """Process log messages"""
         try:
             while True:
-                message = self.message_queue.get_nowait()
-                self.log_text.insert(tk.END, message + '\n')
+                msg = self.message_queue.get_nowait()
+                self.log_text.insert(tk.END, msg + "\n")
                 self.log_text.see(tk.END)
         except queue.Empty:
             pass
@@ -1109,12 +765,12 @@ class SmartMonitorGUI:
                 # Calculate processing speed (records/sec)
                 if elapsed_time > 0:
                     speed = self.session_total_records / elapsed_time
-                    self.speed_var.set(f"{speed:.2f} {self.get_text('records_per_second')}")
+                    self.speed_var.set(f"{speed:.2f} records/sec")
                 else:
-                    self.speed_var.set(f"0.00 {self.get_text('records_per_second')}")
+                    self.speed_var.set("0.00 records/sec")
             else:
                 self.time_var.set("0.0s")
-                self.speed_var.set(f"0.00 {self.get_text('records_per_second')}")
+                self.speed_var.set("0.00 records/sec")
             
             # Update record count and alarm count
             self.records_var.set(str(self.session_total_records))
@@ -1126,7 +782,7 @@ class SmartMonitorGUI:
                 if fp_status.get('total_records_pushed'):
                     self.status_text.set(f"Simulation running - {fp_status['total_records_pushed']} records pushed")
                 else:
-                    self.status_text.set(self.get_text("simulation_running"))
+                    self.status_text.set("Simulation monitoring running...")
         
         # Update status every 1 second
         self.root.after(1000, self.update_status)
@@ -1136,16 +792,16 @@ class SmartMonitorGUI:
         if hasattr(self, 'alarm_tree'):
             # Set column headers
             headers = [
-                self.get_text("time"),
-                self.get_text("severity"),
-                self.get_text("rule"),
-                self.get_text("description"),
-                self.get_text("sensor_values")
+                "Time",
+                "Severity", 
+                "Rule",
+                "Description",
+                "Sensor Values"
             ]
             
-            for i, col in enumerate(self.alarm_columns):
-                self.alarm_tree.heading(col, text=headers[i])
-                self.alarm_tree.column(col, width=150)
+            for i, header in enumerate(headers):
+                self.alarm_tree.heading(self.alarm_columns[i], text=header)
+                self.alarm_tree.column(self.alarm_columns[i], width=100)
     
     def _cleanup_temp_files(self):
         """Clean up temporary files and offset records"""
@@ -1158,27 +814,30 @@ class SmartMonitorGUI:
             temp_file = Path(f"data/mpl{workstation_id}_temp.dat")
             if temp_file.exists():
                 temp_file.unlink()
-                print(self.get_text("deleted_temp_file", temp_file))
+                print(f"Deleted temp file: {temp_file}")
             
             # Clean up offset records
             offset_file = Path(".offsets.json")
             if offset_file.exists():
                 try:
-                    with open(offset_file, 'r') as f:
+                    with open(offset_file, 'r', encoding='utf-8') as f:
                         offsets = json.load(f)
                     
                     # Delete offset record for temp file
                     temp_file_key = f"data/mpl{workstation_id}_temp.dat"
                     if temp_file_key in offsets:
                         del offsets[temp_file_key]
-                        with open(offset_file, 'w') as f:
-                            json.dump(offsets, f)
-                        print(self.get_text("cleaned_offset_record", temp_file_key))
+                        
+                        # Save updated offsets
+                        with open(offset_file, 'w', encoding='utf-8') as f:
+                            json.dump(offsets, f, ensure_ascii=False, indent=2)
+                        
+                        print(f"Cleaned offset record: {temp_file_key}")
                 except Exception as e:
-                    print(self.get_text("cleanup_offset_failed", str(e)))
-            
+                    print(f"Failed to cleanup offset records: {str(e)}")
+        
         except Exception as e:
-            print(self.get_text("cleanup_temp_failed", str(e)))
+            print(f"Failed to cleanup temp files: {str(e)}")
     
     def run(self):
         """Run GUI application"""
