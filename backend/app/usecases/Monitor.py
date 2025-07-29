@@ -1,7 +1,7 @@
 """
 backend/app/usecases/Monitor.py
 ------------------------------------
-监控用例 - 负责监控数据流和触发告警
+Monitor Use Case - Responsible for monitoring data flow and triggering alarms
 """
 import sys
 import os
@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Callable, Optional, Dict, Any
 from datetime import datetime, timedelta
 
-# 添加backend目录到Python路径
+# Add backend directory to Python path
 backend_path = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(backend_path))
 
@@ -22,14 +22,16 @@ from backend.app.services.RuleEngineService import RuleEngine
 from backend.app.infra.datastore.DatParser import iter_new_records
 from backend.app.infra.config.RuleLoader import RuleLoader
 from backend.app.infra.fileprovider import FileProvider
+from backend.app.interfaces.IMonitorService import IMonitorService
+from backend.app.interfaces.IFileProvider import IFileProvider
 
 
-class MonitorService:
+class MonitorService(IMonitorService):
     """
-    监控服务
+    Monitor Service
     
-    协调数据解析、规则评估和告警处理
-    支持FileProvider的持续监控功能
+    Coordinates data parsing, rule evaluation, and alarm processing
+    Supports FileProvider's continuous monitoring functionality
     """
     
     def __init__(self):
@@ -38,13 +40,13 @@ class MonitorService:
         self.logger = logging.getLogger(__name__)
         self.alarm_handlers: List[Callable[[AlarmEvent], None]] = []
         
-        # FileProvider相关
-        self.file_provider: Optional[FileProvider] = None
+        # FileProvider related
+        self.file_provider: Optional[IFileProvider] = None
         self.monitoring_thread: Optional[threading.Thread] = None
         self.stop_monitoring_event = threading.Event()
-        self.is_monitoring = False
+        self._is_monitoring = False
         
-        # 监控状态
+        # Monitoring status
         self.monitoring_stats = {
             'total_records_processed': 0,
             'total_alarms_generated': 0,
@@ -52,303 +54,294 @@ class MonitorService:
             'current_file_path': None
         }
     
-    def initialize(self, config_path: str = "config/rules.yaml"):
+    def initialize(self, config_path: str = "config/rules.yaml") -> None:
         """
-        初始化监控服务
+        Initialize monitor service
         
         Parameters
         ----------
         config_path : str
-            规则配置文件路径
+            Path to rule configuration file
         """
         try:
-            # 加载规则
+            # Load rules
             rules = self.rule_loader.load_rules()
             self.rule_engine.load_rules(rules)
-            self.logger.info(f"监控服务初始化完成，加载了 {len(rules)} 条规则")
+            self.logger.info(f"Monitor service initialized, loaded {len(rules)} rules")
         except Exception as e:
-            self.logger.error(f"初始化监控服务失败: {e}")
+            self.logger.error(f"Failed to initialize monitor service: {e}")
             raise
     
-    def set_file_provider(self, file_provider: FileProvider):
+    def set_file_provider(self, file_provider: IFileProvider) -> None:
         """
-        设置文件提供者
+        Set file provider
         
         Parameters
         ----------
-        file_provider : FileProvider
-            文件提供者实例
+        file_provider : IFileProvider
+            File provider instance
         """
         self.file_provider = file_provider
-        # 设置文件更新回调
+        # Set file update callback
         file_provider.set_callback(self._on_file_update)
-        self.logger.info("文件提供者已设置")
+        self.logger.info("File provider set")
     
     def start_continuous_monitoring(self, run_id: str) -> bool:
         """
-        开始持续监控
+        Start continuous monitoring
         
         Parameters
         ----------
         run_id : str
-            测试会话ID
+            Test session ID
             
         Returns
         -------
         bool
-            是否成功启动监控
+            True if monitoring started successfully
         """
-        if self.is_monitoring:
-            self.logger.warning("监控已在运行中")
+        if self._is_monitoring:
+            self.logger.warning("Monitoring already running")
+            return False
+        
+        try:
+            self.stop_monitoring_event.clear()
+            self._is_monitoring = True
+            
+            # Start monitoring thread
+            self.monitoring_thread = threading.Thread(
+                target=self._monitoring_worker,
+                args=(run_id,),
+                daemon=True
+            )
+            self.monitoring_thread.start()
+            
+            self.logger.info(f"Continuous monitoring started for run_id: {run_id}")
             return True
-        
-        if not self.file_provider:
-            self.logger.error("未设置文件提供者")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to start continuous monitoring: {e}")
+            self._is_monitoring = False
             return False
-        
-        # 启动文件提供者
-        if not self.file_provider.start():
-            self.logger.error("启动文件提供者失败")
-            return False
-        
-        # 启动监控线程
-        self.stop_monitoring_event.clear()
-        self.monitoring_thread = threading.Thread(
-            target=self._monitoring_worker,
-            args=(run_id,),
-            daemon=True
-        )
-        self.monitoring_thread.start()
-        
-        self.is_monitoring = True
-        self.logger.info(f"持续监控已启动，运行ID: {run_id}")
-        
-        return True
     
     def stop_continuous_monitoring(self) -> bool:
         """
-        停止持续监控
+        Stop continuous monitoring
         
         Returns
         -------
         bool
-            是否成功停止监控
+            True if monitoring stopped successfully
         """
-        if not self.is_monitoring:
+        if not self._is_monitoring:
             return True
         
-        # 停止监控线程
-        self.stop_monitoring_event.set()
-        if self.monitoring_thread:
-            self.monitoring_thread.join(timeout=5)
-        
-        # 停止文件提供者
-        if self.file_provider:
-            self.file_provider.stop()
-        
-        self.is_monitoring = False
-        self.logger.info("持续监控已停止")
-        
-        return True
+        try:
+            self.stop_monitoring_event.set()
+            self._is_monitoring = False
+            
+            # Stop file provider
+            if self.file_provider:
+                self.file_provider.stop()
+            
+            # Wait for thread to finish
+            if self.monitoring_thread and self.monitoring_thread.is_alive():
+                self.monitoring_thread.join(timeout=5)
+            
+            self.logger.info("Continuous monitoring stopped")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to stop continuous monitoring: {e}")
+            return False
     
-    def add_alarm_handler(self, handler: Callable[[AlarmEvent], None]):
+    def add_alarm_handler(self, handler: Callable[[AlarmEvent], None]) -> None:
         """
-        添加告警处理器
+        Add alarm handler
         
         Parameters
         ----------
         handler : Callable[[AlarmEvent], None]
-            告警处理函数
+            Alarm handler function
         """
         self.alarm_handlers.append(handler)
     
     def process_data_file(self, file_path: str, run_id: str) -> tuple[List[AlarmEvent], int]:
         """
-        处理数据文件，返回所有告警事件和记录数
+        Process data file
         
         Parameters
         ----------
         file_path : str
-            数据文件路径
+            Path to data file
         run_id : str
-            测试会话ID
+            Run ID
             
         Returns
         -------
         tuple[List[AlarmEvent], int]
-            告警事件列表和记录数
+            List of alarms and record count
         """
-        all_alarms = []
+        alarms = []
+        records_count = 0
         
         try:
-            # 解析数据文件
-            records = list(iter_new_records(Path(file_path), run_id))
-            self.logger.info(f"解析了 {len(records)} 条记录")
-            
-            # 打印每条记录的详细信息
-            for i, record in enumerate(records):
-                record_dict = record.to_dict()
-                self.logger.info(f"记录 {i+1}: T1={record_dict.get('T1', 'N/A')}, U={record_dict.get('U', 'N/A')}, P={record_dict.get('P', 'N/A')}, 时间={record_dict.get('ts', 'N/A')}")
-            
-            # 逐条评估记录
-            for record in records:
-                alarms = self.rule_engine.evaluate_record(record, run_id)
-                all_alarms.extend(alarms)
+            for record in iter_new_records(file_path):
+                record_alarms = self.process_record(record, run_id)
+                alarms.extend(record_alarms)
+                records_count += 1
                 
-                # 触发告警处理器
-                for alarm in alarms:
-                    self._handle_alarm(alarm)
+                # Update stats
+                self.monitoring_stats['total_records_processed'] += 1
+                self.monitoring_stats['total_alarms_generated'] += len(record_alarms)
+                self.monitoring_stats['last_processed_time'] = datetime.now()
+                self.monitoring_stats['current_file_path'] = file_path
             
-            # 只在有记录或告警时才输出日志
-            if len(records) > 0 or len(all_alarms) > 0:
-                self.logger.info(f"处理了 {len(records)} 条记录，生成了 {len(all_alarms)} 个告警事件")
-            
-            return all_alarms, len(records)
+            self.logger.info(f"Processed {records_count} records, generated {len(alarms)} alarms")
             
         except Exception as e:
-            self.logger.error(f"处理数据文件失败: {e}")
+            self.logger.error(f"Failed to process data file: {e}")
             raise
+        
+        return alarms, records_count
     
     def process_record(self, record: Record, run_id: str) -> List[AlarmEvent]:
         """
-        处理单条记录
+        Process single record
         
         Parameters
         ----------
         record : Record
-            传感器记录
+            Sensor record
         run_id : str
-            测试会话ID
+            Run ID
             
         Returns
         -------
         List[AlarmEvent]
-            告警事件列表
+            List of generated alarms
         """
         try:
+            # Evaluate rules
             alarms = self.rule_engine.evaluate_record(record, run_id)
             
-            # 触发告警处理器
+            # Handle alarms
             for alarm in alarms:
                 self._handle_alarm(alarm)
             
             return alarms
             
         except Exception as e:
-            self.logger.error(f"处理记录失败: {e}")
+            self.logger.error(f"Failed to process record: {e}")
             return []
     
-    def get_rule_summary(self) -> dict:
+    def get_monitoring_status(self) -> Dict[str, Any]:
         """
-        获取规则摘要信息
+        Get monitoring status
         
         Returns
         -------
-        dict
-            规则摘要
-        """
-        return {
-            'total_rules': len(self.rule_engine.rules),
-            'enabled_rules': len([r for r in self.rule_engine.rules if r.enabled]),
-            'rule_ids': [r.id for r in self.rule_engine.rules]
-        }
-    
-    def get_monitoring_status(self) -> dict:
-        """
-        获取监控状态信息
-        
-        Returns
-        -------
-        dict
-            监控状态
+        Dict[str, Any]
+            Current monitoring status
         """
         status = {
-            'is_monitoring': self.is_monitoring,
+            'is_monitoring': self._is_monitoring,
             'stats': self.monitoring_stats.copy()
         }
         
         if self.file_provider:
             status['file_provider'] = self.file_provider.get_status()
-            
-            # 添加持续时间信息
-            if hasattr(self.file_provider, '_start_time') and self.file_provider._start_time:
-                duration = (datetime.now() - self.file_provider._start_time).total_seconds()
-                status['file_provider']['simulation_duration'] = duration
         
         return status
     
+    @property
+    def is_monitoring(self) -> bool:
+        """
+        Check if monitoring is active
+        
+        Returns
+        -------
+        bool
+            True if monitoring is active
+        """
+        return self._is_monitoring
+    
     def _on_file_update(self, file_path: Path):
         """
-        文件更新回调处理
+        Handle file update callback
         
         Parameters
         ----------
         file_path : Path
-            更新的文件路径
+            Updated file path
         """
         try:
-            self.logger.info(f"检测到文件更新: {file_path}")
+            self.logger.info(f"File updated: {file_path}")
             
-            # 更新监控状态
-            self.monitoring_stats['current_file_path'] = str(file_path)
-            self.monitoring_stats['last_processed_time'] = datetime.now()
-            
-            # 处理文件中的新记录（增量处理）
-            if self.monitoring_stats.get('run_id'):
-                alarms, record_count = self.process_data_file(str(file_path), self.monitoring_stats['run_id'])
-                if record_count > 0:  # 只在有实际处理记录时才更新统计
-                    self.monitoring_stats['total_records_processed'] += record_count
-                    self.monitoring_stats['total_alarms_generated'] += len(alarms)
-                    
-                    # 更新处理时间统计
-                    if self.file_provider and hasattr(self.file_provider, '_start_time') and self.file_provider._start_time:
-                        duration = (datetime.now() - self.file_provider._start_time).total_seconds()
-                        self.monitoring_stats['total_duration'] = duration
+            # Process new records
+            for record in iter_new_records(str(file_path)):
+                record_alarms = self.process_record(record, "continuous")
+                
+                # Update stats
+                self.monitoring_stats['total_records_processed'] += 1
+                self.monitoring_stats['total_alarms_generated'] += len(record_alarms)
+                self.monitoring_stats['last_processed_time'] = datetime.now()
+                self.monitoring_stats['current_file_path'] = str(file_path)
                 
         except Exception as e:
-            self.logger.error(f"处理文件更新失败: {e}")
+            self.logger.error(f"Failed to process file update: {e}")
     
     def _monitoring_worker(self, run_id: str):
         """
-        监控工作线程
+        Monitoring worker thread
         
         Parameters
         ----------
         run_id : str
-            测试会话ID
+            Run ID
         """
-        self.monitoring_stats['run_id'] = run_id
-        
-        while not self.stop_monitoring_event.is_set():
-            try:
-                # 检查文件提供者状态（只检查，不处理文件）
-                if self.file_provider and self.file_provider.is_file_available():
-                    file_path = self.file_provider.get_file_path()
-                    if file_path:
-                        # 只更新状态，不重复处理文件
-                        self.monitoring_stats['current_file_path'] = str(file_path)
-                        self.monitoring_stats['last_processed_time'] = datetime.now()
+        try:
+            if self.file_provider:
+                self.file_provider.start()
                 
-                # 等待一段时间再检查
-                self.stop_monitoring_event.wait(5)  # 每5秒检查一次
-                
-            except Exception as e:
-                self.logger.error(f"监控工作线程出错: {e}")
-                self.stop_monitoring_event.wait(10)  # 出错后等待更长时间
+                # Keep monitoring until stopped
+                while not self.stop_monitoring_event.is_set():
+                    self.stop_monitoring_event.wait(1)
+                    
+        except Exception as e:
+            self.logger.error(f"Monitoring worker error: {e}")
+        finally:
+            if self.file_provider:
+                self.file_provider.stop()
     
     def _handle_alarm(self, alarm: AlarmEvent):
-        """处理告警事件"""
+        """
+        Handle alarm event
+        
+        Parameters
+        ----------
+        alarm : AlarmEvent
+            Alarm event to handle
+        """
         try:
+            # Call all registered handlers
             for handler in self.alarm_handlers:
-                handler(alarm)
+                try:
+                    handler(alarm)
+                except Exception as e:
+                    self.logger.error(f"Alarm handler error: {e}")
+                    
         except Exception as e:
-            self.logger.error(f"处理告警事件失败: {e}")
+            self.logger.error(f"Failed to handle alarm: {e}")
 
 
-# 默认告警处理器
 def default_alarm_handler(alarm: AlarmEvent):
-    """默认告警处理器"""
-    print(f"[{alarm.severity.value.upper()}] {alarm.timestamp}: {alarm.description}")
-    print(f"  传感器值: {alarm.sensor_values}")
-    print(f"  规则ID: {alarm.rule_id}")
-    print("-" * 50) 
+    """
+    Default alarm handler
+    
+    Parameters
+    ----------
+    alarm : AlarmEvent
+        Alarm event to handle
+    """
+    print(f"ALARM: {alarm.severity.value} - {alarm.description}") 

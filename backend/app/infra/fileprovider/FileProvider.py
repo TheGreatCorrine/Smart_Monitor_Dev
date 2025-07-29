@@ -1,22 +1,24 @@
 """
 backend/app/infra/fileprovider/FileProvider.py
 ------------------------------------
-文件提供者抽象基类 - 定义文件获取的标准接口
+File Provider Abstract Base Class - Defines standard interface for file acquisition
 """
 from abc import ABC, abstractmethod
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Dict
 from pathlib import Path
 import logging
 
+from ...interfaces.IFileProvider import IFileProvider
 
-class FileProvider(ABC):
+
+class FileProvider(IFileProvider):
     """
-    文件提供者抽象基类
+    File Provider Abstract Base Class
     
-    定义了文件获取和管理的标准接口，支持不同的文件获取策略：
-    - 本地文件
-    - 模拟文件推送
-    - 网络文件获取（未来扩展）
+    Defines standard interface for file acquisition and management, supporting different file acquisition strategies:
+    - Local files
+    - Simulated file push
+    - Network file acquisition (future extension)
     """
     
     def __init__(self):
@@ -27,100 +29,104 @@ class FileProvider(ABC):
     @abstractmethod
     def get_file_path(self) -> Optional[Path]:
         """
-        获取当前可用的文件路径
+        Get current available file path
         
         Returns
         -------
         Optional[Path]
-            文件路径，如果不可用则返回None
+            File path, returns None if not available
         """
         pass
     
     @abstractmethod
     def is_file_available(self) -> bool:
         """
-        检查文件是否可用
+        Check if file is available
         
         Returns
         -------
         bool
-            文件是否可用
+            Whether file is available
         """
         pass
     
-    @abstractmethod
     def start(self) -> bool:
         """
-        启动文件提供者
+        Start file provider
         
         Returns
         -------
         bool
-            是否成功启动
+            True if started successfully
         """
-        pass
+        self._is_active = True
+        return True
     
-    @abstractmethod
-    def stop(self) -> bool:
+    def stop(self) -> None:
         """
-        停止文件提供者
+        Stop file provider
+        """
+        self._is_active = False
+    
+    def is_running(self) -> bool:
+        """
+        Check if file provider is running
         
         Returns
         -------
         bool
-            是否成功停止
-        """
-        pass
-    
-    def set_callback(self, callback: Callable[[Path], Any]) -> None:
-        """
-        设置文件更新回调函数
-        
-        Parameters
-        ----------
-        callback : Callable[[Path], Any]
-            当文件更新时调用的回调函数
-        """
-        self._callback = callback
-    
-    def is_active(self) -> bool:
-        """
-        检查提供者是否处于活动状态
-        
-        Returns
-        -------
-        bool
-            是否处于活动状态
+            True if running
         """
         return self._is_active
     
+    def set_callback(self, callback: Callable[[Path], None]) -> None:
+        """
+        Set callback function for file updates
+        
+        Parameters
+        ----------
+        callback : Callable[[Path], None]
+            Function to call when file is updated
+        """
+        self._callback = callback
+    
+    def get_status(self) -> Dict[str, Any]:
+        """
+        Get current status of file provider
+        
+        Returns
+        -------
+        Dict[str, Any]
+            Status information
+        """
+        return {
+            'is_active': self._is_active,
+            'file_available': self.is_file_available(),
+            'file_path': str(self.get_file_path()) if self.get_file_path() else None
+        }
+    
     def _notify_file_update(self, file_path: Path) -> None:
         """
-        通知文件更新（内部方法）
+        Notify file update (internal method)
         
         Parameters
         ----------
         file_path : Path
-            更新的文件路径
+            Updated file path
         """
-        if self._callback and file_path.exists():
+        if self._callback and self._is_active:
             try:
                 self._callback(file_path)
-                self.logger.info(f"文件更新通知: {file_path}")
             except Exception as e:
-                self.logger.error(f"文件更新回调执行失败: {e}")
+                self.logger.error(f"Error in file update callback: {e}")
     
-    def get_status(self) -> dict:
+    def is_active(self) -> bool:
         """
-        获取提供者状态信息
+        Check if provider is active (deprecated, use is_running)
         
         Returns
         -------
-        dict
-            状态信息字典
+        bool
+            Whether provider is active
         """
-        return {
-            'active': self._is_active,
-            'file_available': self.is_file_available(),
-            'file_path': str(self.get_file_path()) if self.get_file_path() else None
-        } 
+        return self._is_active 

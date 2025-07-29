@@ -15,10 +15,9 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import json
 
-from .usecases.Monitor import MonitorService
-from .controllers.MonitorController import MonitorController
-from .infra.fileprovider import SimulatedFileProvider, LocalFileProvider
-from .services.ChannelConfigurationService import ChannelConfigurationService
+from .adapters.GUIAdapter import GUIAdapter
+from .di.config import get_monitor_service, get_channel_service, create_file_provider
+from .entities.AlarmEvent import AlarmEvent
 
 
 class SmartMonitorGUI:
@@ -30,12 +29,15 @@ class SmartMonitorGUI:
         self.root.geometry("1200x800")
         self.root.configure(bg='#f0f0f0')
         
-        # Initialize components
-        self.monitor_service = MonitorService()
-        self.monitor_controller = MonitorController(self.monitor_service)
+        # Initialize dependencies through DI container
+        monitor_service = get_monitor_service()
+        channel_service = get_channel_service()
+        
+        # Create GUI adapter
+        self.adapter = GUIAdapter(monitor_service, channel_service)
         
         # FileProvider related
-        self.file_provider: Optional[SimulatedFileProvider] = None
+        self.file_provider: Optional[Any] = None
         self.monitoring_thread: Optional[threading.Thread] = None
         
         # Session statistics
@@ -46,8 +48,6 @@ class SmartMonitorGUI:
         # Label matching related
         self.channel_labels = {}
         self.label_mode = False
-        self.label_config_path = Path("config/label_channel_match.yaml")
-        self.label_selection_path = Path("label_selection.json")
         self.config = {'categories': {}}  # Initialize with empty config
         
         # Message queue for inter-thread communication
@@ -246,7 +246,7 @@ class SmartMonitorGUI:
         if choice == "1":
             # Re-select labels
             self.label_mode = True
-            self.load_label_configuration()
+            self.config = self.adapter.load_label_configuration()
             self.create_label_selection_ui()
         elif choice == "2":
             # Load previous label selection record
@@ -257,17 +257,6 @@ class SmartMonitorGUI:
             self.label_mode = False
             self.channel_labels = {}
             ttk.Label(self.label_scrollable_frame, text="✅ Will use raw channel ID").grid(row=0, column=0, sticky=tk.W)
-    
-    def load_label_configuration(self):
-        """Load label configuration"""
-        try:
-            self.channel_config_service = ChannelConfigurationService(str(self.label_config_path))
-            self.config = self.channel_config_service.get_configuration_for_ui()
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load label configuration: {str(e)}")
-            self.label_mode = False
-            # Keep the default empty config instead of setting to None
-            self.config = {'categories': {}}
     
     def create_label_selection_ui(self):
         """Create label selection interface"""
@@ -302,18 +291,17 @@ class SmartMonitorGUI:
     
     def load_last_label_selection(self):
         """Load previous label selection record"""
-        if not self.label_selection_path.exists():
+        selected_labels = self.adapter.load_label_selection()
+        
+        if selected_labels is None:
             messagebox.showwarning("Warning", "No previous label selection record found, will select again.")
             self.label_choice_var.set("1")
             self.on_label_choice_change()
             return
         
         try:
-            with open(self.label_selection_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
             # Load channel labels
-            for ch_id, label in data['labels'].items():
+            for ch_id, label in selected_labels.items():
                 if ch_id in self.channel_labels:
                     self.channel_labels[ch_id].set(label)
             
@@ -360,26 +348,16 @@ class SmartMonitorGUI:
                 for ch_id, var in self.channel_labels.items():
                     selected_labels[ch_id] = var.get()
                 
-                # Save to file
-                with open(self.label_selection_path, 'w', encoding='utf-8') as f:
-                    json.dump({
-                        'timestamp': datetime.now().isoformat(),
-                        'labels': selected_labels
-                    }, f, ensure_ascii=False, indent=2)
+                # Save through adapter
+                if not self.adapter.save_label_selection(selected_labels):
+                    messagebox.showerror("Error", "Failed to save label selection")
+                    return
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to save label selection: {str(e)}")
                 return
         
         # Go to second page
         self.show_page2()
-        
-        # Initialize monitor service
-        try:
-            self.monitor_service.rule_loader.config_path = Path(self.config_file_var.get())
-            self.monitor_service.initialize()
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to initialize monitor service: {str(e)}")
-            return
     
     def create_control_panel(self, parent):
         """Create control panel"""
@@ -456,10 +434,6 @@ class SmartMonitorGUI:
         alarm_scrollbar = ttk.Scrollbar(alarm_frame, orient=tk.VERTICAL, command=self.alarm_tree.yview)
         self.alarm_tree.configure(yscrollcommand=alarm_scrollbar.set)
         
-        # Add scrollbar
-        alarm_scrollbar = ttk.Scrollbar(alarm_frame, orient=tk.VERTICAL, command=self.alarm_tree.yview)
-        self.alarm_tree.configure(yscrollcommand=alarm_scrollbar.set)
-        
         self.alarm_tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         alarm_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
         
@@ -497,15 +471,11 @@ class SmartMonitorGUI:
                 self.run_id_var.set(run_id)
             
             # Auto-infer workstation ID
-            path = Path(filename)
-            if path.stem.startswith('mpl') or path.stem.startswith('MPL'):
-                # Extract workstation ID from filename
-                import re
-                match = re.search(r'mpl(\d+)', path.stem.lower())
-                if match:
-                    workstation_id = match.group(1)
-                    self.workstation_id_var.set(workstation_id)
-                    print(f"Auto inferred workstation ID: {workstation_id} (from filename: {path.stem})")
+            workstation_id = self.adapter.auto_infer_workstation_id(filename)
+            if workstation_id:
+                self.workstation_id_var.set(workstation_id)
+                path = Path(filename)
+                print(f"Auto inferred workstation ID: {workstation_id} (from filename: {path.stem})")
     
     def browse_config_file(self):
         """Browse config file"""
@@ -528,13 +498,15 @@ class SmartMonitorGUI:
             messagebox.showerror("Error", "Please fill in all required fields")
             return
         
-        # Check if file exists
-        if not Path(dat_file).exists():
-            messagebox.showerror("Error", f"Data file does not exist: {dat_file}")
+        # Validate file path through adapter
+        validation = self.adapter.validate_file_path(dat_file)
+        if not validation['valid']:
+            messagebox.showerror("Error", validation['error'])
             return
         
-        if not Path(config_file).exists():
-            messagebox.showerror("Error", f"Config file does not exist: {config_file}")
+        validation = self.adapter.validate_file_path(config_file)
+        if not validation['valid']:
+            messagebox.showerror("Error", validation['error'])
             return
         
         # Clear previous results
@@ -561,16 +533,8 @@ class SmartMonitorGUI:
     
     def stop_monitoring(self):
         """Stop monitoring"""
-        # Stop continuous monitoring
-        if self.monitor_service.is_monitoring:
-            self.monitor_service.stop_continuous_monitoring()
-        
-        # Stop file provider
-        if self.file_provider:
-            self.file_provider.stop()
-        
-        # Clean up temporary files and offset records
-        self._cleanup_temp_files()
+        # Stop monitoring through adapter
+        self.adapter.stop_monitoring()
         
         # Reset session statistics
         self.session_start_time = None
@@ -610,39 +574,25 @@ class SmartMonitorGUI:
             messagebox.showerror("Error", "Please fill in all required fields")
             return
         
-        # Check if file exists
-        if not Path(dat_file).exists():
-            messagebox.showerror("Error", f"Data file does not exist: {dat_file}")
+        # Validate file path through adapter
+        validation = self.adapter.validate_file_path(dat_file)
+        if not validation['valid']:
+            messagebox.showerror("Error", validation['error'])
             return
         
-        if not Path(config_file).exists():
-            messagebox.showerror("Error", f"Config file does not exist: {config_file}")
+        validation = self.adapter.validate_file_path(config_file)
+        if not validation['valid']:
+            messagebox.showerror("Error", validation['error'])
             return
         
         try:
-            # Clean up old temporary files and offset records
-            self._cleanup_temp_files()
+            # Create file provider
+            self.file_provider = create_file_provider("simulated")
             
-            # Reset session statistics
-            self.session_start_time = datetime.now()
-            self.session_total_records = 0
-            self.session_total_alarms = 0
+            # Start simulation through adapter
+            result = self.adapter.start_simulation(dat_file, config_file, run_id, workstation_id, self.file_provider)
             
-            # Initialize monitor service
-            self.monitor_service.rule_loader.config_path = Path(config_file)
-            self.monitor_service.initialize()
-            
-            # Add alarm handler
-            self.monitor_service.add_alarm_handler(self._gui_alarm_handler)
-            
-            # Create simulated file provider
-            self.file_provider = SimulatedFileProvider(dat_file, workstation_id)
-            
-            # Set file provider
-            self.monitor_service.set_file_provider(self.file_provider)
-            
-            # Start continuous monitoring
-            if self.monitor_service.start_continuous_monitoring(run_id):
+            if result['success']:
                 # Update interface status
                 self.start_button.config(state='disabled')
                 self.stop_button.config(state='normal')
@@ -652,7 +602,7 @@ class SmartMonitorGUI:
                 # Show success message
                 messagebox.showinfo("Success", f"Simulation started!\nWorkstation ID: {workstation_id}\nPush one record every 10 seconds")
             else:
-                messagebox.showerror("Error", "Failed to start simulation")
+                messagebox.showerror("Error", result['error'])
                 self.status_text.set("Simulation failed")
         
         except Exception as e:
@@ -662,39 +612,34 @@ class SmartMonitorGUI:
     def _monitoring_worker(self, dat_file: str, config_file: str, run_id: str):
         """Monitoring worker thread"""
         try:
-            # Initialize monitor service
-            self.monitor_service.rule_loader.config_path = Path(config_file)
-            self.monitor_service.initialize()
+            # Start monitoring through adapter
+            result = self.adapter.start_monitoring(dat_file, config_file, run_id)
             
-            # Add alarm handler
-            self.monitor_service.add_alarm_handler(self._gui_alarm_handler)
-            
-            # Process data file
-            start_time = datetime.now()
-            alarms, records_count = self.monitor_service.process_data_file(dat_file, run_id)
-            end_time = datetime.now()
-            
-            # Update session statistics
-            self.session_total_records = records_count
-            self.session_total_alarms = len(alarms)
-            
-            # Calculate processing time and speed
-            processing_time = (end_time - start_time).total_seconds()
-            speed = records_count / processing_time if processing_time > 0 else 0
-            
-            # Update statistics
-            self.records_var.set(str(records_count))
-            self.alarms_var.set(str(len(alarms)))
-            self.time_var.set(f"{processing_time:.2f}s")
-            self.speed_var.set(f"{speed:.2f} records/sec")
-            
-            # Update status
-            self.status_text.set("Processing complete")
-            self.progress_var.set(100)
-            
-            # Display completion message
-            messagebox.showinfo("Success", f"Processing complete! {records_count} records processed, {len(alarms)} alarms generated.")
-            
+            if result['success']:
+                # Update session statistics
+                self.session_total_records = result['records_count']
+                self.session_total_alarms = result['alarms_count']
+                
+                # Calculate processing time and speed
+                if self.session_start_time:
+                    processing_time = (datetime.now() - self.session_start_time).total_seconds()
+                    speed = self.session_total_records / processing_time if processing_time > 0 else 0
+                    
+                    # Update statistics
+                    self.records_var.set(str(self.session_total_records))
+                    self.alarms_var.set(str(self.session_total_alarms))
+                    self.time_var.set(f"{processing_time:.2f}s")
+                    self.speed_var.set(f"{speed:.2f} records/sec")
+                
+                # Update status
+                self.status_text.set("Processing complete")
+                self.progress_var.set(100)
+                
+                # Display completion message
+                messagebox.showinfo("Success", f"Processing complete! {self.session_total_records} records processed, {self.session_total_alarms} alarms generated.")
+            else:
+                messagebox.showerror("Error", result['error'])
+                
         except Exception as e:
             messagebox.showerror("Error", f"Processing failed: {str(e)}")
         finally:
@@ -702,12 +647,12 @@ class SmartMonitorGUI:
             self.start_button.config(state='normal')
             self.stop_button.config(state='disabled')
     
-    def _gui_alarm_handler(self, alarm):
+    def _gui_alarm_handler(self, alarm: AlarmEvent):
         """GUI alarm handler"""
         # Add alarm to table in GUI thread
         self.root.after(0, self._add_alarm_to_table, alarm)
     
-    def _add_alarm_to_table(self, alarm):
+    def _add_alarm_to_table(self, alarm: AlarmEvent):
         """Add alarm to table"""
         severity_icons = {
             "low": "🔵",
@@ -747,8 +692,10 @@ class SmartMonitorGUI:
     
     def update_status(self):
         """Update monitoring status"""
-        if self.monitor_service.is_monitoring:
-            status = self.monitor_service.get_monitoring_status()
+        # Get status through adapter
+        status = self.adapter.get_monitoring_status()
+        
+        if status.get('is_monitoring'):
             stats = status.get('stats', {})
             
             # Update session statistics

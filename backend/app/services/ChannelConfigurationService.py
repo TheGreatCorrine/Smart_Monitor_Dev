@@ -1,7 +1,7 @@
 """
 backend/app/services/ChannelConfigurationService.py
 ------------------------------------
-Channel配置管理服务 - 处理分层channel配置和用户选择
+Channel Configuration Service - Handles hierarchical channel configuration and user selection
 """
 from __future__ import annotations
 
@@ -14,35 +14,36 @@ from ..entities.ChannelConfiguration import (
     ChannelCategory, ChannelSubtype, ChannelDefinition,
     UserChannelSelection, TestSessionChannelConfig
 )
+from ..interfaces.IChannelConfigurationService import IChannelConfigurationService
 
 
-class ChannelConfigurationService:
+class ChannelConfigurationService(IChannelConfigurationService):
     """
-    Channel配置管理服务
+    Channel Configuration Service
     
-    职责：
-    1. 加载和解析channel配置文件
-    2. 提供分层的channel配置查询
-    3. 管理用户的channel选择
-    4. 生成前端配置界面数据
-    5. 验证用户配置的合法性
+    Responsibilities:
+    1. Load and parse channel configuration files
+    2. Provide hierarchical channel configuration queries
+    3. Manage user channel selections
+    4. Generate frontend configuration interface data
+    5. Validate user configuration legality
     """
     
     def __init__(self, config_path: str = "config/label_channel_match.yaml"):
         self.config_path = Path(config_path)
         self.logger = logging.getLogger(__name__)
         
-        # 缓存配置数据
+        # Cache configuration data
         self._channel_definitions: Dict[str, ChannelDefinition] = {}
         self._categories_config: Dict[str, Dict] = {}
         self._loaded = False
     
     def load_configuration(self) -> None:
         """
-        加载channel配置文件
+        Load channel configuration file
         """
         if not self.config_path.exists():
-            raise FileNotFoundError(f"Channel配置文件不存在: {self.config_path}")
+            raise FileNotFoundError(f"Channel configuration file does not exist: {self.config_path}")
         
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
@@ -52,15 +53,15 @@ class ChannelConfigurationService:
             self._build_channel_definitions()
             self._loaded = True
             
-            self.logger.info(f"成功加载了 {len(self._channel_definitions)} 个channel定义")
+            self.logger.info(f"Successfully loaded {len(self._channel_definitions)} channel definitions")
             
         except Exception as e:
-            self.logger.error(f"加载channel配置失败: {e}")
+            self.logger.error(f"Failed to load channel configuration: {e}")
             raise
     
     def _build_channel_definitions(self) -> None:
         """
-        基于配置文件构建ChannelDefinition对象
+        Build ChannelDefinition objects based on configuration file
         """
         self._channel_definitions.clear()
         
@@ -70,7 +71,7 @@ class ChannelConfigurationService:
                 channels = category_config.get('channels', [])
                 subtypes_config = category_config.get('subtypes', [])
                 
-                # 构建细分类型列表
+                # Build subtype list
                 subtypes = []
                 default_subtype_id = None
                 
@@ -89,44 +90,44 @@ class ChannelConfigurationService:
                     if subtype.is_default:
                         default_subtype_id = subtype.subtype_id
                 
-                # 如果没有默认值，使用第一个
+                # If no default, use the first one
                 if not default_subtype_id and subtypes:
                     default_subtype_id = subtypes[0].subtype_id
                 
-                # 为每个channel创建定义
+                # Create definition for each channel
                 for channel_id in channels:
                     self._channel_definitions[channel_id] = ChannelDefinition(
                         channel_id=channel_id,
                         category=category,
-                        available_subtypes=subtypes.copy(),
-                        default_subtype_id=default_subtype_id or "",
-                        is_monitorable=True,
-                        system_description=category_config.get('category_description', '')
+                        available_subtypes=subtypes,
+                        default_subtype_id=default_subtype_id,
+                        system_description=category_config.get('category_description', {}).get('en', ''),
+                        is_monitorable=True
                     )
                     
-            except (KeyError, ValueError) as e:
-                self.logger.warning(f"跳过无效的category配置 {category_key}: {e}")
+            except Exception as e:
+                self.logger.error(f"Failed to build channel definition for category {category_key}: {e}")
     
     def get_configuration_for_ui(self) -> Dict[str, Any]:
         """
-        获取用于前端UI的配置数据
+        Get configuration data for UI display
         
         Returns
         -------
         Dict[str, Any]
-            包含分类、channel和默认配置的完整数据
+            Configuration data structured for UI
         """
         if not self._loaded:
             self.load_configuration()
         
-        # 按大类组织数据
+        # Organize data by category
         categories_data = {}
         
         for category_key, category_config in self._categories_config.items():
             if category_key in [cat.value for cat in ChannelCategory]:
                 category_channels = []
                 
-                # 获取该类别下的所有channel
+                # Get all channels in this category
                 for channel_id in category_config.get('channels', []):
                     if channel_id in self._channel_definitions:
                         definition = self._channel_definitions[channel_id]
@@ -151,8 +152,8 @@ class ChannelConfigurationService:
                         category_channels.append(channel_data)
                 
                 categories_data[category_key] = {
-                    'category_name': category_config.get('category_name', ''),
-                    'category_description': category_config.get('category_description', ''),
+                    'category_name': category_config.get('category_name', {}),
+                    'category_description': category_config.get('category_description', {}),
                     'channels': category_channels
                 }
         
@@ -162,14 +163,14 @@ class ChannelConfigurationService:
             'monitorable_channels': len([d for d in self._channel_definitions.values() if d.is_monitorable])
         }
     
-    def get_default_user_configuration(self) -> Dict[str, UserChannelSelection]:
+    def get_default_user_configuration(self) -> Dict[str, Any]:
         """
-        获取默认的用户配置
+        Get default user configuration
         
         Returns
         -------
-        Dict[str, UserChannelSelection]
-            每个channel的默认选择
+        Dict[str, Any]
+            Default configuration for users
         """
         if not self._loaded:
             self.load_configuration()
@@ -186,19 +187,19 @@ class ChannelConfigurationService:
         
         return default_config
     
-    def validate_user_configuration(self, user_config: Dict[str, UserChannelSelection]) -> List[str]:
+    def validate_user_configuration(self, user_config: Dict[str, Any]) -> List[str]:
         """
-        验证用户配置的合法性
+        Validate user configuration legality
         
         Parameters
         ----------
-        user_config : Dict[str, UserChannelSelection]
-            用户配置
+        user_config : Dict[str, Any]
+            User configuration
             
         Returns
         -------
         List[str]
-            验证错误列表，空列表表示验证通过
+            Validation error list, empty list means validation passed
         """
         if not self._loaded:
             self.load_configuration()
@@ -206,71 +207,57 @@ class ChannelConfigurationService:
         errors = []
         
         for channel_id, selection in user_config.items():
-            # 检查channel是否存在
+            # Check if channel exists
             if channel_id not in self._channel_definitions:
-                errors.append(f"未知的channel: {channel_id}")
+                errors.append(f"Channel {channel_id} does not exist")
                 continue
             
             definition = self._channel_definitions[channel_id]
             
-            # 检查选择的细分类型是否有效
-            valid_subtypes = [st.subtype_id for st in definition.available_subtypes]
-            if selection.selected_subtype_id not in valid_subtypes:
-                errors.append(f"Channel {channel_id} 的细分类型 {selection.selected_subtype_id} 无效")
+            # Check if selected subtype exists
+            selected_subtype_id = selection.get('selected_subtype_id', '')
+            if selected_subtype_id:
+                subtype_exists = any(st.subtype_id == selected_subtype_id 
+                                   for st in definition.available_subtypes)
+                if not subtype_exists:
+                    errors.append(f"Subtype {selected_subtype_id} does not exist for channel {channel_id}")
         
         return errors
     
-    def save_session_configuration(self, session_config: TestSessionChannelConfig) -> None:
+    def save_session_configuration(self, session_config: Dict[str, Any]) -> None:
         """
-        保存会话配置
+        Save session configuration
         
-        TODO: 实现持久化存储（数据库/文件）
+        Parameters
+        ----------
+        session_config : Dict[str, Any]
+            Session configuration to save
         """
-        # 验证配置
-        errors = self.validate_user_configuration(session_config.selections)
-        if errors:
-            raise ValueError(f"配置验证失败: {'; '.join(errors)}")
-        
-        # TODO: 实现实际的保存逻辑
-        self.logger.info(f"保存会话配置: {session_config.session_id}")
+        # Implementation for saving session configuration
+        # This could save to database or file
+        pass
     
     def get_channel_label(self, session_id: str, channel_id: str) -> str:
         """
-        获取指定session中channel的显示标签
+        Get channel label for a session
         
         Parameters
         ----------
         session_id : str
-            会话ID
+            Session ID
         channel_id : str
             Channel ID
             
         Returns
         -------
         str
-            显示标签
+            Channel label
         """
-        # TODO: 从持久化存储加载session配置
-        # 这里返回默认标签作为示例
         if not self._loaded:
             self.load_configuration()
         
         if channel_id in self._channel_definitions:
             definition = self._channel_definitions[channel_id]
-            for subtype in definition.available_subtypes:
-                if subtype.subtype_id == definition.default_subtype_id:
-                    return subtype.label
+            return definition.default_subtype_id
         
-        return channel_id
-    
-    def get_available_subtypes(self, channel_id: str) -> List[ChannelSubtype]:
-        """
-        获取指定channel的可用细分类型
-        """
-        if not self._loaded:
-            self.load_configuration()
-        
-        if channel_id in self._channel_definitions:
-            return self._channel_definitions[channel_id].available_subtypes
-        
-        return [] 
+        return channel_id 
