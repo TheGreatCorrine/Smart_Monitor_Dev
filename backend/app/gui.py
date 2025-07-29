@@ -262,11 +262,7 @@ class SmartMonitorGUI:
         """Load label configuration"""
         try:
             self.channel_config_service = ChannelConfigurationService(str(self.label_config_path))
-            loaded_config = self.channel_config_service.load_configuration()
-            if loaded_config is not None:
-                self.config = loaded_config
-            else:
-                self.config = {'categories': {}}
+            self.config = self.channel_config_service.get_configuration_for_ui()
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load label configuration: {str(e)}")
             self.label_mode = False
@@ -277,8 +273,10 @@ class SmartMonitorGUI:
         """Create label selection interface"""
         row = 0
         for category_key, category in self.config['categories'].items():
-            # Category title
-            ttk.Label(self.label_scrollable_frame, text=f"【{category['category_name']}】{category['category_description']}", 
+            # Category title - use English name
+            category_name = category['category_name'].get('en', category['category_name']) if isinstance(category['category_name'], dict) else category['category_name']
+            category_desc = category['category_description'].get('en', category['category_description']) if isinstance(category['category_description'], dict) else category['category_description']
+            ttk.Label(self.label_scrollable_frame, text=f"【{category_name}】{category_desc}", 
                       font=('Arial', 10, 'bold')).grid(row=row, column=0, sticky=tk.W, pady=(10, 5))
             row += 1
             
@@ -294,7 +292,7 @@ class SmartMonitorGUI:
                 label_var = tk.StringVar(value=ch.get('default_subtype_id', ''))
                 self.channel_labels[ch_id] = label_var
                 
-                for st in ch['subtypes']:
+                for st in ch['available_subtypes']:
                     default_mark = " (Default)" if st['subtype_id'] == ch.get('default_subtype_id', '') else ""
                     ttk.Radiobutton(self.label_scrollable_frame, text=st['label'], 
                                    variable=label_var, value=st['subtype_id']).grid(row=row, column=0, sticky=tk.W, padx=(40, 0))
