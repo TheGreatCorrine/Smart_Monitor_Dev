@@ -186,7 +186,8 @@ class MonitorService(IMonitorService):
         records_count = 0
         
         try:
-            for record in iter_new_records(file_path):
+            from pathlib import Path
+            for record in iter_new_records(Path(file_path), run_id):
                 record_alarms = self.process_record(record, run_id)
                 alarms.extend(record_alarms)
                 records_count += 1
@@ -279,7 +280,7 @@ class MonitorService(IMonitorService):
             self.logger.info(f"File updated: {file_path}")
             
             # Process new records
-            for record in iter_new_records(str(file_path)):
+            for record in iter_new_records(file_path, "continuous"):
                 record_alarms = self.process_record(record, "continuous")
                 
                 # Update stats

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Monitor Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+        }
+        .status {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .api-test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Smart Monitor Web</h1>
+            <p>基于Flask的智能监控系统Web界面</p>
+        </div>
+
+        <div class="status">
+            <h3>📊 系统状态</h3>
+            <p>✅ Flask Web应用已启动</p>
+            <p>✅ 基础API已就绪</p>
+            <p>✅ Clean Architecture集成完成</p>
+            <p>✅ Web适配器已就绪</p>
+        </div>
+
+        <div class="api-test">
+            <h3>🧪 API测试</h3>
+            <button class="btn" onclick="testHealthAPI()">测试健康检查API</button>
+            <button class="btn" onclick="testBasicAPI()">测试基础API</button>
+            <button class="btn" onclick="testWebAdapter()">测试Web适配器</button>
+            <button class="btn" onclick="testLabelConfig()">测试标签配置</button>
+            <button class="btn" onclick="testFileList()">测试文件列表</button>
+            <button class="btn" onclick="testSystemInfo()">测试系统信息</button>
+            <div id="api-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="status">
+            <h3>📋 开发进度</h3>
+            <p>✅ 阶段1: 基础框架搭建 - 完成</p>
+            <p>✅ 阶段2: 集成现有架构 - 完成</p>
+            <p>✅ 阶段3: 核心功能API - 完成</p>
+            <p>⏳ 阶段4: 前端界面开发 - 待开始</p>
+            <p>⏳ 阶段5: 实时功能 - 待开始</p>
+            <p>⏳ 阶段6: 错误处理和优化 - 待开始</p>
+        </div>
+
+        <div class="status">
+            <h3>🔗 可用API端点</h3>
+            <p><strong>配置管理:</strong></p>
+            <ul>
+                <li>GET /api/config/labels - 获取标签配置</li>
+                <li>POST /api/config/labels - 保存标签选择</li>
+                <li>GET /api/config/labels/load - 加载标签选择</li>
+                <li>GET /api/config/rules - 获取规则配置</li>
+                <li>GET /api/config/channels - 获取通道配置</li>
+            </ul>
+            <p><strong>文件管理:</strong></p>
+            <ul>
+                <li>GET /api/file/list - 列出数据文件</li>
+                <li>GET /api/file/info/&lt;filename&gt; - 获取文件信息</li>
+                <li>POST /api/file/validate - 验证文件路径</li>
+                <li>POST /api/file/infer-workstation - 自动推断工作站ID</li>
+            </ul>
+            <p><strong>监控管理:</strong></p>
+            <ul>
+                <li>POST /api/monitor/start - 启动监控</li>
+                <li>POST /api/monitor/simulation - 启动模拟</li>
+                <li>POST /api/monitor/stop - 停止监控</li>
+                <li>GET /api/monitor/status - 获取监控状态</li>
+            </ul>
+            <p><strong>系统信息:</strong></p>
+            <ul>
+                <li>GET /api/system/info - 获取系统信息</li>
+                <li>GET /api/system/health - 获取系统健康状态</li>
+            </ul>
+            <p><strong>Web状态:</strong></p>
+            <ul>
+                <li>GET /api/web/status - 获取Web应用状态</li>
+                <li>POST /api/web/reset - 重置Web会话</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function testHealthAPI() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>健康检查API响应:</strong><br>' + JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>错误:</strong><br>' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+
+        async function testBasicAPI() {
+            try {
+                const response = await fetch('/api/test');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>基础API响应:</strong><br>' + JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>错误:</strong><br>' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+
+        async function testWebAdapter() {
+            try {
+                const response = await fetch('/api/web/status');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>Web适配器状态:</strong><br>' + JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>错误:</strong><br>' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+
+        async function testLabelConfig() {
+            try {
+                const response = await fetch('/api/config/labels');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>标签配置:</strong><br>' + JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>错误:</strong><br>' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+
+        async function testFileList() {
+            try {
+                const response = await fetch('/api/file/list');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>文件列表:</strong><br>' + JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>错误:</strong><br>' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+
+        async function testSystemInfo() {
+            try {
+                const response = await fetch('/api/system/info');
+                const data = await response.json();
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>系统信息:</strong><br>' + JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    '<strong>错误:</strong><br>' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html> 
