@@ -9,20 +9,28 @@
 </head>
 <body>
     <div class="container">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
+        <!-- 侧边栏 - 初始隐藏 -->
+        <aside class="sidebar" id="sidebar" style="display: none;">
             <div class="sidebar-header">
                 <h1>🔍 Smart Monitor</h1>
                 <p>智能监控系统</p>
+                <button class="btn btn-sm btn-outline" onclick="app.showTestSelection()">
+                    <i class="fas fa-home"></i>
+                    返回主页
+                </button>
             </div>
 
             <nav class="nav-section">
                 <h3>主要功能</h3>
-                <a href="#" class="nav-item active" data-page="page1">
+                <a href="#" class="nav-item" data-page="workstation-selection" id="workstation-nav" style="display: none;">
+                    <i class="fas fa-desktop"></i>
+                    工作台选择
+                </a>
+                <a href="#" class="nav-item" data-page="file-config" id="file-config-nav" style="display: none;">
                     <i class="fas fa-file-upload"></i>
                     文件选择 & 标签匹配
                 </a>
-                <a href="#" class="nav-item" data-page="page2">
+                <a href="#" class="nav-item" data-page="monitor-panel" id="monitor-nav" style="display: none;">
                     <i class="fas fa-tachometer-alt"></i>
                     控制面板 & 监控状态
                 </a>
@@ -51,9 +59,63 @@
         </aside>
 
         <!-- 主内容区域 -->
-        <main class="main-content">
-            <!-- 页面1: 文件选择和标签匹配 -->
-            <div id="page1" class="page active">
+        <main class="main-content" id="main-content">
+            <!-- 主页面: 测试选择 -->
+            <div id="test-selection" class="page active">
+                <div class="test-selection-page">
+                    <div class="test-selection-header">
+                        <h1>🔍 Smart Monitor</h1>
+                        <p>智能监控系统 - 测试选择</p>
+                    </div>
+
+                    <div class="test-selection-container">
+                        <div class="test-option" onclick="app.selectTest('old')">
+                            <div class="test-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <h3>Old Test</h3>
+                            <p>使用现有的测试配置</p>
+                            <div class="test-description">
+                                <p>选择正在运行的测试工作台</p>
+                                <p>快速进入监控状态</p>
+                            </div>
+                        </div>
+                        
+                        <div class="test-option" onclick="app.selectTest('new')">
+                            <div class="test-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <h3>New Test</h3>
+                            <p>创建新的测试配置</p>
+                            <div class="test-description">
+                                <p>上传数据文件</p>
+                                <p>配置标签匹配</p>
+                                <p>启动新的监控会话</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作台选择页面 -->
+            <div id="workstation-selection" class="page hidden">
+                <div class="page-header">
+                    <h2>🖥️ 工作台选择</h2>
+                    <p>选择正在运行的测试工作台</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">可用工作台</h3>
+                    </div>
+                    <div id="workstation-list" class="workstation-list">
+                        <div class="loading">正在加载工作台列表...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件选择和标签匹配页面 -->
+            <div id="file-config" class="page hidden">
                 <div class="page-header">
                     <h2>📁 文件选择 & 标签匹配</h2>
                     <p>选择数据文件并配置标签匹配</p>
@@ -121,7 +183,7 @@
                         <h3 class="card-title">确认配置</h3>
                     </div>
                     <div class="flex gap-4">
-                        <button class="btn btn-primary btn-lg" onclick="app.confirmAndGoToPage2()">
+                        <button class="btn btn-primary btn-lg" onclick="app.confirmAndGoToMonitor()">
                             <i class="fas fa-check"></i>
                             确认配置并进入监控
                         </button>
@@ -133,8 +195,8 @@
                 </div>
             </div>
 
-            <!-- 页面2: 控制面板和监控状态 -->
-            <div id="page2" class="page hidden">
+            <!-- 控制面板和监控状态页面 -->
+            <div id="monitor-panel" class="page hidden">
                 <div class="page-header">
                     <h2>📊 控制面板 & 监控状态</h2>
                     <p>监控控制和实时状态显示</p>
@@ -168,55 +230,66 @@
                                 停止监控
                             </button>
                             <button class="btn btn-secondary" onclick="app.startSimulation()">
-                                <i class="fas fa-gamepad"></i>
+                                <i class="fas fa-play-circle"></i>
                                 启动模拟
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 状态面板 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">监控状态</h3>
-                            <div id="monitoring-status" class="status-indicator status-info">未启动</div>
-                        </div>
-                        <div id="monitoring-details">
-                            <p>监控未启动</p>
-                        </div>
+                <!-- 监控状态 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">监控状态</h3>
+                        <div id="monitoring-status" class="status-indicator status-warning">已停止</div>
                     </div>
+                    <div id="monitoring-details" class="mt-4">
+                        <p>监控已停止</p>
+                    </div>
+                </div>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">会话统计</h3>
+                <!-- 会话统计 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">会话统计</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="stat-item">
+                            <div class="stat-label">开始时间</div>
+                            <div class="stat-value" id="session-start">-</div>
                         </div>
-                        <div id="session-stats">
-                            <p><strong>开始时间:</strong> <span id="session-start">-</span></p>
-                            <p><strong>处理记录:</strong> <span id="total-records">0</span></p>
-                            <p><strong>告警数量:</strong> <span id="total-alarms">0</span></p>
-                            <p><strong>处理速度:</strong> <span id="processing-speed">0</span> 记录/秒</p>
+                        <div class="stat-item">
+                            <div class="stat-label">处理记录</div>
+                            <div class="stat-value" id="total-records">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">生成告警</div>
+                            <div class="stat-value" id="total-alarms">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">处理速度</div>
+                            <div class="stat-value" id="processing-speed">0.00</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 告警表格 -->
+                <!-- 告警管理 -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">告警记录</h3>
-                        <button class="btn btn-outline btn-sm" onclick="app.clearAlarms()">
+                        <h3 class="card-title">告警管理</h3>
+                        <button class="btn btn-sm btn-outline" onclick="app.clearAlarms()">
                             <i class="fas fa-trash"></i>
                             清空告警
                         </button>
                     </div>
                     <div class="table-container">
-                        <table class="table" id="alarm-table">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>时间</th>
-                                    <th>工作站ID</th>
+                                    <th>工作台</th>
                                     <th>通道</th>
-                                    <th>值</th>
+                                    <th>数值</th>
                                     <th>阈值</th>
                                     <th>规则</th>
                                 </tr>
@@ -234,56 +307,51 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">系统日志</h3>
-                        <button class="btn btn-outline btn-sm" onclick="app.clearLogs()">
+                        <button class="btn btn-sm btn-outline" onclick="app.clearLogs()">
                             <i class="fas fa-trash"></i>
                             清空日志
                         </button>
                     </div>
-                    <div class="log-container">
-                        <div id="log-viewer" class="log-viewer">
-                            <p>系统日志将在这里显示...</p>
-                        </div>
+                    <div id="log-viewer" class="log-viewer">
+                        <div class="log-entry">系统启动完成</div>
                     </div>
                 </div>
             </div>
 
             <!-- 配置管理页面 -->
-            <div id="config-page" class="page hidden">
+            <div id="config" class="page hidden">
                 <div class="page-header">
                     <h2>⚙️ 配置管理</h2>
-                    <p>管理标签配置和规则设置</p>
+                    <p>系统配置和规则管理</p>
                 </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">标签配置</h3>
-                    </div>
-                    <div id="config-content">
-                        <p>配置管理功能开发中...</p>
-                    </div>
+                <div id="config-content">
+                    <p>配置管理功能开发中...</p>
                 </div>
             </div>
 
             <!-- 系统信息页面 -->
-            <div id="system-page" class="page hidden">
+            <div id="system" class="page hidden">
                 <div class="page-header">
                     <h2>🖥️ 系统信息</h2>
-                    <p>系统状态和健康检查</p>
+                    <p>系统状态和资源使用情况</p>
                 </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">系统状态</h3>
+                            <h3 class="card-title">系统信息</h3>
                         </div>
                         <div id="system-info">
-                            <p>正在加载系统信息...</p>
+                            <p>加载中...</p>
                         </div>
                     </div>
+                    
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">健康检查</h3>
                         </div>
                         <div id="health-check">
-                            <p>正在检查系统健康状态...</p>
+                            <p>加载中...</p>
                         </div>
                     </div>
                 </div>
@@ -292,81 +360,8 @@
     </div>
 
     <!-- 通知容器 -->
-    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+    <div id="notification-container" class="notification-container"></div>
 
-    <!-- 加载JavaScript -->
     <script src="/static/js/app.js"></script>
-    
-    <!-- 页面样式 -->
-    <style>
-        .page {
-            display: none;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        .label-selection-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 1rem;
-        }
-        
-        .log-container {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .log-viewer {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
-            line-height: 1.5;
-        }
-        
-        .table-container {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .notification {
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            color: white;
-            font-weight: 500;
-            box-shadow: var(--shadow-lg);
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .notification-success {
-            background-color: var(--success-color);
-        }
-        
-        .notification-error {
-            background-color: var(--error-color);
-        }
-        
-        .notification-info {
-            background-color: var(--primary-color);
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    </style>
 </body>
 </html> 

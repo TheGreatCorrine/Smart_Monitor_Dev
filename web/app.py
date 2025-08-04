@@ -276,6 +276,48 @@ def get_monitoring_status():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/monitor/workstations', methods=['GET'])
+def get_workstations():
+    """获取可用工作台列表"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        # 模拟工作台数据，实际应该从后端获取
+        workstations = [
+            {
+                'id': 'WS001',
+                'name': '工作站 1',
+                'status': 'running',
+                'start_time': '2024-01-01T10:00:00Z',
+                'records_processed': 1250,
+                'alarms_generated': 3
+            },
+            {
+                'id': 'WS002',
+                'name': '工作站 2',
+                'status': 'stopped',
+                'start_time': None,
+                'records_processed': 0,
+                'alarms_generated': 0
+            },
+            {
+                'id': 'WS003',
+                'name': '工作站 3',
+                'status': 'running',
+                'start_time': '2024-01-01T09:30:00Z',
+                'records_processed': 890,
+                'alarms_generated': 1
+            }
+        ]
+        
+        return jsonify({
+            'success': True,
+            'workstations': workstations
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ==================== 文件管理增强API ====================
 
 @app.route('/api/file/list', methods=['GET'])
@@ -577,4 +619,4 @@ if __name__ == '__main__':
     import os
     project_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
     os.chdir(project_root)
-    app.run(host='0.0.0.0', port=5001, debug=False) 
+    app.run(host='0.0.0.0', port=5002, debug=False) 

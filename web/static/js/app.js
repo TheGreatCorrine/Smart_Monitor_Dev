@@ -1,25 +1,27 @@
 /**
  * Smart Monitor Web - 主应用JavaScript
  * 使用原生JavaScript，无框架依赖
- * 仿照GUI的两页设计
+ * 新的页面流程：测试选择 -> 工作台选择/文件配置 -> 监控面板
  */
 
 class SmartMonitorApp {
     constructor() {
-        this.currentPage = 'page1';
+        this.currentPage = 'test-selection';
         this.refreshInterval = null;
         this.selectedFile = null;
         this.selectedLabels = {};
+        this.selectedWorkstation = null;
         this.alarms = [];
         this.logs = [];
+        this.testType = null;
         this.init();
     }
 
     init() {
         this.setupNavigation();
-        this.loadPage1();
-        this.startAutoRefresh();
+        this.loadTestSelection();
         this.setupFileUpload();
+        this.disableConfirmButton();
     }
 
     // ==================== 导航管理 ====================
@@ -28,6 +30,11 @@ class SmartMonitorApp {
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
+                
+                if (item.classList.contains('disabled')) {
+                    return;
+                }
+                
                 const page = item.dataset.page;
                 this.navigateTo(page);
             });
@@ -35,8 +42,8 @@ class SmartMonitorApp {
     }
 
     navigateTo(page) {
-        // 如果离开页面2，停止自动刷新
-        if (this.currentPage === 'page2' && page !== 'page2') {
+        // 如果离开监控页面，停止自动刷新
+        if (this.currentPage === 'monitor-panel' && page !== 'monitor-panel') {
             this.stopAutoRefresh();
         }
         
@@ -44,7 +51,11 @@ class SmartMonitorApp {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-page="${page}"]`).classList.add('active');
+        
+        const navItem = document.querySelector(`[data-page="${page}"]`);
+        if (navItem) {
+            navItem.classList.add('active');
+        }
 
         // 隐藏所有页面
         document.querySelectorAll('.page').forEach(pageElement => {
@@ -59,18 +70,23 @@ class SmartMonitorApp {
             targetPage.classList.add('active');
         }
 
-        // 加载页面内容
         this.currentPage = page;
         this.loadPage(page);
     }
 
     loadPage(page) {
         switch (page) {
-            case 'page1':
-                this.loadPage1();
+            case 'test-selection':
+                this.loadTestSelection();
                 break;
-            case 'page2':
-                this.loadPage2();
+            case 'workstation-selection':
+                this.loadWorkstationSelection();
+                break;
+            case 'file-config':
+                this.loadFileConfig();
+                break;
+            case 'monitor-panel':
+                this.loadMonitorPanel();
                 break;
             case 'config':
                 this.loadConfig();
@@ -81,10 +97,173 @@ class SmartMonitorApp {
         }
     }
 
-    // ==================== 页面1: 文件选择和标签匹配 ====================
-    async loadPage1() {
+    // ==================== 测试选择功能 ====================
+    selectTest(testType) {
+        this.testType = testType;
+        
+        if (testType === 'old') {
+            // 显示侧边栏并跳转到工作台选择
+            this.showSidebar();
+            this.navigateTo('workstation-selection');
+            this.showSuccess('已选择 Old Test，请选择工作台');
+        } else if (testType === 'new') {
+            // 显示侧边栏并跳转到文件配置页面
+            this.showSidebar();
+            this.navigateTo('file-config');
+            this.showSuccess('已选择 New Test，请配置文件和标签');
+        }
+    }
+
+    showTestSelection() {
+        // 隐藏侧边栏，返回测试选择页面
+        this.hideSidebar();
+        this.navigateTo('test-selection');
+        this.testType = null;
+        this.selectedWorkstation = null;
+        this.selectedFile = null;
+        this.selectedLabels = {};
+    }
+
+    showSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        
+        // 移除全屏类以显示侧边栏
+        const container = document.querySelector('.container');
+        if (container) {
+            container.classList.remove('fullscreen');
+        }
+        
+        if (sidebar) {
+            sidebar.style.display = 'block';
+        }
+        
+        // 根据测试类型显示相应的导航项
+        if (this.testType === 'old') {
+            this.showNavItem('workstation-nav');
+            this.hideNavItem('file-config-nav');
+        } else if (this.testType === 'new') {
+            this.hideNavItem('workstation-nav');
+            this.showNavItem('file-config-nav');
+        }
+        
+        // 总是显示监控面板导航
+        this.showNavItem('monitor-nav');
+    }
+
+    hideSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            sidebar.style.display = 'none';
+        }
+        
+        // 添加全屏类以隐藏侧边栏
+        const container = document.querySelector('.container');
+        if (container) {
+            container.classList.add('fullscreen');
+        }
+    }
+
+    showNavItem(navId) {
+        const navItem = document.getElementById(navId);
+        if (navItem) {
+            navItem.style.display = 'flex';
+        }
+    }
+
+    hideNavItem(navId) {
+        const navItem = document.getElementById(navId);
+        if (navItem) {
+            navItem.style.display = 'none';
+        }
+    }
+
+    // ==================== 测试选择页面 ====================
+    loadTestSelection() {
+        // 重置所有状态
+        this.testType = null;
+        this.selectedWorkstation = null;
+        this.selectedFile = null;
+        this.selectedLabels = {};
+        this.hideSidebar();
+        
+        // 添加全屏类以隐藏侧边栏
+        const container = document.querySelector('.container');
+        if (container) {
+            container.classList.add('fullscreen');
+        }
+    }
+
+    // ==================== 工作台选择页面 ====================
+    async loadWorkstationSelection() {
+        await this.loadWorkstationList();
+    }
+
+    async loadWorkstationList() {
+        try {
+            const data = await this.fetchAPI('/api/monitor/workstations');
+            this.updateWorkstationList(data);
+        } catch (error) {
+            console.error('Failed to load workstation list:', error);
+            this.showError('加载工作台列表失败');
+        }
+    }
+
+    updateWorkstationList(data) {
+        const workstationList = document.getElementById('workstation-list');
+        
+        if (data.success && data.workstations && data.workstations.length > 0) {
+            let html = '';
+            
+            data.workstations.forEach(workstation => {
+                const statusClass = workstation.status === 'running' ? 'running' : 'stopped';
+                const statusText = workstation.status === 'running' ? '运行中' : '已停止';
+                
+                html += `
+                    <div class="workstation-item" onclick="app.selectWorkstation('${workstation.id}')">
+                        <div class="workstation-header">
+                            <div class="workstation-name">${workstation.name}</div>
+                            <div class="workstation-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="workstation-details">
+                            <p><strong>ID:</strong> ${workstation.id}</p>
+                            <p><strong>开始时间:</strong> ${workstation.start_time || '-'}</p>
+                            <p><strong>处理记录:</strong> ${workstation.records_processed || 0}</p>
+                            <p><strong>生成告警:</strong> ${workstation.alarms_generated || 0}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            workstationList.innerHTML = html;
+        } else {
+            workstationList.innerHTML = '<div class="text-center text-secondary">暂无可用工作台</div>';
+        }
+    }
+
+    selectWorkstation(workstationId) {
+        this.selectedWorkstation = workstationId;
+        
+        // 更新选中状态
+        document.querySelectorAll('.workstation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const selectedItem = document.querySelector(`[onclick="app.selectWorkstation('${workstationId}')"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('active');
+        }
+        
+        // 跳转到监控面板
+        this.navigateTo('monitor-panel');
+        this.showSuccess(`已选择工作台: ${workstationId}`);
+    }
+
+    // ==================== 文件配置页面 ====================
+    async loadFileConfig() {
         await this.loadFileList();
         await this.loadLabelConfiguration();
+        this.disableConfirmButton();
     }
 
     async loadFileList() {
@@ -110,9 +289,13 @@ class SmartMonitorApp {
                 fileSelector.appendChild(option);
             });
 
-            // 添加文件选择事件
             fileSelector.addEventListener('change', (e) => {
-                this.onFileSelected(e.target.value);
+                const selectedValue = e.target.value;
+                if (!selectedValue) {
+                    this.onFileDeselected();
+                } else {
+                    this.onFileSelected(selectedValue);
+                }
             });
         } else {
             fileSelector.innerHTML = '<option value="">没有找到数据文件</option>';
@@ -127,7 +310,6 @@ class SmartMonitorApp {
 
         this.selectedFile = filePath;
         
-        // 更新状态指示器为加载中
         const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
         if (statusIndicator) {
             statusIndicator.className = 'status-indicator status-info';
@@ -135,11 +317,9 @@ class SmartMonitorApp {
         }
         
         try {
-            // 获取文件信息
             const fileInfo = await this.fetchAPI(`/api/file/info/${filePath.split('/').pop()}`);
             this.updateFileInfo(fileInfo);
             
-            // 自动推断工作站ID
             const workstationInfo = await this.fetchAPI('/api/file/infer-workstation', {
                 method: 'POST',
                 body: JSON.stringify({ file_path: filePath })
@@ -149,19 +329,40 @@ class SmartMonitorApp {
                 this.showSuccess(`自动推断工作站ID: ${workstationInfo.workstation_id}`);
             }
             
-            // 加载标签配置
             await this.loadLabelConfiguration();
+            this.enableConfirmButton();
             
         } catch (error) {
             console.error('Failed to get file info:', error);
             this.showError('获取文件信息失败');
             
-            // 更新状态指示器为错误
             if (statusIndicator) {
                 statusIndicator.className = 'status-indicator status-error';
                 statusIndicator.textContent = '文件信息获取失败';
             }
         }
+    }
+
+    onFileDeselected() {
+        this.selectedFile = null;
+        
+        const fileInfo = document.getElementById('file-info');
+        if (fileInfo) {
+            fileInfo.innerHTML = '<p>请选择数据文件以查看详细信息</p>';
+        }
+        
+        const labelSelection = document.getElementById('label-selection');
+        if (labelSelection) {
+            labelSelection.innerHTML = '<p>请先选择数据文件以配置标签匹配</p>';
+        }
+        
+        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
+        if (statusIndicator) {
+            statusIndicator.className = 'status-indicator status-info';
+            statusIndicator.textContent = '等待文件选择';
+        }
+        
+        this.disableConfirmButton();
     }
 
     updateFileInfo(data) {
@@ -202,7 +403,6 @@ class SmartMonitorApp {
         const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
         
         if (data.categories && Object.keys(data.categories).length > 0) {
-            // 更新状态指示器
             if (statusIndicator) {
                 statusIndicator.className = 'status-indicator status-success';
                 statusIndicator.textContent = '标签配置已加载';
@@ -210,10 +410,7 @@ class SmartMonitorApp {
             
             let html = '<div class="grid grid-cols-1 gap-4">';
             
-            // 定义优先级顺序
             const priorityOrder = ['environment_temp', 'total_power'];
-            
-            // 将类别分为优先级和非优先级
             const priorityCategories = [];
             const otherCategories = [];
             
@@ -225,14 +422,10 @@ class SmartMonitorApp {
                 }
             });
             
-            // 按字母顺序排序非优先级类别
             otherCategories.sort((a, b) => a[0].localeCompare(b[0]));
-            
-            // 合并所有类别：优先级在前，其他在后
             const sortedCategories = [...priorityCategories, ...otherCategories];
             
             sortedCategories.forEach(([categoryKey, category]) => {
-                // 获取英文名称和描述
                 const categoryName = category.category_name?.en || categoryKey;
                 const categoryDescription = category.category_description?.en || '';
                 
@@ -281,10 +474,8 @@ class SmartMonitorApp {
             html += '</div>';
             labelSelection.innerHTML = html;
             
-            // 添加标签选择事件
             this.setupLabelSelectionEvents();
         } else {
-            // 更新状态指示器
             if (statusIndicator) {
                 statusIndicator.className = 'status-indicator status-error';
                 statusIndicator.textContent = '标签配置加载失败';
@@ -310,7 +501,7 @@ class SmartMonitorApp {
         console.log('Label selection updated:', this.selectedLabels);
     }
 
-    async confirmAndGoToPage2() {
+    async confirmAndGoToMonitor() {
         if (!this.selectedFile) {
             this.showError('请先选择数据文件');
             return;
@@ -322,7 +513,6 @@ class SmartMonitorApp {
         }
 
         try {
-            // 保存标签选择
             const saveResult = await this.fetchAPI('/api/config/labels/save', {
                 method: 'POST',
                 body: JSON.stringify({ selected_labels: this.selectedLabels })
@@ -330,7 +520,7 @@ class SmartMonitorApp {
 
             if (saveResult.success) {
                 this.showSuccess('配置已保存');
-                this.navigateTo('page2');
+                this.navigateTo('monitor-panel');
             } else {
                 this.showError('保存配置失败');
             }
@@ -365,12 +555,10 @@ class SmartMonitorApp {
         });
     }
 
-    // ==================== 页面2: 控制面板和监控状态 ====================
-    async loadPage2() {
+    // ==================== 监控面板页面 ====================
+    async loadMonitorPanel() {
         await this.loadMonitoringStatus();
         await this.loadSessionStats();
-        
-        // 启动自动刷新
         this.startAutoRefresh();
     }
 
@@ -455,15 +643,12 @@ class SmartMonitorApp {
             const stats = status.stats || {};
             const fileProvider = status.file_provider || {};
             
-            // 更新处理记录数
             const recordsProcessed = stats.total_records_processed || 0;
             totalRecords.textContent = recordsProcessed;
             
-            // 更新告警数量
             const alarmsGenerated = stats.total_alarms_generated || 0;
             totalAlarms.textContent = alarmsGenerated;
             
-            // 更新开始时间
             if (fileProvider.start_time) {
                 const startTime = new Date(fileProvider.start_time);
                 sessionStart.textContent = startTime.toLocaleString();
@@ -471,7 +656,6 @@ class SmartMonitorApp {
                 sessionStart.textContent = '-';
             }
             
-            // 计算处理速度
             if (fileProvider.start_time && recordsProcessed > 0) {
                 const startTime = new Date(fileProvider.start_time);
                 const now = new Date();
@@ -497,25 +681,31 @@ class SmartMonitorApp {
     // ==================== 监控控制 ====================
     async startMonitoring() {
         console.log('startMonitoring called');
-        console.log('selectedFile:', this.selectedFile);
         
         const configFile = document.getElementById('config-selector')?.value;
         const runId = document.getElementById('run-id')?.value || undefined;
 
-        if (!this.selectedFile) {
+        if (this.testType === 'new' && !this.selectedFile) {
             this.showError('请先选择数据文件');
             return;
         }
 
         try {
             console.log('Sending monitoring start request...');
+            const requestBody = {
+                config_path: configFile,
+                run_id: runId
+            };
+
+            if (this.testType === 'new') {
+                requestBody.file_path = this.selectedFile;
+            } else if (this.testType === 'old' && this.selectedWorkstation) {
+                requestBody.workstation_id = this.selectedWorkstation;
+            }
+
             const data = await this.fetchAPI('/api/monitor/start', {
                 method: 'POST',
-                body: JSON.stringify({
-                    file_path: this.selectedFile,
-                    config_path: configFile,
-                    run_id: runId
-                })
+                body: JSON.stringify(requestBody)
             });
 
             console.log('Monitoring start response:', data);
@@ -555,21 +745,26 @@ class SmartMonitorApp {
 
     async startSimulation() {
         console.log('startSimulation called');
-        console.log('selectedFile:', this.selectedFile);
         
-        if (!this.selectedFile) {
+        if (this.testType === 'new' && !this.selectedFile) {
             this.showError('请先选择数据文件');
             return;
         }
 
         try {
             console.log('Sending simulation start request...');
+            const requestBody = {};
+
+            if (this.testType === 'new') {
+                requestBody.file_path = this.selectedFile;
+                requestBody.workstation_id = '1';
+            } else if (this.testType === 'old' && this.selectedWorkstation) {
+                requestBody.workstation_id = this.selectedWorkstation;
+            }
+
             const data = await this.fetchAPI('/api/monitor/simulation', {
                 method: 'POST',
-                body: JSON.stringify({
-                    file_path: this.selectedFile,
-                    workstation_id: '1'
-                })
+                body: JSON.stringify(requestBody)
             });
 
             console.log('Simulation start response:', data);
@@ -626,10 +821,8 @@ class SmartMonitorApp {
                 if (data.success && data.logs) {
                     const logContainer = document.getElementById('log-viewer');
                     if (logContainer) {
-                        // 清空现有日志
                         logContainer.innerHTML = '';
                         
-                        // 添加新的日志条目
                         data.logs.forEach(log => {
                             const logEntry = document.createElement('div');
                             logEntry.className = 'log-entry';
@@ -637,7 +830,6 @@ class SmartMonitorApp {
                             logContainer.appendChild(logEntry);
                         });
                         
-                        // 滚动到底部
                         logContainer.scrollTop = logContainer.scrollHeight;
                     }
                 }
@@ -719,14 +911,12 @@ class SmartMonitorApp {
         
         if (!uploadArea || !fileUpload) return;
         
-        // 文件选择事件
         fileUpload.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 this.uploadFile(e.target.files[0]);
             }
         });
         
-        // 拖拽上传事件
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -746,20 +936,17 @@ class SmartMonitorApp {
             }
         });
         
-        // 点击上传区域触发文件选择
         uploadArea.addEventListener('click', () => {
             fileUpload.click();
         });
     }
 
     async uploadFile(file) {
-        // 验证文件类型
         if (!file.name.toLowerCase().endsWith('.dat')) {
             this.showError('只支持 .dat 文件');
             return;
         }
         
-        // 显示上传进度
         this.showUploadProgress();
         
         try {
@@ -777,10 +964,8 @@ class SmartMonitorApp {
                 this.showSuccess('文件上传成功');
                 this.hideUploadProgress();
                 
-                // 刷新文件列表
                 await this.loadFileList();
                 
-                // 自动选择上传的文件
                 const fileSelector = document.getElementById('file-selector');
                 if (fileSelector) {
                     fileSelector.value = result.file_info.path;
@@ -807,7 +992,6 @@ class SmartMonitorApp {
             progressFill.style.width = '0%';
             progressText.textContent = '准备上传...';
             
-            // 模拟上传进度
             let progressValue = 0;
             const interval = setInterval(() => {
                 progressValue += Math.random() * 15;
@@ -864,14 +1048,12 @@ class SmartMonitorApp {
     }
 
     startAutoRefresh() {
-        // 清除之前的定时器
         if (this.refreshInterval) {
             clearInterval(this.refreshInterval);
         }
         
-        // 每2秒自动刷新一次
         this.refreshInterval = setInterval(() => {
-            if (this.currentPage === 'page2') {
+            if (this.currentPage === 'monitor-panel') {
                 this.loadMonitoringStatus();
                 this.loadSessionStats();
                 this.updateAlarmTable();
@@ -893,6 +1075,26 @@ class SmartMonitorApp {
 
     showError(message) {
         this.showNotification(message, 'error');
+    }
+
+    disableConfirmButton() {
+        const confirmButton = document.querySelector('button[onclick="app.confirmAndGoToMonitor()"]');
+        if (confirmButton) {
+            confirmButton.disabled = true;
+            confirmButton.classList.add('disabled');
+            confirmButton.style.opacity = '0.5';
+            confirmButton.style.cursor = 'not-allowed';
+        }
+    }
+
+    enableConfirmButton() {
+        const confirmButton = document.querySelector('button[onclick="app.confirmAndGoToMonitor()"]');
+        if (confirmButton) {
+            confirmButton.disabled = false;
+            confirmButton.classList.remove('disabled');
+            confirmButton.style.opacity = '1';
+            confirmButton.style.cursor = 'pointer';
+        }
     }
 
     showNotification(message, type = 'info') {

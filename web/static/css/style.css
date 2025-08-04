@@ -98,6 +98,17 @@ body {
     color: var(--primary-color);
 }
 
+.nav-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.nav-item.disabled:hover {
+    background-color: transparent;
+    color: var(--text-secondary);
+}
+
 .nav-item.active {
     background-color: var(--primary-color);
     color: white;
@@ -108,7 +119,15 @@ body {
     font-size: 1.125rem;
 }
 
-/* ==================== 主内容区域 ==================== */
+/* ==================== 页面样式 ==================== */
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
 .page-header {
     margin-bottom: 2rem;
 }
@@ -116,41 +135,232 @@ body {
 .page-header h2 {
     font-size: 2rem;
     font-weight: 700;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .page-header p {
     color: var(--text-secondary);
+    font-size: 1.125rem;
 }
 
-/* ==================== 卡片组件 ==================== */
+/* ==================== 测试选择页面样式 ==================== */
+.test-selection-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.test-selection-header {
+    margin-bottom: 3rem;
+}
+
+.test-selection-header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.test-selection-header p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.test-selection-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 800px;
+    width: 100%;
+}
+
+.test-option {
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    border-radius: 1.5rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.test-option:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+}
+
+.test-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.test-option:hover::before {
+    opacity: 1;
+}
+
+.test-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.test-option:hover .test-icon {
+    transform: scale(1.1);
+}
+
+.test-option h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.test-option p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+}
+
+.test-description {
+    text-align: left;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+}
+
+.test-description p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.test-description p:first-child {
+    margin-top: 0;
+}
+
+.test-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* ==================== 工作台选择样式 ==================== */
+.workstation-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.workstation-item {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.workstation-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.workstation-item.active {
+    border-color: var(--success-color);
+    background-color: #f0fdf4;
+}
+
+.workstation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.workstation-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.workstation-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.workstation-status.running {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.workstation-status.stopped {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.workstation-details {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.workstation-details p {
+    margin: 0.25rem 0;
+}
+
+/* ==================== 卡片样式 ==================== */
 .card {
     background-color: var(--surface-color);
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     box-shadow: var(--shadow);
-    padding: 1.5rem;
     margin-bottom: 1.5rem;
+    overflow: hidden;
 }
 
 .card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: between;
     align-items: center;
-    margin-bottom: 1rem;
+    justify-content: space-between;
 }
 
 .card-title {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-primary);
+    margin: 0;
 }
 
 .card-subtitle {
-    color: var(--text-secondary);
     font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
 }
 
-/* ==================== 按钮组件 ==================== */
+/* ==================== 按钮样式 ==================== */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -213,12 +423,13 @@ body {
 
 .btn-outline {
     background-color: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
 }
 
 .btn-outline:hover {
-    background-color: var(--background-color);
+    background-color: var(--primary-color);
+    color: white;
 }
 
 .btn-sm {
@@ -231,9 +442,22 @@ body {
     font-size: 1rem;
 }
 
-/* ==================== 表单组件 ==================== */
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn:disabled:hover,
+.btn.disabled:hover {
+    background-color: inherit;
+    color: inherit;
+}
+
+/* ==================== 表单样式 ==================== */
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-label {
@@ -250,13 +474,14 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
+    background-color: var(--surface-color);
     transition: border-color 0.2s ease;
 }
 
 .form-input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .form-select {
@@ -265,18 +490,26 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
-    background-color: white;
+    background-color: var(--surface-color);
     cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* ==================== 状态指示器 ==================== */
 .status-indicator {
-    display: inline-flex;
-    align-items: center;
     padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
+    border-radius: 1rem;
     font-size: 0.75rem;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .status-success {
@@ -299,7 +532,7 @@ body {
     color: #1e40af;
 }
 
-/* ==================== 表格组件 ==================== */
+/* ==================== 表格样式 ==================== */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -313,11 +546,10 @@ body {
 }
 
 .table th {
+    background-color: var(--background-color);
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
 .table tbody tr:hover {
@@ -327,7 +559,6 @@ body {
 /* ==================== 网格布局 ==================== */
 .grid {
     display: grid;
-    gap: 1.5rem;
 }
 
 .grid-cols-1 {
@@ -396,7 +627,7 @@ body {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* ==================== 响应式设计 ==================== */
@@ -431,7 +662,7 @@ body {
     }
     
     .card {
-        padding: 1rem;
+        margin-bottom: 1rem;
     }
     
     .btn {
@@ -440,11 +671,11 @@ body {
     }
 }
 
-/* ==================== 动画 ==================== */
+/* ==================== 动画效果 ==================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -453,18 +684,27 @@ body {
 }
 
 .fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.5s ease-out;
 }
 
-/* ==================== 加载状态 ==================== */
 .loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.loading::before {
+    content: '';
+    width: 1rem;
+    height: 1rem;
     border: 2px solid var(--border-color);
-    border-radius: 50%;
     border-top-color: var(--primary-color);
-    animation: spin 1s ease-in-out infinite;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -480,11 +720,11 @@ body {
 
 .upload-area {
     border: 2px dashed var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     padding: 2rem;
     text-align: center;
-    transition: all 0.2s ease;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .upload-area:hover {
@@ -494,7 +734,7 @@ body {
 
 .upload-area.dragover {
     border-color: var(--primary-color);
-    background-color: #dbeafe;
+    background-color: #eff6ff;
 }
 
 .upload-content {
@@ -506,7 +746,7 @@ body {
 
 .upload-icon {
     font-size: 3rem;
-    color: var(--text-secondary);
+    color: var(--primary-color);
 }
 
 .upload-text {
@@ -541,40 +781,39 @@ body {
 .progress-fill {
     height: 100%;
     background-color: var(--primary-color);
-    width: 0%;
     transition: width 0.3s ease;
+    width: 0%;
 }
 
 .progress-text {
     font-size: 0.875rem;
     color: var(--text-secondary);
-    margin: 0;
     text-align: center;
+    margin: 0;
 }
 
+/* ==================== 工具类 ==================== */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* ==================== 日志查看器样式 ==================== */
 .log-viewer {
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background-color: #1e293b;
+    color: #e2e8f0;
     padding: 1rem;
-    height: 300px;
-    overflow-y: auto;
+    border-radius: 0.5rem;
     font-family: 'Courier New', monospace;
     font-size: 0.875rem;
-    line-height: 1.4;
+    line-height: 1.5;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .log-entry {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     padding: 0.25rem 0;
-    border-bottom: 1px solid var(--border-color);
-    word-wrap: break-word;
-    white-space: pre-wrap;
+    border-bottom: 1px solid #334155;
 }
 
 .log-entry:last-child {
@@ -582,12 +821,175 @@ body {
 }
 
 .log-container {
-    margin-top: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .log-container h3 {
+    margin-bottom: 1rem;
+}
+
+/* ==================== 表格容器样式 ==================== */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* ==================== 通知样式 ==================== */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+}
+
+.notification {
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
     margin-bottom: 0.5rem;
-    color: var(--text-color);
-    font-size: 1rem;
+    color: white;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification-success {
+    background-color: var(--success-color);
+}
+
+.notification-error {
+    background-color: var(--error-color);
+}
+
+.notification-info {
+    background-color: var(--primary-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ==================== 标签选择样式 ==================== */
+.label-selection-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.label-category {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.label-category:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.label-channel {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-radius: 0.5rem;
+}
+
+.label-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.label-radio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.label-radio:hover {
+    background-color: var(--background-color);
+}
+
+.label-radio input[type="radio"] {
+    margin: 0;
+}
+
+/* ==================== 统计项样式 ==================== */
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-radius: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
     font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ==================== 全屏布局支持 ==================== */
+.container.fullscreen {
+    grid-template-columns: 1fr;
+}
+
+.container.fullscreen .sidebar {
+    display: none;
+}
+
+.container.fullscreen .main-content {
+    margin-left: 0;
+    padding: 2rem;
+}
+
+/* ==================== 工作台选择页面特殊样式 ==================== */
+.workstation-selection .card {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.workstation-selection .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+/* ==================== 文件配置页面特殊样式 ==================== */
+.file-config .card {
+    max-width: 900px;
+    margin: 0 auto 2rem auto;
+}
+
+.file-config .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+/* ==================== 监控面板特殊样式 ==================== */
+.monitor-panel .card {
+    margin-bottom: 2rem;
+}
+
+.monitor-panel .page-header {
+    margin-bottom: 2rem;
 } 
