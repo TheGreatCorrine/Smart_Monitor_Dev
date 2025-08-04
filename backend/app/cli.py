@@ -42,8 +42,7 @@ def select_labels_interactively():
             ch_id = ch['channel_id']
             print(f"  通道: {ch_id}")
             for idx, st in enumerate(ch['available_subtypes']):
-                default_mark = "(默认)" if st['is_default'] else ""
-                print(f"    [{idx+1}] {st['label']} {st['tag']} {default_mark}")
+                print(f"    [{idx+1}] {st['label']} {st['tag']}")
             while True:
                 sel = input(f"    请选择label (1-{len(ch['available_subtypes'])}, Enter默认): ").strip()
                 if not sel:

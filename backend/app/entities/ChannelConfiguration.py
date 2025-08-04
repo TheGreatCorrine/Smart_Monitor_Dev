@@ -33,7 +33,6 @@ class ChannelSubtype:
     description: str                         # 详细描述，如 "冰箱内部环境温度监测"
     unit: str = "°C"                        # 单位
     typical_range: Optional[tuple[float, float]] = None  # 典型值范围
-    is_default: bool = False                 # 是否为该大类的默认选项
 
 
 @dataclass(slots=True)

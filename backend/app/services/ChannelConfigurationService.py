@@ -73,7 +73,6 @@ class ChannelConfigurationService(IChannelConfigurationService):
                 
                 # Build subtype list
                 subtypes = []
-                default_subtype_id = None
                 
                 for subtype_config in subtypes_config:
                     subtype = ChannelSubtype(
@@ -82,17 +81,12 @@ class ChannelConfigurationService(IChannelConfigurationService):
                         tag=subtype_config['tag'],
                         description=subtype_config['description'],
                         unit=subtype_config.get('unit', ''),
-                        typical_range=tuple(subtype_config['typical_range']) if subtype_config.get('typical_range') else None,
-                        is_default=subtype_config.get('is_default', False)
+                        typical_range=tuple(subtype_config['typical_range']) if subtype_config.get('typical_range') else None
                     )
                     subtypes.append(subtype)
-                    
-                    if subtype.is_default:
-                        default_subtype_id = subtype.subtype_id
                 
-                # If no default, use the first one
-                if not default_subtype_id and subtypes:
-                    default_subtype_id = subtypes[0].subtype_id
+                # Use the first subtype as default
+                default_subtype_id = subtypes[0].subtype_id if subtypes else None
                 
                 # Create definition for each channel
                 for channel_id in channels:
@@ -142,8 +136,7 @@ class ChannelConfigurationService(IChannelConfigurationService):
                                     'tag': st.tag,
                                     'description': st.description,
                                     'unit': st.unit,
-                                    'typical_range': st.typical_range,
-                                    'is_default': st.is_default
+                                    'typical_range': st.typical_range
                                 }
                                 for st in definition.available_subtypes
                             ],
