@@ -16,13 +16,12 @@
       - `description`: 详细说明
       - `unit`: 单位
       - `typical_range`: 合理范围（如 [0.0, 100.0]）
-      - `is_default`: 是否为默认选项
 
 ## 2. 填写要点
 
 - 每个大类至少有1个subtype，且`subtype_id`唯一。
 - 每个subtype需填写`label`、`tag`、`description`、`unit`、`typical_range`。
-- `is_default: true`表示推荐默认选项。
+- 第一个subtype将作为默认选项。
 - `channels`为物理通道ID列表，需与实际采集数据一致。
 
 ## 3. 示例片段
@@ -40,7 +39,6 @@ environment_temp:
       description: "可选的环境温度"
       unit: "°C"
       typical_range: [15.0, 35.0]
-      is_default: true
 ```
 
 ## 4. 注意事项
