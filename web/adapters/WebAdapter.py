@@ -241,19 +241,20 @@ class WebAdapter:
     
     # ==================== 监控管理 ====================
     
-    def start_monitoring(self, file_path: str, config_path: str = "config/rules.yaml", run_id: str = None) -> Dict[str, Any]:
+    def start_monitoring(self, file_path: str = None, config_path: str = "config/rules.yaml", run_id: str = None, workstation_id: str = None) -> Dict[str, Any]:
         """启动监控 - 直接使用监控服务"""
         try:
             if not run_id:
                 run_id = f"web_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            # 验证文件
-            validation = self.validate_file_path(file_path)
-            if not validation.get('valid', False):
-                return {
-                    'success': False,
-                    'error': validation.get('message', 'File validation failed')
-                }
+            # 如果有文件路径，验证文件
+            if file_path:
+                validation = self.validate_file_path(file_path)
+                if not validation.get('valid', False):
+                    return {
+                        'success': False,
+                        'error': validation.get('message', 'File validation failed')
+                    }
             
             # 启动监控
             success = self.monitor_service.start_continuous_monitoring(run_id)
@@ -267,7 +268,8 @@ class WebAdapter:
                 'success': success,
                 'message': 'Monitoring started successfully' if success else 'Failed to start monitoring',
                 'run_id': run_id,
-                'file_path': file_path
+                'file_path': file_path,
+                'workstation_id': workstation_id
             }
         except Exception as e:
             return {

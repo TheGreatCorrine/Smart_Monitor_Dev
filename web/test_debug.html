@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+    <style>
+        .page {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin: 10px;
+        }
+        .page.active {
+            display: block;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    
+    <button onclick="showPage('test-selection')">显示测试选择</button>
+    <button onclick="showPage('old-test-monitor-panel')">显示Old Test监控面板</button>
+    <button onclick="showPage('new-test-monitor-panel')">显示New Test监控面板</button>
+    
+    <div id="test-selection" class="page active">
+        <h2>测试选择页面</h2>
+        <p>这是测试选择页面</p>
+    </div>
+    
+    <div id="old-test-monitor-panel" class="page hidden">
+        <h2>Old Test监控面板</h2>
+        <p>这是Old Test监控面板</p>
+        <div id="old-monitoring-status">状态: 未启动</div>
+        <div id="old-monitoring-details">详情: 无</div>
+    </div>
+    
+    <div id="new-test-monitor-panel" class="page hidden">
+        <h2>New Test监控面板</h2>
+        <p>这是New Test监控面板</p>
+        <div id="new-monitoring-status">状态: 未启动</div>
+        <div id="new-monitoring-details">详情: 无</div>
+    </div>
+    
+    <script>
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                page.classList.add('hidden');
+            });
+            
+            // 显示目标页面
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                targetPage.classList.add('active');
+                console.log('显示页面:', pageId);
+            } else {
+                console.error('页面不存在:', pageId);
+            }
+        }
+    </script>
+</body>
+</html> 

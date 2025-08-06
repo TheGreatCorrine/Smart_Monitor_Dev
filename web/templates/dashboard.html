@@ -9,57 +9,8 @@
 </head>
 <body>
     <div class="container">
-        <!-- 侧边栏 - 初始隐藏 -->
-        <aside class="sidebar" id="sidebar" style="display: none;">
-            <div class="sidebar-header">
-                <h1>🔍 Smart Monitor</h1>
-                <p>智能监控系统</p>
-                <button class="btn btn-sm btn-outline" onclick="app.showTestSelection()">
-                    <i class="fas fa-home"></i>
-                    返回主页
-                </button>
-            </div>
-
-            <nav class="nav-section">
-                <h3>主要功能</h3>
-                <a href="#" class="nav-item" data-page="workstation-selection" id="workstation-nav" style="display: none;">
-                    <i class="fas fa-desktop"></i>
-                    工作台选择
-                </a>
-                <a href="#" class="nav-item" data-page="file-config" id="file-config-nav" style="display: none;">
-                    <i class="fas fa-file-upload"></i>
-                    文件选择 & 标签匹配
-                </a>
-                <a href="#" class="nav-item" data-page="monitor-panel" id="monitor-nav" style="display: none;">
-                    <i class="fas fa-tachometer-alt"></i>
-                    控制面板 & 监控状态
-                </a>
-            </nav>
-
-            <nav class="nav-section">
-                <h3>系统管理</h3>
-                <a href="#" class="nav-item" data-page="config">
-                    <i class="fas fa-cog"></i>
-                    配置管理
-                </a>
-                <a href="#" class="nav-item" data-page="system">
-                    <i class="fas fa-server"></i>
-                    系统信息
-                </a>
-            </nav>
-
-            <nav class="nav-section">
-                <h3>开发信息</h3>
-                <div class="text-sm text-secondary">
-                    <p><strong>版本:</strong> 1.0.0</p>
-                    <p><strong>技术栈:</strong> 原生Web技术</p>
-                    <p><strong>架构:</strong> Clean Architecture</p>
-                </div>
-            </nav>
-        </aside>
-
         <!-- 主内容区域 -->
-        <main class="main-content" id="main-content">
+        <main class="main-content">
             <!-- 主页面: 测试选择 -->
             <div id="test-selection" class="page active">
                 <div class="test-selection-page">
@@ -78,6 +29,7 @@
                             <div class="test-description">
                                 <p>选择正在运行的测试工作台</p>
                                 <p>快速进入监控状态</p>
+                                <p>适用于已配置的测试环境</p>
                             </div>
                         </div>
                         
@@ -100,6 +52,12 @@
             <!-- 工作台选择页面 -->
             <div id="workstation-selection" class="page hidden">
                 <div class="page-header">
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="app.showTestSelection()">
+                            <i class="fas fa-home"></i>
+                            返回主页
+                        </button>
+                    </div>
                     <h2>🖥️ 工作台选择</h2>
                     <p>选择正在运行的测试工作台</p>
                 </div>
@@ -117,6 +75,12 @@
             <!-- 文件选择和标签匹配页面 -->
             <div id="file-config" class="page hidden">
                 <div class="page-header">
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="app.showTestSelection()">
+                            <i class="fas fa-home"></i>
+                            返回主页
+                        </button>
+                    </div>
                     <h2>📁 文件选择 & 标签匹配</h2>
                     <p>选择数据文件并配置标签匹配</p>
                 </div>
@@ -195,11 +159,28 @@
                 </div>
             </div>
 
-            <!-- 控制面板和监控状态页面 -->
-            <div id="monitor-panel" class="page hidden">
+            <!-- Old Test 控制面板和监控状态页面 -->
+            <div id="old-test-monitor-panel" class="page hidden">
                 <div class="page-header">
-                    <h2>📊 控制面板 & 监控状态</h2>
-                    <p>监控控制和实时状态显示</p>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="app.showTestSelection()">
+                            <i class="fas fa-home"></i>
+                            返回主页
+                        </button>
+                    </div>
+                    <h2>📊 Old Test 控制面板</h2>
+                    <p>现有测试工作台的监控控制</p>
+                </div>
+
+                <!-- 工作台信息 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">当前工作台</h3>
+                        <div id="current-workstation-status" class="status-indicator status-info">未选择</div>
+                    </div>
+                    <div id="workstation-info">
+                        <p>请先选择工作台</p>
+                    </div>
                 </div>
 
                 <!-- 控制面板 -->
@@ -211,90 +192,79 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label">配置文件</label>
-                                <select id="config-selector" class="form-select">
+                                <select id="old-config-selector" class="form-select">
                                     <option value="config/rules.yaml">config/rules.yaml (默认)</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">运行ID</label>
-                                <input type="text" id="run-id" class="form-input" placeholder="自动生成">
+                                <input type="text" id="old-run-id" class="form-input" placeholder="自动生成">
                             </div>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <button class="btn btn-success" onclick="app.startMonitoring()">
+                            <button class="btn btn-success" onclick="app.startOldTestMonitoring()">
                                 <i class="fas fa-play"></i>
                                 启动监控
                             </button>
-                            <button class="btn btn-warning" onclick="app.stopMonitoring()">
+                            <button class="btn btn-warning" onclick="app.stopOldTestMonitoring()">
                                 <i class="fas fa-stop"></i>
                                 停止监控
                             </button>
-                            <button class="btn btn-secondary" onclick="app.startSimulation()">
-                                <i class="fas fa-play-circle"></i>
+                            <button class="btn btn-secondary" onclick="app.startOldTestSimulation()">
+                                <i class="fas fa-gamepad"></i>
                                 启动模拟
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 监控状态 -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">监控状态</h3>
-                        <div id="monitoring-status" class="status-indicator status-warning">已停止</div>
+                <!-- 状态面板 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">监控状态</h3>
+                            <div id="old-monitoring-status" class="status-indicator status-info">未启动</div>
+                        </div>
+                        <div id="old-monitoring-details">
+                            <p>监控未启动</p>
+                        </div>
                     </div>
-                    <div id="monitoring-details" class="mt-4">
-                        <p>监控已停止</p>
-                    </div>
-                </div>
 
-                <!-- 会话统计 -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">会话统计</h3>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="stat-item">
-                            <div class="stat-label">开始时间</div>
-                            <div class="stat-value" id="session-start">-</div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">会话统计</h3>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-label">处理记录</div>
-                            <div class="stat-value" id="total-records">0</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">生成告警</div>
-                            <div class="stat-value" id="total-alarms">0</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">处理速度</div>
-                            <div class="stat-value" id="processing-speed">0.00</div>
+                        <div id="old-session-stats">
+                            <p><strong>开始时间:</strong> <span id="old-session-start">-</span></p>
+                            <p><strong>处理记录:</strong> <span id="old-total-records">0</span></p>
+                            <p><strong>告警数量:</strong> <span id="old-total-alarms">0</span></p>
+                            <p><strong>处理速度:</strong> <span id="old-processing-speed">0</span> 记录/秒</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 告警管理 -->
+                <!-- 告警表格 -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">告警管理</h3>
-                        <button class="btn btn-sm btn-outline" onclick="app.clearAlarms()">
+                        <h3 class="card-title">告警记录</h3>
+                        <button class="btn btn-outline btn-sm" onclick="app.clearOldTestAlarms()">
                             <i class="fas fa-trash"></i>
                             清空告警
                         </button>
                     </div>
                     <div class="table-container">
-                        <table class="table">
+                        <table class="table" id="old-alarm-table">
                             <thead>
                                 <tr>
                                     <th>时间</th>
-                                    <th>工作台</th>
+                                    <th>工作站ID</th>
                                     <th>通道</th>
-                                    <th>数值</th>
+                                    <th>值</th>
                                     <th>阈值</th>
                                     <th>规则</th>
                                 </tr>
                             </thead>
-                            <tbody id="alarm-tbody">
+                            <tbody id="old-alarm-tbody">
                                 <tr>
                                     <td colspan="6" class="text-center">暂无告警记录</td>
                                 </tr>
@@ -307,51 +277,214 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">系统日志</h3>
-                        <button class="btn btn-sm btn-outline" onclick="app.clearLogs()">
+                        <button class="btn btn-outline btn-sm" onclick="app.clearOldTestLogs()">
                             <i class="fas fa-trash"></i>
                             清空日志
                         </button>
                     </div>
-                    <div id="log-viewer" class="log-viewer">
-                        <div class="log-entry">系统启动完成</div>
+                    <div class="log-container">
+                        <div id="old-log-viewer" class="log-viewer">
+                            <p>系统日志将在这里显示...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Test 控制面板和监控状态页面 -->
+            <div id="new-test-monitor-panel" class="page hidden">
+                <div class="page-header">
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="app.showTestSelection()">
+                            <i class="fas fa-home"></i>
+                            返回主页
+                        </button>
+                    </div>
+                    <h2>📊 New Test 控制面板</h2>
+                    <p>新测试会话的监控控制</p>
+                </div>
+
+                <!-- 文件信息 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">当前文件</h3>
+                        <div id="current-file-status" class="status-indicator status-info">未选择</div>
+                    </div>
+                    <div id="file-info-display">
+                        <p>请先选择数据文件</p>
+                    </div>
+                </div>
+
+                <!-- 控制面板 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">监控控制</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">配置文件</label>
+                                <select id="new-config-selector" class="form-select">
+                                    <option value="config/rules.yaml">config/rules.yaml (默认)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">运行ID</label>
+                                <input type="text" id="new-run-id" class="form-input" placeholder="自动生成">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">工作站ID</label>
+                                <input type="text" id="new-workstation-id" class="form-input" placeholder="自动推断">
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button class="btn btn-success" onclick="app.startNewTestMonitoring()">
+                                <i class="fas fa-play"></i>
+                                启动监控
+                            </button>
+                            <button class="btn btn-warning" onclick="app.stopNewTestMonitoring()">
+                                <i class="fas fa-stop"></i>
+                                停止监控
+                            </button>
+                            <button class="btn btn-secondary" onclick="app.startNewTestSimulation()">
+                                <i class="fas fa-gamepad"></i>
+                                启动模拟
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 状态面板 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">监控状态</h3>
+                            <div id="new-monitoring-status" class="status-indicator status-info">未启动</div>
+                        </div>
+                        <div id="new-monitoring-details">
+                            <p>监控未启动</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">会话统计</h3>
+                        </div>
+                        <div id="new-session-stats">
+                            <p><strong>开始时间:</strong> <span id="new-session-start">-</span></p>
+                            <p><strong>处理记录:</strong> <span id="new-total-records">0</span></p>
+                            <p><strong>告警数量:</strong> <span id="new-total-alarms">0</span></p>
+                            <p><strong>处理速度:</strong> <span id="new-processing-speed">0</span> 记录/秒</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签配置显示 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">标签配置</h3>
+                        <div id="label-config-status" class="status-indicator status-info">未配置</div>
+                    </div>
+                    <div id="label-config-display">
+                        <p>请先配置标签匹配</p>
+                    </div>
+                </div>
+
+                <!-- 告警表格 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">告警记录</h3>
+                        <button class="btn btn-outline btn-sm" onclick="app.clearNewTestAlarms()">
+                            <i class="fas fa-trash"></i>
+                            清空告警
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table" id="new-alarm-table">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>工作站ID</th>
+                                    <th>通道</th>
+                                    <th>值</th>
+                                    <th>阈值</th>
+                                    <th>规则</th>
+                                </tr>
+                            </thead>
+                            <tbody id="new-alarm-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center">暂无告警记录</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 日志查看器 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">系统日志</h3>
+                        <button class="btn btn-outline btn-sm" onclick="app.clearNewTestLogs()">
+                            <i class="fas fa-trash"></i>
+                            清空日志
+                        </button>
+                    </div>
+                    <div class="log-container">
+                        <div id="new-log-viewer" class="log-viewer">
+                            <p>系统日志将在这里显示...</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- 配置管理页面 -->
-            <div id="config" class="page hidden">
+            <div id="config-page" class="page hidden">
                 <div class="page-header">
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="app.showTestSelection()">
+                            <i class="fas fa-home"></i>
+                            返回主页
+                        </button>
+                    </div>
                     <h2>⚙️ 配置管理</h2>
-                    <p>系统配置和规则管理</p>
+                    <p>管理标签配置和规则设置</p>
                 </div>
-                <div id="config-content">
-                    <p>配置管理功能开发中...</p>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">标签配置</h3>
+                    </div>
+                    <div id="config-content">
+                        <p>配置管理功能开发中...</p>
+                    </div>
                 </div>
             </div>
 
             <!-- 系统信息页面 -->
-            <div id="system" class="page hidden">
+            <div id="system-page" class="page hidden">
                 <div class="page-header">
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="app.showTestSelection()">
+                            <i class="fas fa-home"></i>
+                            返回主页
+                        </button>
+                    </div>
                     <h2>🖥️ 系统信息</h2>
-                    <p>系统状态和资源使用情况</p>
+                    <p>系统状态和健康检查</p>
                 </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">系统信息</h3>
+                            <h3 class="card-title">系统状态</h3>
                         </div>
                         <div id="system-info">
-                            <p>加载中...</p>
+                            <p>正在加载系统信息...</p>
                         </div>
                     </div>
-                    
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">健康检查</h3>
                         </div>
                         <div id="health-check">
-                            <p>加载中...</p>
+                            <p>正在检查系统健康状态...</p>
                         </div>
                     </div>
                 </div>
@@ -360,8 +493,144 @@
     </div>
 
     <!-- 通知容器 -->
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+    <!-- 加载JavaScript -->
+    <script src="/static/js/app.js"></script>
+    
+    <!-- 页面样式 -->
+    <style>
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .test-selection-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .test-option {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .test-option:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .test-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .test-option h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+        }
+        
+        .test-option p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+        
+        .label-selection-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-viewer {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notification {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification-success {
+            background-color: var(--success-color);
+        }
+        
+        .notification-error {
+            background-color: var(--error-color);
+        }
+        
+        .notification-info {
+            background-color: var(--primary-color);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+    </style>
+
+    <!-- 通知容器 -->
     <div id="notification-container" class="notification-container"></div>
 
     <script src="/static/js/app.js"></script>
+    <script>
+        // 初始化应用
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new SmartMonitorApp();
+        });
+    </script>
 </body>
 </html> 

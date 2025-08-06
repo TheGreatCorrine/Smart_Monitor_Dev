@@ -14,8 +14,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # 导入Web适配器
 from adapters.WebAdapter import WebAdapter
+import uuid
+import time
+from datetime import datetime
+import threading
 
 app = Flask(__name__)
+
+# 会话管理器 - 存储所有活动的监控会话
+active_sessions = {}
+session_counter = 0
 
 # 初始化Web适配器
 try:
@@ -24,6 +32,29 @@ try:
 except Exception as e:
     print(f"❌ Web适配器初始化失败: {e}")
     web_adapter = None
+
+def create_session_id():
+    """创建唯一的会话ID"""
+    global session_counter
+    session_counter += 1
+    return f"WS{session_counter:03d}"
+
+def get_session_info(session_id):
+    """获取会话信息"""
+    if session_id in active_sessions:
+        session = active_sessions[session_id]
+        return {
+            'id': session_id,
+            'name': session['name'],
+            'status': session['status'],
+            'start_time': session['start_time'],
+            'records_processed': session.get('records_processed', 0),
+            'alarms_generated': session.get('alarms_generated', 0),
+            'test_type': session.get('test_type', 'unknown'),
+            'file_path': session.get('file_path'),
+            'workstation_id': session.get('workstation_id')
+        }
+    return None
 
 @app.route('/')
 def index():
@@ -228,8 +259,33 @@ def start_monitoring():
         file_path = data.get('file_path', '')
         config_path = data.get('config_path', 'config/rules.yaml')
         run_id = data.get('run_id')
+        workstation_id = data.get('workstation_id')
         
+        # 创建新的会话
+        session_id = create_session_id()
+        session_name = f"工作站 {session_id}"
+        
+        # 创建会话记录
+        active_sessions[session_id] = {
+            'name': session_name,
+            'status': 'running',
+            'start_time': datetime.now().isoformat(),
+            'records_processed': 0,
+            'alarms_generated': 0,
+            'test_type': 'new' if file_path else 'old',
+            'file_path': file_path,
+            'workstation_id': workstation_id,
+            'config_path': config_path,
+            'run_id': run_id
+        }
+        
+        # 调用后端启动监控
         result = web_adapter.start_monitoring(file_path, config_path, run_id)
+        
+        if result.get('success'):
+            result['session_id'] = session_id
+            result['session_name'] = session_name
+        
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -247,7 +303,38 @@ def start_simulation():
         run_id = data.get('run_id')
         workstation_id = data.get('workstation_id', '1')
         
+        # 从文件名推断工作站ID
+        if file_path:
+            workstation_info = web_adapter.auto_infer_workstation_id(file_path)
+            if workstation_info.get('success') and workstation_info.get('workstation_id'):
+                workstation_id = workstation_info['workstation_id']
+        
+        # 创建新的会话
+        session_id = create_session_id()
+        session_name = f"工作站 {workstation_id}"
+        
+        # 创建会话记录
+        active_sessions[session_id] = {
+            'name': session_name,
+            'status': 'running',
+            'start_time': datetime.now().isoformat(),
+            'records_processed': 0,
+            'alarms_generated': 0,
+            'test_type': 'simulation',
+            'file_path': file_path,
+            'workstation_id': workstation_id,
+            'config_path': config_path,
+            'run_id': run_id
+        }
+        
+        # 调用后端启动模拟
         result = web_adapter.start_simulation(file_path, config_path, run_id, workstation_id)
+        
+        if result.get('success'):
+            result['session_id'] = session_id
+            result['session_name'] = session_name
+            result['workstation_id'] = workstation_id
+        
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -259,8 +346,29 @@ def stop_monitoring():
         return jsonify({'error': 'Web adapter not available'}), 500
     
     try:
-        result = web_adapter.stop_monitoring()
-        return jsonify(result)
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if session_id and session_id in active_sessions:
+            # 更新会话状态
+            active_sessions[session_id]['status'] = 'stopped'
+            
+            # 调用后端停止监控
+            result = web_adapter.stop_monitoring()
+            
+            # 从活动会话中移除
+            del active_sessions[session_id]
+            
+            result['session_id'] = session_id
+            return jsonify(result)
+        else:
+            # 如果没有指定session_id，停止所有监控
+            result = web_adapter.stop_monitoring()
+            
+            # 清空所有会话
+            active_sessions.clear()
+            
+            return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -283,33 +391,22 @@ def get_workstations():
         return jsonify({'error': 'Web adapter not available'}), 500
     
     try:
-        # 模拟工作台数据，实际应该从后端获取
-        workstations = [
-            {
-                'id': 'WS001',
-                'name': '工作站 1',
-                'status': 'running',
-                'start_time': '2024-01-01T10:00:00Z',
-                'records_processed': 1250,
-                'alarms_generated': 3
-            },
-            {
-                'id': 'WS002',
-                'name': '工作站 2',
-                'status': 'stopped',
-                'start_time': None,
-                'records_processed': 0,
-                'alarms_generated': 0
-            },
-            {
-                'id': 'WS003',
-                'name': '工作站 3',
-                'status': 'running',
-                'start_time': '2024-01-01T09:30:00Z',
-                'records_processed': 890,
-                'alarms_generated': 1
-            }
-        ]
+        # 从活动会话中获取工作台数据
+        workstations = []
+        
+        for session_id, session in active_sessions.items():
+            if session['status'] == 'running':
+                workstations.append({
+                    'id': session_id,
+                    'name': session['name'],
+                    'status': session['status'],
+                    'start_time': session['start_time'],
+                    'records_processed': session.get('records_processed', 0),
+                    'alarms_generated': session.get('alarms_generated', 0),
+                    'test_type': session.get('test_type', 'unknown'),
+                    'file_path': session.get('file_path'),
+                    'workstation_id': session.get('workstation_id')
+                })
         
         return jsonify({
             'success': True,

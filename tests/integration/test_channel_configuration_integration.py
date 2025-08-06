@@ -78,8 +78,7 @@ def test_framework():
             tag="🧪 测试",
             description="这是一个测试用的细分类型",
             unit="°C",
-            typical_range=(0.0, 100.0),
-            is_default=True
+            typical_range=(0.0, 100.0)
         )
         print(f"   ✅ ChannelSubtype创建成功: {subtype.label}")
         
@@ -141,7 +140,6 @@ environment_temp:
       description: "冰箱所在房间的环境温度"
       unit: "°C"
       typical_range: [15.0, 30.0]
-      is_default: true
       
     - subtype_id: "lab_ambient"
       label: "实验室环境温度"
@@ -149,7 +147,6 @@ environment_temp:
       description: "实验室内的标准环境温度"
       unit: "°C"
       typical_range: [18.0, 25.0]
-      is_default: false
 """
     
     print(template)

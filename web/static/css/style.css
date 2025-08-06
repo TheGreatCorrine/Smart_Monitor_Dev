@@ -32,91 +32,15 @@ body {
 
 /* ==================== 布局 ==================== */
 .container {
-    display: grid;
-    grid-template-columns: 280px 1fr;
     min-height: 100vh;
-}
-
-.sidebar {
-    background-color: var(--surface-color);
-    border-right: 1px solid var(--border-color);
-    padding: 1.5rem;
-    overflow-y: auto;
+    background-color: var(--background-color);
 }
 
 .main-content {
     padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
     overflow-y: auto;
-}
-
-/* ==================== 侧边栏 ==================== */
-.sidebar-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar-header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.sidebar-header p {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
-.nav-section {
-    margin-bottom: 2rem;
-}
-
-.nav-section h3 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.25rem;
-    border-radius: 0.5rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.nav-item:hover {
-    background-color: var(--background-color);
-    color: var(--primary-color);
-}
-
-.nav-item.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.nav-item.disabled:hover {
-    background-color: transparent;
-    color: var(--text-secondary);
-}
-
-.nav-item.active {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.nav-item i {
-    margin-right: 0.75rem;
-    font-size: 1.125rem;
 }
 
 /* ==================== 页面样式 ==================== */
@@ -144,18 +68,10 @@ body {
     font-size: 1.125rem;
 }
 
-/* ==================== 测试选择页面样式 ==================== */
+/* ==================== 测试选择页面 ==================== */
 .test-selection-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
     text-align: center;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+    padding: 2rem 0;
 }
 
 .test-selection-header {
@@ -164,22 +80,25 @@ body {
 
 .test-selection-header h1 {
     font-size: 3rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--primary-color);
     margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
 }
 
 .test-selection-header p {
     font-size: 1.25rem;
     color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .test-selection-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
-    max-width: 800px;
-    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .test-option {
@@ -195,33 +114,35 @@ body {
     overflow: hidden;
 }
 
-.test-option:hover {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-4px);
-}
-
 .test-option::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.test-option:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
 }
 
 .test-option:hover::before {
-    opacity: 1;
+    opacity: 0.05;
 }
 
 .test-icon {
     font-size: 4rem;
     color: var(--primary-color);
     margin-bottom: 1.5rem;
-    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .test-option:hover .test-icon {
@@ -229,72 +150,76 @@ body {
 }
 
 .test-option h3 {
-    margin: 0 0 1rem 0;
-    color: var(--text-primary);
     font-size: 1.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 .test-option p {
-    margin: 0 0 1.5rem 0;
-    color: var(--text-secondary);
     font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 2;
 }
 
 .test-description {
     text-align: left;
-    padding: 1rem;
     background: var(--background-color);
+    padding: 1.5rem;
     border-radius: 0.75rem;
-    margin-top: 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 .test-description p {
-    margin: 0.5rem 0;
     font-size: 0.875rem;
     color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
 }
 
 .test-description p:first-child {
-    margin-top: 0;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .test-description p:last-child {
     margin-bottom: 0;
 }
 
-/* ==================== 工作台选择样式 ==================== */
+/* ==================== 工作台列表 ==================== */
 .workstation-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .workstation-item {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     padding: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     box-shadow: var(--shadow);
 }
 
 .workstation-item:hover {
     border-color: var(--primary-color);
     box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
 }
 
 .workstation-item.active {
-    border-color: var(--success-color);
-    background-color: #f0fdf4;
+    border-color: var(--primary-color);
+    background-color: rgba(37, 99, 235, 0.05);
 }
 
 .workstation-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
 }
 
@@ -307,7 +232,7 @@ body {
 .workstation-status {
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 500;
 }
 
@@ -317,34 +242,36 @@ body {
 }
 
 .workstation-status.stopped {
-    background-color: var(--warning-color);
+    background-color: var(--text-secondary);
     color: white;
 }
 
 .workstation-details {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    margin-bottom: 1rem;
 }
 
 .workstation-details p {
-    margin: 0.25rem 0;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
 }
 
-/* ==================== 卡片样式 ==================== */
+/* ==================== 卡片组件 ==================== */
 .card {
-    background-color: var(--surface-color);
-    border-radius: 1rem;
-    box-shadow: var(--shadow);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
     margin-bottom: 1.5rem;
-    overflow: hidden;
+    box-shadow: var(--shadow);
 }
 
 .card-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .card-title {
@@ -364,7 +291,7 @@ body {
 .btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     border: none;
     border-radius: 0.5rem;
@@ -373,62 +300,69 @@ body {
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s ease;
-    gap: 0.5rem;
+    background: var(--surface-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
+    background: var(--primary-color);
     color: white;
+    border-color: var(--primary-color);
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-hover);
+    background: var(--primary-hover);
 }
 
 .btn-secondary {
-    background-color: var(--secondary-color);
+    background: var(--secondary-color);
     color: white;
+    border-color: var(--secondary-color);
 }
 
 .btn-secondary:hover {
-    background-color: #475569;
+    background: #475569;
 }
 
 .btn-success {
-    background-color: var(--success-color);
+    background: var(--success-color);
     color: white;
+    border-color: var(--success-color);
 }
 
 .btn-success:hover {
-    background-color: #059669;
+    background: #059669;
 }
 
 .btn-warning {
-    background-color: var(--warning-color);
+    background: var(--warning-color);
     color: white;
+    border-color: var(--warning-color);
 }
 
 .btn-warning:hover {
-    background-color: #d97706;
+    background: #d97706;
 }
 
 .btn-error {
-    background-color: var(--error-color);
+    background: var(--error-color);
     color: white;
+    border-color: var(--error-color);
 }
 
 .btn-error:hover {
-    background-color: #dc2626;
+    background: #dc2626;
 }
 
 .btn-outline {
-    background-color: transparent;
+    background: transparent;
     color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .btn-outline:hover {
-    background-color: var(--primary-color);
+    background: var(--primary-color);
     color: white;
 }
 
@@ -451,13 +385,13 @@ body {
 
 .btn:disabled:hover,
 .btn.disabled:hover {
-    background-color: inherit;
-    color: inherit;
+    transform: none;
+    box-shadow: none;
 }
 
 /* ==================== 表单样式 ==================== */
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-label {
@@ -470,12 +404,12 @@ body {
 
 .form-input {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
-    background-color: var(--surface-color);
     transition: border-color 0.2s ease;
+    background: var(--surface-color);
 }
 
 .form-input:focus {
@@ -486,11 +420,11 @@ body {
 
 .form-select {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
-    background-color: var(--surface-color);
+    background: var(--surface-color);
     cursor: pointer;
     transition: border-color 0.2s ease;
 }
@@ -507,29 +441,28 @@ body {
     border-radius: 1rem;
     font-size: 0.75rem;
     font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .status-success {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: var(--success-color);
+    color: white;
 }
 
 .status-warning {
-    background-color: #fef3c7;
-    color: #92400e;
+    background-color: var(--warning-color);
+    color: white;
 }
 
 .status-error {
-    background-color: #fee2e2;
-    color: #991b1b;
+    background-color: var(--error-color);
+    color: white;
 }
 
 .status-info {
-    background-color: #dbeafe;
-    color: #1e40af;
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* ==================== 表格样式 ==================== */
@@ -540,7 +473,7 @@ body {
 
 .table th,
 .table td {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
@@ -556,28 +489,27 @@ body {
     background-color: var(--background-color);
 }
 
-/* ==================== 网格布局 ==================== */
+/* ==================== 工具类 ==================== */
 .grid {
     display: grid;
 }
 
 .grid-cols-1 {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
 .grid-cols-2 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .grid-cols-4 {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-/* ==================== 工具类 ==================== */
 .flex {
     display: flex;
 }
@@ -636,21 +568,8 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .sidebar {
-        position: fixed;
-        left: -280px;
-        top: 0;
-        height: 100vh;
-        z-index: 1000;
-        transition: left 0.3s ease;
-    }
-    
-    .sidebar.open {
-        left: 0;
-    }
-    
     .main-content {
-        margin-left: 0;
+        padding: 1.5rem;
     }
 }
 
@@ -658,24 +577,24 @@ body {
     .grid-cols-2,
     .grid-cols-3,
     .grid-cols-4 {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
     }
     
     .card {
-        margin-bottom: 1rem;
+        padding: 1rem;
     }
     
     .btn {
-        width: 100%;
-        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
     }
 }
 
-/* ==================== 动画效果 ==================== */
+/* ==================== 动画 ==================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
@@ -684,13 +603,11 @@ body {
 }
 
 .fade-in {
-    animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
     padding: 2rem;
     color: var(--text-secondary);
     font-style: italic;
@@ -698,13 +615,14 @@ body {
 
 .loading::before {
     content: '';
+    display: inline-block;
     width: 1rem;
     height: 1rem;
     border: 2px solid var(--border-color);
     border-top-color: var(--primary-color);
     border-radius: 50%;
-    margin-right: 0.5rem;
     animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
 }
 
 @keyframes spin {
@@ -713,7 +631,7 @@ body {
     }
 }
 
-/* ==================== 文件上传样式 ==================== */
+/* ==================== 文件上传 ==================== */
 .upload-section {
     margin-top: 1rem;
 }
@@ -724,17 +642,18 @@ body {
     padding: 2rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    background: var(--background-color);
 }
 
 .upload-area:hover {
     border-color: var(--primary-color);
-    background-color: var(--background-color);
+    background: rgba(37, 99, 235, 0.05);
 }
 
 .upload-area.dragover {
     border-color: var(--primary-color);
-    background-color: #eff6ff;
+    background: rgba(37, 99, 235, 0.1);
 }
 
 .upload-content {
@@ -746,7 +665,7 @@ body {
 
 .upload-icon {
     font-size: 3rem;
-    color: var(--primary-color);
+    color: var(--text-secondary);
 }
 
 .upload-text {
@@ -765,14 +684,14 @@ body {
 .upload-progress {
     margin-top: 1rem;
     padding: 1rem;
-    background-color: var(--background-color);
+    background: var(--background-color);
     border-radius: 0.5rem;
 }
 
 .progress-bar {
     width: 100%;
     height: 0.5rem;
-    background-color: var(--border-color);
+    background: var(--border-color);
     border-radius: 0.25rem;
     overflow: hidden;
     margin-bottom: 0.5rem;
@@ -780,7 +699,7 @@ body {
 
 .progress-fill {
     height: 100%;
-    background-color: var(--primary-color);
+    background: var(--primary-color);
     transition: width 0.3s ease;
     width: 0%;
 }
@@ -792,12 +711,11 @@ body {
     margin: 0;
 }
 
-/* ==================== 工具类 ==================== */
 .hidden {
     display: none !important;
 }
 
-/* ==================== 日志查看器样式 ==================== */
+/* ==================== 日志查看器 ==================== */
 .log-viewer {
     background-color: #1e293b;
     color: #e2e8f0;
@@ -813,29 +731,28 @@ body {
 .log-entry {
     margin-bottom: 0.25rem;
     padding: 0.25rem 0;
-    border-bottom: 1px solid #334155;
 }
 
 .log-entry:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .log-container {
-    max-height: 300px;
-    overflow-y: auto;
+    margin-top: 1rem;
 }
 
 .log-container h3 {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
-/* ==================== 表格容器样式 ==================== */
 .table-container {
     max-height: 400px;
     overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
 }
 
-/* ==================== 通知样式 ==================== */
+/* ==================== 通知系统 ==================== */
 .notification-container {
     position: fixed;
     top: 20px;
@@ -877,13 +794,14 @@ body {
     }
 }
 
-/* ==================== 标签选择样式 ==================== */
+/* ==================== 标签选择 ==================== */
 .label-selection-container {
     max-height: 400px;
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     padding: 1rem;
+    background: var(--background-color);
 }
 
 .label-category {
@@ -898,16 +816,17 @@ body {
 }
 
 .label-channel {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     padding: 1rem;
-    background-color: var(--background-color);
+    background: var(--surface-color);
     border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
 }
 
 .label-radio-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-top: 0.5rem;
 }
 
@@ -915,79 +834,65 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    background: var(--surface-color);
 }
 
 .label-radio:hover {
-    background-color: var(--background-color);
+    border-color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
 }
 
 .label-radio input[type="radio"] {
     margin: 0;
 }
 
-/* ==================== 统计项样式 ==================== */
+/* ==================== 统计项 ==================== */
 .stat-item {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 1rem;
-    background-color: var(--background-color);
+    background: var(--surface-color);
     border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
 }
 
 .stat-label {
     font-size: 0.875rem;
     color: var(--text-secondary);
-    margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
 }
 
-/* ==================== 全屏布局支持 ==================== */
-.container.fullscreen {
-    grid-template-columns: 1fr;
-}
-
-.container.fullscreen .sidebar {
-    display: none;
-}
-
-.container.fullscreen .main-content {
-    margin-left: 0;
-    padding: 2rem;
-}
-
-/* ==================== 工作台选择页面特殊样式 ==================== */
+/* ==================== 页面特定样式 ==================== */
 .workstation-selection .card {
-    max-width: 800px;
-    margin: 0 auto;
+    margin-bottom: 1rem;
 }
 
 .workstation-selection .page-header {
-    text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
-/* ==================== 文件配置页面特殊样式 ==================== */
 .file-config .card {
-    max-width: 900px;
-    margin: 0 auto 2rem auto;
+    margin-bottom: 1.5rem;
 }
 
 .file-config .page-header {
-    text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
-/* ==================== 监控面板特殊样式 ==================== */
 .monitor-panel .card {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .monitor-panel .page-header {

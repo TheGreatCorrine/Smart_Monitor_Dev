@@ -118,8 +118,7 @@ class TestIChannelConfigurationService(unittest.TestCase):
                             'label': 'Temperature',
                             'tag': 'temp',
                             'description': 'Temperature measurement',
-                            'unit': '°C',
-                            'is_default': True
+                            'unit': '°C'
                         }
                     ],
                     'category_description': {'en': 'Temperature sensors'}
