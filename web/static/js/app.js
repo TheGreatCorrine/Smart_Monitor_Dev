@@ -1,28 +1,20 @@
 /**
- * Smart Monitor Web - 主应用JavaScript
- * 使用原生JavaScript，无框架依赖
- * 新的页面流程：测试选择 -> 工作台选择/文件配置 -> 监控面板
+ * Smart Monitor Web - 重构后的前端JavaScript
+ * 纯View层，只负责UI交互和数据展示
+ * 所有业务逻辑已移到后端SessionController
  */
 
 class SmartMonitorApp {
     constructor() {
         this.currentPage = 'test-selection';
         this.refreshInterval = null;
-        this.selectedFile = null;
-        this.selectedLabels = {};
-        this.selectedWorkstation = null;
         this.currentSessionId = null;
-        this.currentSessionName = null;
-        this.alarms = [];
-        this.logs = [];
-        this.testType = null;
         this.init();
     }
 
     init() {
         this.loadTestSelection();
         this.setupFileUpload();
-        this.disableConfirmButton();
     }
 
     // ==================== 导航管理 ====================
@@ -48,13 +40,6 @@ class SmartMonitorApp {
 
         this.currentPage = page;
         this.loadPage(page);
-        
-        // 如果是监控面板，记录当前会话信息
-        if (page === 'old-test-monitor-panel' || page === 'new-test-monitor-panel') {
-            console.log('Navigating to monitor panel - Test type:', this.testType);
-            console.log('Current session ID:', this.currentSessionId);
-            console.log('Selected workstation:', this.selectedWorkstation);
-        }
     }
 
     loadPage(page) {
@@ -84,94 +69,51 @@ class SmartMonitorApp {
     }
 
     // ==================== 测试选择功能 ====================
-    selectTest(testType) {
-        // 重置所有状态
-        this.testType = testType;
-        this.selectedFile = null;
-        this.selectedLabels = {};
-        this.selectedWorkstation = null;
-        this.currentSessionId = null;
-        this.currentSessionName = null;
-        
-        if (testType === 'old') {
-            // 强制跳转到工作台选择页面
-            this.navigateTo('workstation-selection');
-            this.showSuccess('已选择 Old Test，请选择工作台');
-        } else if (testType === 'new') {
-            // 跳转到文件配置页面
-            this.navigateTo('file-config');
-            this.showSuccess('已选择 New Test，请配置文件和标签');
+    async selectTest(testType) {
+        try {
+            const response = await this.fetchAPI('/api/session/select-test', {
+                method: 'POST',
+                body: JSON.stringify({ test_type: testType })
+            });
+
+            if (response.success) {
+                this.currentSessionId = response.session_id;
+                
+                if (testType === 'old') {
+                    this.navigateTo('workstation-selection');
+                    this.showSuccess('已选择 Old Test，请选择工作台');
+                } else if (testType === 'new') {
+                    this.navigateTo('file-config');
+                    this.showSuccess('已选择 New Test，请配置文件和标签');
+                }
+            } else {
+                this.showError(response.error || '选择测试类型失败');
+            }
+        } catch (error) {
+            console.error('Failed to select test type:', error);
+            this.showError('选择测试类型时发生错误');
         }
     }
 
     showTestSelection() {
-        // 返回测试选择页面
         this.navigateTo('test-selection');
-        
-        // 重置所有状态
-        this.testType = null;
-        this.selectedWorkstation = null;
-        this.selectedFile = null;
-        this.selectedLabels = {};
         this.currentSessionId = null;
-        this.currentSessionName = null;
-        
-        // 清空文件选择器
-        const fileSelector = document.getElementById('file-selector');
-        if (fileSelector) {
-            fileSelector.value = '';
-        }
-        
-        // 清空文件信息
-        const fileInfo = document.getElementById('file-info');
-        if (fileInfo) {
-            fileInfo.innerHTML = '<p>请选择数据文件以查看详细信息</p>';
-        }
-        
-        // 清空标签选择
-        const labelSelection = document.getElementById('label-selection');
-        if (labelSelection) {
-            labelSelection.innerHTML = '<p>请先选择数据文件以配置标签匹配</p>';
-        }
-        
-        // 重置状态指示器
-        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
-        if (statusIndicator) {
-            statusIndicator.className = 'status-indicator status-info';
-            statusIndicator.textContent = '等待文件选择';
-        }
-        
-        // 禁用确认按钮
-        this.disableConfirmButton();
     }
 
     // ==================== 测试选择页面 ====================
     loadTestSelection() {
-        // 重置所有状态
-        this.testType = null;
-        this.selectedWorkstation = null;
-        this.selectedFile = null;
-        this.selectedLabels = {};
+        // 重置状态
+        this.currentSessionId = null;
     }
 
     // ==================== 工作台选择页面 ====================
     async loadWorkstationSelection() {
-        // 重置工作台选择页面的状态
-        this.selectedWorkstation = null;
-        this.currentSessionId = null;
-        this.currentSessionName = null;
-        
-        // 清除工作台选择状态
-        document.querySelectorAll('.workstation-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
         await this.loadWorkstationList();
     }
 
     async loadWorkstationList() {
         try {
-            const data = await this.fetchAPI('/api/monitor/workstations');
+            const data = await this.fetchAPI('/api/session/workstations');
             this.updateWorkstationList(data);
         } catch (error) {
             console.error('Failed to load workstation list:', error);
@@ -225,86 +167,51 @@ class SmartMonitorApp {
         }
     }
 
-    selectWorkstation(workstationId) {
-        this.selectedWorkstation = workstationId;
-        
-        // 更新选中状态
-        document.querySelectorAll('.workstation-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        const selectedItem = document.querySelector(`[onclick="app.selectWorkstation('${workstationId}')"]`);
-        if (selectedItem) {
-            selectedItem.classList.add('active');
+    async selectWorkstation(workstationId) {
+        try {
+            const response = await this.fetchAPI('/api/session/select-workstation', {
+                method: 'POST',
+                body: JSON.stringify({ workstation_id: workstationId })
+            });
+
+            if (response.success) {
+                this.currentSessionId = response.session_id;
+                this.navigateTo('old-test-monitor-panel');
+                this.showSuccess(`已选择工作台: ${workstationId}`);
+            } else {
+                this.showError(response.error || '选择工作台失败');
+            }
+        } catch (error) {
+            console.error('Failed to select workstation:', error);
+            this.showError('选择工作台时发生错误');
         }
-        
-        // 跳转到Old Test监控面板
-        this.navigateTo('old-test-monitor-panel');
-        this.showSuccess(`已选择工作台: ${workstationId}`);
     }
 
     async stopWorkstation(workstationId) {
         try {
-            const data = await this.fetchAPI('/api/monitor/stop', {
+            const response = await this.fetchAPI('/api/session/stop-workstation', {
                 method: 'POST',
-                body: JSON.stringify({ session_id: workstationId })
+                body: JSON.stringify({ workstation_id: workstationId })
             });
 
-            if (data.success) {
+            if (response.success) {
                 this.showSuccess(`工作台 ${workstationId} 已停止`);
-                
-                // 刷新工作台列表
                 this.loadWorkstationList();
-                
-                // 如果停止的是当前选中的工作台，清除选择
-                if (this.selectedWorkstation === workstationId) {
-                    this.selectedWorkstation = null;
-                }
             } else {
-                this.showError(data.error || '停止工作台失败');
+                this.showError(response.error || '停止工作台失败');
             }
         } catch (error) {
-            console.error('Stop workstation error:', error);
+            console.error('Failed to stop workstation:', error);
             this.showError('停止工作台时发生错误');
         }
     }
 
     // ==================== 文件配置页面 ====================
     async loadFileConfig() {
-        // 重置文件配置页面的状态
-        this.selectedFile = null;
-        this.selectedLabels = {};
-        this.currentSessionId = null;
-        this.currentSessionName = null;
-        
-        // 清空文件选择器
-        const fileSelector = document.getElementById('file-selector');
-        if (fileSelector) {
-            fileSelector.value = '';
-        }
-        
-        // 清空文件信息
-        const fileInfo = document.getElementById('file-info');
-        if (fileInfo) {
-            fileInfo.innerHTML = '<p>请选择数据文件以查看详细信息</p>';
-        }
-        
-        // 清空标签选择
-        const labelSelection = document.getElementById('label-selection');
-        if (labelSelection) {
-            labelSelection.innerHTML = '<p>请先选择数据文件以配置标签匹配</p>';
-        }
-        
-        // 重置状态指示器
-        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
-        if (statusIndicator) {
-            statusIndicator.className = 'status-indicator status-info';
-            statusIndicator.textContent = '等待文件选择';
-        }
-        
         await this.loadFileList();
         await this.loadLabelConfiguration();
-        this.disableConfirmButton();
+        // 检查是否有保存的配置
+        await this.checkSavedConfiguration();
     }
 
     async loadFileList() {
@@ -349,8 +256,6 @@ class SmartMonitorApp {
             return;
         }
 
-        this.selectedFile = filePath;
-        
         const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
         if (statusIndicator) {
             statusIndicator.className = 'status-indicator status-info';
@@ -371,8 +276,10 @@ class SmartMonitorApp {
             }
             
             await this.loadLabelConfiguration();
-            this.enableConfirmButton();
             
+            // 检查配置状态
+            await this.checkConfigurationStatus();
+
         } catch (error) {
             console.error('Failed to get file info:', error);
             this.showError('获取文件信息失败');
@@ -385,25 +292,108 @@ class SmartMonitorApp {
     }
 
     onFileDeselected() {
-        this.selectedFile = null;
-        
+        // 清除文件信息
         const fileInfo = document.getElementById('file-info');
         if (fileInfo) {
             fileInfo.innerHTML = '<p>请选择数据文件以查看详细信息</p>';
         }
-        
+
+        // 清除标签选择
         const labelSelection = document.getElementById('label-selection');
         if (labelSelection) {
             labelSelection.innerHTML = '<p>请先选择数据文件以配置标签匹配</p>';
         }
-        
-        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
+
+        // 更新状态指示器
+        const statusIndicator = document.querySelector('#file-config .card-header .status-indicator');
         if (statusIndicator) {
-            statusIndicator.className = 'status-indicator status-info';
             statusIndicator.textContent = '等待文件选择';
+            statusIndicator.className = 'status-indicator status-info';
+        }
+
+        // 检查配置状态
+        this.checkConfigurationStatus();
+    }
+
+    // ==================== 配置状态检查 ====================
+    
+    async checkConfigurationStatus() {
+        // 检查文件是否已选择
+        const fileSelector = document.getElementById('file-selector');
+        const selectedFile = fileSelector?.value;
+        const fileSelected = Boolean(selectedFile && selectedFile.trim() !== '');
+        
+        // 检查标签是否已配置
+        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
+        const labelsConfigured = radioButtons.length > 0;
+        
+        // 检查是否完全配置
+        const fullyConfigured = fileSelected && labelsConfigured;
+        
+        // 更新状态
+        const status = {
+            file_selected: fileSelected,
+            labels_configured: labelsConfigured,
+            fully_configured: fullyConfigured
+        };
+        
+        this.updateConfigurationStatus(status);
+        this.updateStartMonitoringButton(fullyConfigured);
+    }
+
+    updateConfigurationStatus(status) {
+        // 更新状态指示器
+        const statusIndicator = document.querySelector('#file-config .card-header .status-indicator');
+        if (statusIndicator) {
+            if (status.fully_configured) {
+                statusIndicator.textContent = '配置完成';
+                statusIndicator.className = 'status-indicator status-success';
+            } else if (status.file_selected && !status.labels_configured) {
+                statusIndicator.textContent = '请配置标签匹配';
+                statusIndicator.className = 'status-indicator status-warning';
+            } else if (!status.file_selected) {
+                statusIndicator.textContent = '等待文件选择';
+                statusIndicator.className = 'status-indicator status-info';
+            }
+        }
+    }
+
+    updateStartMonitoringButton(enabled) {
+        const startButton = document.getElementById('start-monitoring-btn');
+        if (startButton) {
+            startButton.disabled = !enabled;
+            if (enabled) {
+                startButton.classList.remove('btn-disabled');
+                startButton.classList.add('btn-primary');
+            } else {
+                startButton.classList.add('btn-disabled');
+                startButton.classList.remove('btn-primary');
+            }
+        }
+    }
+
+    async confirmConfiguration() {
+        // 前端本地检查配置状态
+        const fileSelector = document.getElementById('file-selector');
+        const selectedFile = fileSelector?.value;
+        const fileSelected = Boolean(selectedFile && selectedFile.trim() !== '');
+        
+        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
+        const labelsConfigured = radioButtons.length > 0;
+        
+        if (!fileSelected) {
+            this.showError('请先选择数据文件');
+            return;
         }
         
-        this.disableConfirmButton();
+        if (!labelsConfigured) {
+            this.showError('请配置标签匹配');
+            return;
+        }
+        
+        // 配置完整，可以启动监控
+        this.showSuccess('配置已确认');
+        await this.checkConfigurationStatus();
     }
 
     updateFileInfo(data) {
@@ -536,9 +526,6 @@ class SmartMonitorApp {
         const channelId = event.target.name.replace('label_', '');
         const subtypeId = event.target.value;
         
-        this.selectedLabels[channelId] = subtypeId;
-        console.log('Label selection updated:', this.selectedLabels);
-        
         // 清除同组其他选项的选中状态
         const radioGroup = document.querySelectorAll(`input[name="${event.target.name}"]`);
         radioGroup.forEach(radio => {
@@ -555,105 +542,178 @@ class SmartMonitorApp {
             currentLabelElement.style.borderColor = 'var(--primary-color)';
             currentLabelElement.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
         }
+
+        // 保存标签选择到会话
+        this.saveLabelSelectionToSession();
+        
+        // 检查配置状态
+        this.checkConfigurationStatus();
+    }
+
+    async saveLabelSelectionToSession() {
+        if (!this.currentSessionId) {
+            return;
+        }
+
+        try {
+            // 收集标签选择
+            const selectedLabels = {};
+            const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
+            radioButtons.forEach(radio => {
+                const channelId = radio.name.replace('label_', '');
+                selectedLabels[channelId] = radio.value;
+            });
+
+            // 保存到会话
+            const response = await this.fetchAPI('/api/session/configure-new-test', {
+                method: 'POST',
+                body: JSON.stringify({
+                    session_id: this.currentSessionId,
+                    file_path: document.getElementById('file-selector')?.value || '',
+                    selected_labels: selectedLabels
+                })
+            });
+
+            if (!response.success) {
+                console.error('Failed to save label selection to session:', response.error);
+            }
+        } catch (error) {
+            console.error('Failed to save label selection to session:', error);
+        }
     }
 
     async confirmAndGoToMonitor() {
-        if (!this.selectedFile) {
+        const fileSelector = document.getElementById('file-selector');
+        const selectedFile = fileSelector?.value;
+        
+        if (!selectedFile) {
             this.showError('请先选择数据文件');
             return;
         }
 
-        if (Object.keys(this.selectedLabels).length === 0) {
+        // 收集标签选择
+        const selectedLabels = {};
+        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
+        radioButtons.forEach(radio => {
+            const channelId = radio.name.replace('label_', '');
+            selectedLabels[channelId] = radio.value;
+        });
+
+        if (Object.keys(selectedLabels).length === 0) {
             this.showError('请配置标签匹配');
             return;
         }
 
         try {
-            // 先保存标签配置
-            const saveResult = await this.fetchAPI('/api/config/labels/save', {
+            const response = await this.fetchAPI('/api/session/configure-new-test', {
                 method: 'POST',
-                body: JSON.stringify({ selected_labels: this.selectedLabels })
+                body: JSON.stringify({
+                    session_id: this.currentSessionId,
+                    file_path: selectedFile,
+                    selected_labels: selectedLabels
+                })
             });
 
-            if (saveResult.success) {
+            if (response.success) {
                 this.showSuccess('配置已保存，正在启动监控...');
                 
-                // 自动启动监控
-                await this.startNewTestMonitoring();
-                
-                // 跳转到New Test监控面板
-                this.navigateTo('new-test-monitor-panel');
+                // 启动监控
+                const startResponse = await this.fetchAPI('/api/session/start-new-test', {
+                    method: 'POST',
+                    body: JSON.stringify({ session_id: this.currentSessionId })
+                });
+
+                if (startResponse.success) {
+                    this.navigateTo('new-test-monitor-panel');
+                } else {
+                    this.showError(startResponse.error || '启动监控失败');
+                }
             } else {
-                this.showError('保存配置失败');
+                this.showError(response.error || '保存配置失败');
             }
         } catch (error) {
-            console.error('Failed to save configuration:', error);
-            this.showError('保存配置时发生错误');
+            console.error('Failed to configure and start monitoring:', error);
+            this.showError('配置和启动监控时发生错误');
         }
     }
 
     async loadLastLabelSelection() {
         try {
-            console.log('loadLastLabelSelection called');
             const data = await this.fetchAPI('/api/config/labels/load');
-            console.log('API response:', data);
             if (data.success && data.labels) {
-                // API返回的数据结构是 data.labels.labels
-                this.selectedLabels = data.labels.labels || data.labels;
-                console.log('Set selectedLabels to:', this.selectedLabels);
+                this.updateLabelSelectionFromSaved(data.labels);
                 this.showSuccess('已加载上次配置');
-                this.updateLabelSelectionFromSaved();
+                
+                // 保存到会话并检查配置状态
+                await this.saveLabelSelectionToSession();
+                await this.checkConfigurationStatus();
             } else {
                 this.showError('没有找到保存的配置');
+                // 更新按钮状态为禁用
+                this.updateLoadLastConfigButton(false);
             }
         } catch (error) {
             console.error('Failed to load last selection:', error);
             this.showError('加载上次配置失败');
+            // 更新按钮状态为禁用
+            this.updateLoadLastConfigButton(false);
         }
     }
 
-    updateLabelSelectionFromSaved() {
-        console.log('updateLabelSelectionFromSaved called with:', this.selectedLabels);
-        Object.entries(this.selectedLabels).forEach(([channelId, subtypeId]) => {
+    async checkSavedConfiguration() {
+        try {
+            const data = await this.fetchAPI('/api/config/labels/load');
+            const hasSavedConfig = data.success && data.labels && Object.keys(data.labels).length > 0;
+            this.updateLoadLastConfigButton(hasSavedConfig);
+        } catch (error) {
+            console.error('Failed to check saved configuration:', error);
+            this.updateLoadLastConfigButton(false);
+        }
+    }
+
+    updateLoadLastConfigButton(hasSavedConfig) {
+        const loadButton = document.getElementById('load-last-config-btn');
+        if (loadButton) {
+            if (hasSavedConfig) {
+                loadButton.disabled = false;
+                loadButton.classList.remove('btn-disabled');
+                loadButton.classList.add('btn-outline');
+                loadButton.innerHTML = '<i class="fas fa-history"></i> 加载上次配置';
+                // 清除内联样式
+                loadButton.style.opacity = '';
+                loadButton.style.cursor = '';
+                loadButton.style.pointerEvents = '';
+            } else {
+                loadButton.disabled = true;
+                loadButton.classList.remove('btn-outline');
+                loadButton.classList.add('btn-disabled');
+                loadButton.innerHTML = '<i class="fas fa-history"></i> 无保存配置';
+            }
+        }
+    }
+
+    updateLabelSelectionFromSaved(labels) {
+        Object.entries(labels).forEach(([channelId, subtypeId]) => {
             const radio = document.querySelector(`input[name="label_${channelId}"][value="${subtypeId}"]`);
-            console.log(`Looking for radio: label_${channelId}, value: ${subtypeId}, found:`, radio);
             if (radio) {
                 radio.checked = true;
-                // 添加选中状态的视觉反馈
                 const labelElement = radio.closest('.label-radio');
-                console.log('Found label element:', labelElement);
                 if (labelElement) {
                     labelElement.style.borderColor = '#2563eb';
                     labelElement.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
-                    console.log('Applied visual feedback to:', labelElement);
                 }
             }
         });
-        console.log('updateLabelSelectionFromSaved completed');
     }
 
-    // ==================== Old Test 监控面板页面 ====================
+    // ==================== 监控面板页面 ====================
     async loadOldTestMonitorPanel() {
-        console.log('Loading Old Test monitor panel - Selected workstation:', this.selectedWorkstation);
-        
-        // 更新工作台信息
-        this.updateWorkstationInfo();
-        
         await this.loadOldTestMonitoringStatus();
         await this.loadOldTestSessionStats();
         this.startOldTestAutoRefresh();
     }
 
-    // ==================== New Test 监控面板页面 ====================
     async loadNewTestMonitorPanel() {
-        console.log('Loading New Test monitor panel - Current session:', this.currentSessionId, this.currentSessionName);
-        
-        // 更新文件信息
-        this.updateFileInfoDisplay();
-        
-        // 更新标签配置显示
-        this.updateLabelConfigDisplay();
-        
         await this.loadNewTestMonitoringStatus();
         await this.loadNewTestSessionStats();
         this.startNewTestAutoRefresh();
@@ -661,7 +721,7 @@ class SmartMonitorApp {
 
     async loadOldTestMonitoringStatus() {
         try {
-            const data = await this.fetchAPI('/api/monitor/status');
+            const data = await this.fetchAPI('/api/session/status');
             this.updateOldTestMonitoringStatus(data);
         } catch (error) {
             console.error('Failed to load Old Test monitoring status:', error);
@@ -670,19 +730,10 @@ class SmartMonitorApp {
 
     async loadNewTestMonitoringStatus() {
         try {
-            const data = await this.fetchAPI('/api/monitor/status');
+            const data = await this.fetchAPI('/api/session/status');
             this.updateNewTestMonitoringStatus(data);
         } catch (error) {
             console.error('Failed to load New Test monitoring status:', error);
-        }
-    }
-
-    async loadMonitoringStatus() {
-        try {
-            const data = await this.fetchAPI('/api/monitor/status');
-            this.updateMonitoringStatus(data);
-        } catch (error) {
-            console.error('Failed to load monitoring status:', error);
         }
     }
 
@@ -690,43 +741,26 @@ class SmartMonitorApp {
         const statusElement = document.getElementById('old-monitoring-status');
         const detailsElement = document.getElementById('old-monitoring-details');
 
-        if (data.success && data.status) {
-            const status = data.status;
-            const isMonitoring = status.is_monitoring || status.web_monitoring_active;
-            const fileProvider = status.file_provider || {};
+        if (data.success && data.session) {
+            const session = data.session;
+            const isMonitoring = session.is_monitoring || session.status === 'running';
 
             if (isMonitoring) {
                 statusElement.className = 'status-indicator status-success';
                 statusElement.textContent = '运行中';
                 
                 let detailsHtml = '';
-                
-                if (this.selectedWorkstation) {
-                    detailsHtml += `<p><strong>工作台ID:</strong> ${this.selectedWorkstation}</p>`;
+                if (session.configuration?.selected_workstation) {
+                    detailsHtml += `<p><strong>工作台ID:</strong> ${session.configuration.selected_workstation}</p>`;
                 }
-                
-                if (status.web_session_id) {
-                    detailsHtml += `<p><strong>会话ID:</strong> ${status.web_session_id}</p>`;
+                if (session.session_id) {
+                    detailsHtml += `<p><strong>会话ID:</strong> ${session.session_id}</p>`;
                 }
-                
-                if (status.web_current_file) {
-                    detailsHtml += `<p><strong>当前文件:</strong> ${status.web_current_file}</p>`;
+                if (session.statistics?.records_processed !== undefined) {
+                    detailsHtml += `<p><strong>处理记录:</strong> ${session.statistics.records_processed}</p>`;
                 }
-                
-                if (fileProvider.total_records_pushed !== undefined) {
-                    detailsHtml += `<p><strong>推送记录:</strong> ${fileProvider.total_records_pushed}</p>`;
-                }
-                
-                if (status.stats && status.stats.total_records_processed !== undefined) {
-                    detailsHtml += `<p><strong>处理记录:</strong> ${status.stats.total_records_processed}</p>`;
-                }
-                
-                if (status.stats && status.stats.total_alarms_generated !== undefined) {
-                    detailsHtml += `<p><strong>生成告警:</strong> ${status.stats.total_alarms_generated}</p>`;
-                }
-                
-                if (fileProvider.simulation_duration !== undefined) {
-                    detailsHtml += `<p><strong>模拟时长:</strong> ${fileProvider.simulation_duration.toFixed(1)}秒</p>`;
+                if (session.statistics?.alarms_generated !== undefined) {
+                    detailsHtml += `<p><strong>生成告警:</strong> ${session.statistics.alarms_generated}</p>`;
                 }
                 
                 detailsElement.innerHTML = detailsHtml;
@@ -746,96 +780,27 @@ class SmartMonitorApp {
         const statusElement = document.getElementById('new-monitoring-status');
         const detailsElement = document.getElementById('new-monitoring-details');
 
-        if (data.success && data.status) {
-            const status = data.status;
-            const isMonitoring = status.is_monitoring || status.web_monitoring_active;
-            const fileProvider = status.file_provider || {};
+        if (data.success && data.session) {
+            const session = data.session;
+            const isMonitoring = session.is_monitoring || session.status === 'running';
 
             if (isMonitoring) {
                 statusElement.className = 'status-indicator status-success';
                 statusElement.textContent = '运行中';
                 
                 let detailsHtml = '';
-                
-                if (this.selectedFile) {
-                    const fileName = this.selectedFile.split('/').pop();
+                if (session.configuration?.selected_file) {
+                    const fileName = session.configuration.selected_file.split('/').pop();
                     detailsHtml += `<p><strong>当前文件:</strong> ${fileName}</p>`;
                 }
-                
-                if (status.web_session_id) {
-                    detailsHtml += `<p><strong>会话ID:</strong> ${status.web_session_id}</p>`;
+                if (session.session_id) {
+                    detailsHtml += `<p><strong>会话ID:</strong> ${session.session_id}</p>`;
                 }
-                
-                if (status.web_current_file) {
-                    detailsHtml += `<p><strong>文件路径:</strong> ${status.web_current_file}</p>`;
+                if (session.statistics?.records_processed !== undefined) {
+                    detailsHtml += `<p><strong>处理记录:</strong> ${session.statistics.records_processed}</p>`;
                 }
-                
-                if (fileProvider.total_records_pushed !== undefined) {
-                    detailsHtml += `<p><strong>推送记录:</strong> ${fileProvider.total_records_pushed}</p>`;
-                }
-                
-                if (status.stats && status.stats.total_records_processed !== undefined) {
-                    detailsHtml += `<p><strong>处理记录:</strong> ${status.stats.total_records_processed}</p>`;
-                }
-                
-                if (status.stats && status.stats.total_alarms_generated !== undefined) {
-                    detailsHtml += `<p><strong>生成告警:</strong> ${status.stats.total_alarms_generated}</p>`;
-                }
-                
-                if (fileProvider.simulation_duration !== undefined) {
-                    detailsHtml += `<p><strong>模拟时长:</strong> ${fileProvider.simulation_duration.toFixed(1)}秒</p>`;
-                }
-                
-                detailsElement.innerHTML = detailsHtml;
-            } else {
-                statusElement.className = 'status-indicator status-warning';
-                statusElement.textContent = '已停止';
-                detailsElement.innerHTML = '<p>监控已停止</p>';
-            }
-        } else {
-            statusElement.className = 'status-indicator status-error';
-            statusElement.textContent = '错误';
-            detailsElement.innerHTML = '<p>无法获取监控状态</p>';
-        }
-    }
-
-    updateMonitoringStatus(data) {
-        const statusElement = document.getElementById('monitoring-status');
-        const detailsElement = document.getElementById('monitoring-details');
-
-        if (data.success && data.status) {
-            const status = data.status;
-            const isMonitoring = status.is_monitoring || status.web_monitoring_active;
-            const fileProvider = status.file_provider || {};
-
-            if (isMonitoring) {
-                statusElement.className = 'status-indicator status-success';
-                statusElement.textContent = '运行中';
-                
-                let detailsHtml = '';
-                
-                if (status.web_session_id) {
-                    detailsHtml += `<p><strong>会话ID:</strong> ${status.web_session_id}</p>`;
-                }
-                
-                if (status.web_current_file) {
-                    detailsHtml += `<p><strong>当前文件:</strong> ${status.web_current_file}</p>`;
-                }
-                
-                if (fileProvider.total_records_pushed !== undefined) {
-                    detailsHtml += `<p><strong>推送记录:</strong> ${fileProvider.total_records_pushed}</p>`;
-                }
-                
-                if (status.stats && status.stats.total_records_processed !== undefined) {
-                    detailsHtml += `<p><strong>处理记录:</strong> ${status.stats.total_records_processed}</p>`;
-                }
-                
-                if (status.stats && status.stats.total_alarms_generated !== undefined) {
-                    detailsHtml += `<p><strong>生成告警:</strong> ${status.stats.total_alarms_generated}</p>`;
-                }
-                
-                if (fileProvider.simulation_duration !== undefined) {
-                    detailsHtml += `<p><strong>模拟时长:</strong> ${fileProvider.simulation_duration.toFixed(1)}秒</p>`;
+                if (session.statistics?.alarms_generated !== undefined) {
+                    detailsHtml += `<p><strong>生成告警:</strong> ${session.statistics.alarms_generated}</p>`;
                 }
                 
                 detailsElement.innerHTML = detailsHtml;
@@ -853,7 +818,7 @@ class SmartMonitorApp {
 
     async loadOldTestSessionStats() {
         try {
-            const data = await this.fetchAPI('/api/monitor/status');
+            const data = await this.fetchAPI('/api/session/status');
             this.updateOldTestSessionStats(data);
         } catch (error) {
             console.error('Failed to load Old Test session stats:', error);
@@ -862,96 +827,10 @@ class SmartMonitorApp {
 
     async loadNewTestSessionStats() {
         try {
-            const data = await this.fetchAPI('/api/monitor/status');
+            const data = await this.fetchAPI('/api/session/status');
             this.updateNewTestSessionStats(data);
         } catch (error) {
             console.error('Failed to load New Test session stats:', error);
-        }
-    }
-
-    async loadSessionStats() {
-        try {
-            const data = await this.fetchAPI('/api/monitor/status');
-            this.updateSessionStats(data);
-        } catch (error) {
-            console.error('Failed to load session stats:', error);
-        }
-    }
-
-    updateWorkstationInfo() {
-        const workstationStatus = document.getElementById('current-workstation-status');
-        const workstationInfo = document.getElementById('workstation-info');
-        
-        if (this.selectedWorkstation) {
-            workstationStatus.className = 'status-indicator status-success';
-            workstationStatus.textContent = '已选择';
-            
-            workstationInfo.innerHTML = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p><strong>工作台ID:</strong> ${this.selectedWorkstation}</p>
-                        <p><strong>状态:</strong> <span class="status-indicator status-success">运行中</span></p>
-                    </div>
-                    <div>
-                        <p><strong>测试类型:</strong> Old Test</p>
-                        <p><strong>选择时间:</strong> ${new Date().toLocaleString()}</p>
-                    </div>
-                </div>
-            `;
-        } else {
-            workstationStatus.className = 'status-indicator status-warning';
-            workstationStatus.textContent = '未选择';
-            workstationInfo.innerHTML = '<p>请先选择工作台</p>';
-        }
-    }
-
-    updateFileInfoDisplay() {
-        const fileStatus = document.getElementById('current-file-status');
-        const fileInfoDisplay = document.getElementById('file-info-display');
-        
-        if (this.selectedFile) {
-            fileStatus.className = 'status-indicator status-success';
-            fileStatus.textContent = '已选择';
-            
-            const fileName = this.selectedFile.split('/').pop();
-            fileInfoDisplay.innerHTML = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p><strong>文件名:</strong> ${fileName}</p>
-                        <p><strong>文件路径:</strong> ${this.selectedFile}</p>
-                    </div>
-                    <div>
-                        <p><strong>测试类型:</strong> New Test</p>
-                        <p><strong>选择时间:</strong> ${new Date().toLocaleString()}</p>
-                    </div>
-                </div>
-            `;
-        } else {
-            fileStatus.className = 'status-indicator status-warning';
-            fileStatus.textContent = '未选择';
-            fileInfoDisplay.innerHTML = '<p>请先选择数据文件</p>';
-        }
-    }
-
-    updateLabelConfigDisplay() {
-        const labelConfigStatus = document.getElementById('label-config-status');
-        const labelConfigDisplay = document.getElementById('label-config-display');
-        
-        if (this.selectedLabels && Object.keys(this.selectedLabels).length > 0) {
-            labelConfigStatus.className = 'status-indicator status-success';
-            labelConfigStatus.textContent = '已配置';
-            
-            let configHtml = '<div class="grid grid-cols-1 gap-2">';
-            Object.entries(this.selectedLabels).forEach(([channelId, subtypeId]) => {
-                configHtml += `<p><strong>${channelId}:</strong> ${subtypeId}</p>`;
-            });
-            configHtml += '</div>';
-            
-            labelConfigDisplay.innerHTML = configHtml;
-        } else {
-            labelConfigStatus.className = 'status-indicator status-warning';
-            labelConfigStatus.textContent = '未配置';
-            labelConfigDisplay.innerHTML = '<p>请先配置标签匹配</p>';
         }
     }
 
@@ -961,38 +840,14 @@ class SmartMonitorApp {
         const totalAlarms = document.getElementById('old-total-alarms');
         const processingSpeed = document.getElementById('old-processing-speed');
         
-        if (data.success && data.status) {
-            const status = data.status;
-            const stats = status.stats || {};
-            const fileProvider = status.file_provider || {};
+        if (data.success && data.session) {
+            const session = data.session;
+            const stats = session.statistics || {};
             
-            const recordsProcessed = stats.total_records_processed || 0;
-            totalRecords.textContent = recordsProcessed;
-            
-            const alarmsGenerated = stats.total_alarms_generated || 0;
-            totalAlarms.textContent = alarmsGenerated;
-            
-            if (fileProvider.start_time) {
-                const startTime = new Date(fileProvider.start_time);
-                sessionStart.textContent = startTime.toLocaleString();
-            } else {
-                sessionStart.textContent = '-';
-            }
-            
-            if (fileProvider.start_time && recordsProcessed > 0) {
-                const startTime = new Date(fileProvider.start_time);
-                const now = new Date();
-                const elapsedSeconds = (now - startTime) / 1000;
-                
-                if (elapsedSeconds > 0) {
-                    const speed = recordsProcessed / elapsedSeconds;
-                    processingSpeed.textContent = speed.toFixed(2);
-                } else {
-                    processingSpeed.textContent = '0.00';
-                }
-            } else {
-                processingSpeed.textContent = '0.00';
-            }
+            totalRecords.textContent = stats.records_processed || 0;
+            totalAlarms.textContent = stats.alarms_generated || 0;
+            sessionStart.textContent = stats.started_at ? new Date(stats.started_at).toLocaleString() : '-';
+            processingSpeed.textContent = (stats.processing_speed || 0).toFixed(2);
         } else {
             sessionStart.textContent = '-';
             totalRecords.textContent = '0';
@@ -1007,38 +862,14 @@ class SmartMonitorApp {
         const totalAlarms = document.getElementById('new-total-alarms');
         const processingSpeed = document.getElementById('new-processing-speed');
         
-        if (data.success && data.status) {
-            const status = data.status;
-            const stats = status.stats || {};
-            const fileProvider = status.file_provider || {};
+        if (data.success && data.session) {
+            const session = data.session;
+            const stats = session.statistics || {};
             
-            const recordsProcessed = stats.total_records_processed || 0;
-            totalRecords.textContent = recordsProcessed;
-            
-            const alarmsGenerated = stats.total_alarms_generated || 0;
-            totalAlarms.textContent = alarmsGenerated;
-            
-            if (fileProvider.start_time) {
-                const startTime = new Date(fileProvider.start_time);
-                sessionStart.textContent = startTime.toLocaleString();
-            } else {
-                sessionStart.textContent = '-';
-            }
-            
-            if (fileProvider.start_time && recordsProcessed > 0) {
-                const startTime = new Date(fileProvider.start_time);
-                const now = new Date();
-                const elapsedSeconds = (now - startTime) / 1000;
-                
-                if (elapsedSeconds > 0) {
-                    const speed = recordsProcessed / elapsedSeconds;
-                    processingSpeed.textContent = speed.toFixed(2);
-                } else {
-                    processingSpeed.textContent = '0.00';
-                }
-            } else {
-                processingSpeed.textContent = '0.00';
-            }
+            totalRecords.textContent = stats.records_processed || 0;
+            totalAlarms.textContent = stats.alarms_generated || 0;
+            sessionStart.textContent = stats.started_at ? new Date(stats.started_at).toLocaleString() : '-';
+            processingSpeed.textContent = (stats.processing_speed || 0).toFixed(2);
         } else {
             sessionStart.textContent = '-';
             totalRecords.textContent = '0';
@@ -1047,93 +878,19 @@ class SmartMonitorApp {
         }
     }
 
-    updateSessionStats(data) {
-        const sessionStart = document.getElementById('session-start');
-        const totalRecords = document.getElementById('total-records');
-        const totalAlarms = document.getElementById('total-alarms');
-        const processingSpeed = document.getElementById('processing-speed');
-        
-        if (data.success && data.status) {
-            const status = data.status;
-            const stats = status.stats || {};
-            const fileProvider = status.file_provider || {};
-            
-            const recordsProcessed = stats.total_records_processed || 0;
-            totalRecords.textContent = recordsProcessed;
-            
-            const alarmsGenerated = stats.total_alarms_generated || 0;
-            totalAlarms.textContent = alarmsGenerated;
-            
-            if (fileProvider.start_time) {
-                const startTime = new Date(fileProvider.start_time);
-                sessionStart.textContent = startTime.toLocaleString();
-            } else {
-                sessionStart.textContent = '-';
-            }
-            
-            if (fileProvider.start_time && recordsProcessed > 0) {
-                const startTime = new Date(fileProvider.start_time);
-                const now = new Date();
-                const elapsedSeconds = (now - startTime) / 1000;
-                
-                if (elapsedSeconds > 0) {
-                    const speed = recordsProcessed / elapsedSeconds;
-                    processingSpeed.textContent = speed.toFixed(2);
-                } else {
-                    processingSpeed.textContent = '0.00';
-                }
-            } else {
-                processingSpeed.textContent = '0.00';
-            }
-        } else {
-            sessionStart.textContent = '-';
-            totalRecords.textContent = '0';
-            totalAlarms.textContent = '0';
-            processingSpeed.textContent = '0.00';
-        }
-    }
-
-    // ==================== Old Test 监控控制 ====================
+    // ==================== 监控控制 ====================
     async startOldTestMonitoring() {
-        console.log('startOldTestMonitoring called');
-        
-        if (!this.selectedWorkstation) {
-            this.showError('请先选择工作台');
-            return;
-        }
-
-        const configFile = document.getElementById('old-config-selector')?.value;
-        const runId = document.getElementById('old-run-id')?.value || undefined;
-
         try {
-            console.log('Sending Old Test monitoring start request...');
-            const requestBody = {
-                config_path: configFile,
-                run_id: runId,
-                workstation_id: this.selectedWorkstation
-            };
-
-            const data = await this.fetchAPI('/api/monitor/start', {
+            const response = await this.fetchAPI('/api/session/start-old-test', {
                 method: 'POST',
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({ session_id: this.currentSessionId })
             });
 
-            console.log('Old Test monitoring start response:', data);
-
-            if (data.success) {
-                // 保存会话信息
-                this.currentSessionId = data.session_id;
-                this.currentSessionName = data.session_name;
-                
-                this.showSuccess(`Old Test 监控启动成功 - ${data.session_name}`);
+            if (response.success) {
+                this.showSuccess(`Old Test 监控启动成功 - ${response.session_name}`);
                 this.loadOldTestMonitoringStatus();
-                
-                // 刷新工作台列表
-                if (this.currentPage === 'workstation-selection') {
-                    this.loadWorkstationList();
-                }
             } else {
-                this.showError(data.error || 'Old Test 监控启动失败');
+                this.showError(response.error || 'Old Test 监控启动失败');
             }
         } catch (error) {
             console.error('Old Test monitoring start error:', error);
@@ -1142,36 +899,17 @@ class SmartMonitorApp {
     }
 
     async stopOldTestMonitoring() {
-        console.log('stopOldTestMonitoring called');
         try {
-            const requestBody = {};
-            
-            // 如果有当前会话ID，停止特定会话
-            if (this.currentSessionId) {
-                requestBody.session_id = this.currentSessionId;
-            }
-            
-            const data = await this.fetchAPI('/api/monitor/stop', {
+            const response = await this.fetchAPI('/api/session/stop-monitoring', {
                 method: 'POST',
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({ session_id: this.currentSessionId })
             });
 
-            console.log('Old Test monitoring stop response:', data);
-
-            if (data.success) {
+            if (response.success) {
                 this.showSuccess('Old Test 监控已停止');
                 this.loadOldTestMonitoringStatus();
-                
-                // 清除当前会话信息
-                this.currentSessionId = null;
-                this.currentSessionName = null;
-                
-                // 刷新工作台列表
-                if (this.currentPage === 'workstation-selection') {
-                    this.loadWorkstationList();
-                }
             } else {
-                this.showError(data.error || '停止 Old Test 监控失败');
+                this.showError(response.error || '停止 Old Test 监控失败');
             }
         } catch (error) {
             console.error('Old Test monitoring stop error:', error);
@@ -1179,119 +917,61 @@ class SmartMonitorApp {
         }
     }
 
-    async startOldTestSimulation() {
-        console.log('startOldTestSimulation called');
-        
-        if (!this.selectedWorkstation) {
-            this.showError('请先选择工作台');
+    async startNewTestMonitoring() {
+        if (!this.currentSessionId) {
+            this.showError('没有活动的会话');
             return;
         }
 
-        try {
-            console.log('Sending Old Test simulation start request...');
-            const requestBody = {
-                workstation_id: this.selectedWorkstation
-            };
-
-            const data = await this.fetchAPI('/api/monitor/simulation', {
-                method: 'POST',
-                body: JSON.stringify(requestBody)
-            });
-
-            console.log('Old Test simulation start response:', data);
-
-            if (data.success) {
-                // 保存会话信息
-                this.currentSessionId = data.session_id;
-                this.currentSessionName = data.session_name;
-                
-                this.showSuccess(`Old Test 模拟启动成功 - ${data.session_name}`);
-                this.loadOldTestMonitoringStatus();
-                
-                // 刷新工作台列表
-                if (this.currentPage === 'workstation-selection') {
-                    this.loadWorkstationList();
-                }
-            } else {
-                this.showError(data.error || 'Old Test 模拟启动失败');
-            }
-        } catch (error) {
-            console.error('Old Test simulation start error:', error);
-            this.showError('启动 Old Test 模拟时发生错误');
-        }
-    }
-
-    // ==================== New Test 监控控制 ====================
-    async startNewTestMonitoring() {
-        console.log('startNewTestMonitoring called');
+        // 前端本地检查配置状态
+        const fileSelector = document.getElementById('file-selector');
+        const selectedFile = fileSelector?.value;
+        const fileSelected = Boolean(selectedFile && selectedFile.trim() !== '');
         
-        if (!this.selectedFile) {
+        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
+        const labelsConfigured = radioButtons.length > 0;
+        
+        if (!fileSelected) {
             this.showError('请先选择数据文件');
             return;
         }
-
-        const configFile = document.getElementById('new-config-selector')?.value;
-        const runId = document.getElementById('new-run-id')?.value || undefined;
-        const workstationId = document.getElementById('new-workstation-id')?.value || '1';
+        
+        if (!labelsConfigured) {
+            this.showError('请配置标签匹配');
+            return;
+        }
 
         try {
-            console.log('Sending New Test monitoring start request...');
-            const requestBody = {
-                config_path: configFile,
-                run_id: runId,
-                file_path: this.selectedFile,
-                workstation_id: workstationId
-            };
-
-            const data = await this.fetchAPI('/api/monitor/start', {
+            // 启动监控
+            const response = await this.fetchAPI('/api/session/start-new-test', {
                 method: 'POST',
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({ session_id: this.currentSessionId })
             });
 
-            console.log('New Test monitoring start response:', data);
-
-            if (data.success) {
-                // 保存会话信息
-                this.currentSessionId = data.session_id;
-                this.currentSessionName = data.session_name;
-                
-                this.showSuccess(`New Test 监控启动成功 - ${data.session_name}`);
-                this.loadNewTestMonitoringStatus();
+            if (response.success) {
+                this.showSuccess('监控已启动');
+                this.navigateTo('new-test-monitor-panel');
             } else {
-                this.showError(data.error || 'New Test 监控启动失败');
+                this.showError(response.error || '启动监控失败');
             }
         } catch (error) {
-            console.error('New Test monitoring start error:', error);
-            this.showError('启动 New Test 监控时发生错误');
+            console.error('Failed to start new test monitoring:', error);
+            this.showError('启动监控时发生错误');
         }
     }
 
     async stopNewTestMonitoring() {
-        console.log('stopNewTestMonitoring called');
         try {
-            const requestBody = {};
-            
-            // 如果有当前会话ID，停止特定会话
-            if (this.currentSessionId) {
-                requestBody.session_id = this.currentSessionId;
-            }
-            
-            const data = await this.fetchAPI('/api/monitor/stop', {
+            const response = await this.fetchAPI('/api/session/stop-monitoring', {
                 method: 'POST',
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({ session_id: this.currentSessionId })
             });
 
-            console.log('New Test monitoring stop response:', data);
-
-            if (data.success) {
+            if (response.success) {
                 this.showSuccess('New Test 监控已停止');
                 this.loadNewTestMonitoringStatus();
-                
-                // 清除当前会话信息
-                this.currentSessionId = null;
-                this.currentSessionName = null;
             } else {
-                this.showError(data.error || '停止 New Test 监控失败');
+                this.showError(response.error || '停止 New Test 监控失败');
             }
         } catch (error) {
             console.error('New Test monitoring stop error:', error);
@@ -1299,419 +979,81 @@ class SmartMonitorApp {
         }
     }
 
-    async startNewTestSimulation() {
-        console.log('startNewTestSimulation called');
-        
-        if (!this.selectedFile) {
-            this.showError('请先选择数据文件');
-            return;
+    // ==================== 自动刷新 ====================
+    startOldTestAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
         }
+        
+        this.refreshInterval = setInterval(() => {
+            if (this.currentPage === 'old-test-monitor-panel') {
+                this.loadOldTestMonitoringStatus();
+                this.loadOldTestSessionStats();
+            }
+        }, 2000);
+    }
 
-        try {
-            console.log('Sending New Test simulation start request...');
-            const requestBody = {
-                file_path: this.selectedFile,
-                workstation_id: '1'
-            };
-
-            const data = await this.fetchAPI('/api/monitor/simulation', {
-                method: 'POST',
-                body: JSON.stringify(requestBody)
-            });
-
-            console.log('New Test simulation start response:', data);
-
-            if (data.success) {
-                // 保存会话信息
-                this.currentSessionId = data.session_id;
-                this.currentSessionName = data.session_name;
-                
-                this.showSuccess(`New Test 模拟启动成功 - ${data.session_name}`);
+    startNewTestAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+        }
+        
+        this.refreshInterval = setInterval(() => {
+            if (this.currentPage === 'new-test-monitor-panel') {
                 this.loadNewTestMonitoringStatus();
-            } else {
-                this.showError(data.error || 'New Test 模拟启动失败');
+                this.loadNewTestSessionStats();
             }
-        } catch (error) {
-            console.error('New Test simulation start error:', error);
-            this.showError('启动 New Test 模拟时发生错误');
+        }, 2000);
+    }
+
+    stopAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
         }
     }
 
-    // ==================== 通用监控控制 ====================
-    async startMonitoring() {
-        console.log('startMonitoring called');
-        
-        const configFile = document.getElementById('config-selector')?.value;
-        const runId = document.getElementById('run-id')?.value || undefined;
-
-        if (this.testType === 'new' && !this.selectedFile) {
-            this.showError('请先选择数据文件');
-            return;
-        }
-
+    // ==================== 工具方法 ====================
+    async fetchAPI(endpoint, options = {}) {
         try {
-            console.log('Sending monitoring start request...');
-            const requestBody = {
-                    config_path: configFile,
-                    run_id: runId
-            };
-
-            if (this.testType === 'new') {
-                requestBody.file_path = this.selectedFile;
-            } else if (this.testType === 'old' && this.selectedWorkstation) {
-                requestBody.workstation_id = this.selectedWorkstation;
-            }
-
-            const data = await this.fetchAPI('/api/monitor/start', {
-                method: 'POST',
-                body: JSON.stringify(requestBody)
+            const response = await fetch(endpoint, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
             });
 
-            console.log('Monitoring start response:', data);
-
-            if (data.success) {
-                // 保存会话信息
-                this.currentSessionId = data.session_id;
-                this.currentSessionName = data.session_name;
-                
-                this.showSuccess(`监控启动成功 - ${data.session_name}`);
-                this.loadMonitoringStatus();
-                
-                // 刷新工作台列表
-                if (this.currentPage === 'workstation-selection') {
-                    this.loadWorkstationList();
-                }
-            } else {
-                this.showError(data.error || '监控启动失败');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
+
+            return await response.json();
         } catch (error) {
-            console.error('Monitoring start error:', error);
-            this.showError('启动监控时发生错误');
+            console.error(`API call failed for ${endpoint}:`, error);
+            throw error;
         }
     }
 
-    async stopMonitoring() {
-        console.log('stopMonitoring called');
-        try {
-            const requestBody = {};
-            
-            // 如果有当前会话ID，停止特定会话
-            if (this.currentSessionId) {
-                requestBody.session_id = this.currentSessionId;
-            }
-            
-            const data = await this.fetchAPI('/api/monitor/stop', {
-                method: 'POST',
-                body: JSON.stringify(requestBody)
-            });
-
-            console.log('Monitoring stop response:', data);
-
-            if (data.success) {
-                this.showSuccess('监控已停止');
-                this.loadMonitoringStatus();
-                
-                // 清除当前会话信息
-                this.currentSessionId = null;
-                this.currentSessionName = null;
-                
-                // 刷新工作台列表
-                if (this.currentPage === 'workstation-selection') {
-                    this.loadWorkstationList();
-                }
-            } else {
-                this.showError(data.error || '停止监控失败');
-            }
-        } catch (error) {
-            console.error('Monitoring stop error:', error);
-            this.showError('停止监控时发生错误');
-        }
+    showSuccess(message) {
+        this.showNotification(message, 'success');
     }
 
-    async startSimulation() {
-        console.log('startSimulation called');
+    showError(message) {
+        this.showNotification(message, 'error');
+    }
+
+    showNotification(message, type = 'info') {
+        const container = document.getElementById('notification-container');
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
         
-        if (this.testType === 'new' && !this.selectedFile) {
-            this.showError('请先选择数据文件');
-            return;
-        }
-
-        try {
-            console.log('Sending simulation start request...');
-            const requestBody = {};
-
-            if (this.testType === 'new') {
-                requestBody.file_path = this.selectedFile;
-                requestBody.workstation_id = '1';
-            } else if (this.testType === 'old' && this.selectedWorkstation) {
-                requestBody.workstation_id = this.selectedWorkstation;
-            }
-
-            const data = await this.fetchAPI('/api/monitor/simulation', {
-                method: 'POST',
-                body: JSON.stringify(requestBody)
-            });
-
-            console.log('Simulation start response:', data);
-
-            if (data.success) {
-                // 保存会话信息
-                this.currentSessionId = data.session_id;
-                this.currentSessionName = data.session_name;
-                
-                this.showSuccess(`模拟启动成功 - ${data.session_name}`);
-                this.loadMonitoringStatus();
-                
-                // 刷新工作台列表
-                if (this.currentPage === 'workstation-selection') {
-                    this.loadWorkstationList();
-                }
-            } else {
-                this.showError(data.error || '模拟启动失败');
-            }
-        } catch (error) {
-            console.error('Simulation start error:', error);
-            this.showError('启动模拟时发生错误');
-        }
-    }
-
-    // ==================== Old Test 告警和日志管理 ====================
-    clearOldTestAlarms() {
-        this.alarms = [];
-        this.updateOldTestAlarmTable();
-        this.showSuccess('Old Test 告警记录已清空');
-    }
-
-    clearOldTestLogs() {
-        this.logs = [];
-        this.updateOldTestLogViewer();
-        this.showSuccess('Old Test 日志已清空');
-    }
-
-    // ==================== New Test 告警和日志管理 ====================
-    clearNewTestAlarms() {
-        this.alarms = [];
-        this.updateNewTestAlarmTable();
-        this.showSuccess('New Test 告警记录已清空');
-    }
-
-    clearNewTestLogs() {
-        this.logs = [];
-        this.updateNewTestLogViewer();
-        this.showSuccess('New Test 日志已清空');
-    }
-
-    // ==================== 通用告警和日志管理 ====================
-    clearAlarms() {
-        this.alarms = [];
-        this.updateAlarmTable();
-        this.showSuccess('告警记录已清空');
-    }
-
-    clearLogs() {
-        this.logs = [];
-        this.updateLogViewer();
-        this.showSuccess('日志已清空');
-    }
-
-    updateOldTestAlarmTable() {
-        const tbody = document.getElementById('old-alarm-tbody');
+        container.appendChild(notification);
         
-        if (this.alarms.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">暂无告警记录</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = this.alarms.map(alarm => `
-            <tr>
-                <td>${new Date(alarm.timestamp).toLocaleString()}</td>
-                <td>${alarm.workstation_id}</td>
-                <td>${alarm.channel_name}</td>
-                <td>${alarm.value}</td>
-                <td>${alarm.threshold}</td>
-                <td>${alarm.rule_name}</td>
-            </tr>
-        `).join('');
-    }
-
-    updateNewTestAlarmTable() {
-        const tbody = document.getElementById('new-alarm-tbody');
-        
-        if (this.alarms.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">暂无告警记录</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = this.alarms.map(alarm => `
-            <tr>
-                <td>${new Date(alarm.timestamp).toLocaleString()}</td>
-                <td>${alarm.workstation_id}</td>
-                <td>${alarm.channel_name}</td>
-                <td>${alarm.value}</td>
-                <td>${alarm.threshold}</td>
-                <td>${alarm.rule_name}</td>
-            </tr>
-        `).join('');
-    }
-
-    updateAlarmTable() {
-        const tbody = document.getElementById('alarm-tbody');
-        
-        if (this.alarms.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">暂无告警记录</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = this.alarms.map(alarm => `
-            <tr>
-                <td>${new Date(alarm.timestamp).toLocaleString()}</td>
-                <td>${alarm.workstation_id}</td>
-                <td>${alarm.channel_name}</td>
-                <td>${alarm.value}</td>
-                <td>${alarm.threshold}</td>
-                <td>${alarm.rule_name}</td>
-            </tr>
-        `).join('');
-    }
-
-    updateOldTestLogViewer() {
-        fetch('/api/logs')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.logs) {
-                    const logContainer = document.getElementById('old-log-viewer');
-                    if (logContainer) {
-                        logContainer.innerHTML = '';
-                        
-                        data.logs.forEach(log => {
-                            const logEntry = document.createElement('div');
-                            logEntry.className = 'log-entry';
-                            logEntry.textContent = log;
-                            logContainer.appendChild(logEntry);
-                        });
-                        
-                        logContainer.scrollTop = logContainer.scrollHeight;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Failed to load Old Test logs:', error);
-            });
-    }
-
-    updateNewTestLogViewer() {
-        fetch('/api/logs')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.logs) {
-                    const logContainer = document.getElementById('new-log-viewer');
-                    if (logContainer) {
-                        logContainer.innerHTML = '';
-                        
-                        data.logs.forEach(log => {
-                            const logEntry = document.createElement('div');
-                            logEntry.className = 'log-entry';
-                            logEntry.textContent = log;
-                            logContainer.appendChild(logEntry);
-                        });
-                        
-                        logContainer.scrollTop = logContainer.scrollHeight;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Failed to load New Test logs:', error);
-            });
-    }
-
-    updateLogViewer() {
-        fetch('/api/logs')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.logs) {
-                    const logContainer = document.getElementById('log-viewer');
-                    if (logContainer) {
-                        logContainer.innerHTML = '';
-                        
-                        data.logs.forEach(log => {
-                            const logEntry = document.createElement('div');
-                            logEntry.className = 'log-entry';
-                            logEntry.textContent = log;
-                            logContainer.appendChild(logEntry);
-                        });
-                        
-                        logContainer.scrollTop = logContainer.scrollHeight;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Failed to load logs:', error);
-            });
-    }
-
-    addAlarm(alarm) {
-        this.alarms.push(alarm);
-        this.updateAlarmTable();
-    }
-
-    addLog(message) {
-        this.logs.push({
-            timestamp: new Date(),
-            level: 'INFO',
-            message: message
-        });
-        this.updateLogViewer();
-    }
-
-    // ==================== 其他页面 ====================
-    async loadConfig() {
-        const configContent = document.getElementById('config-content');
-        configContent.innerHTML = '<p>配置管理功能开发中...</p>';
-    }
-
-    async loadSystem() {
-        try {
-            const [systemInfo, healthCheck] = await Promise.all([
-                this.fetchAPI('/api/system/info'),
-                this.fetchAPI('/api/system/health')
-            ]);
-
-            this.updateSystemInfo(systemInfo);
-            this.updateHealthCheck(healthCheck);
-        } catch (error) {
-            console.error('Failed to load system info:', error);
-        }
-    }
-
-    updateSystemInfo(data) {
-        const systemInfo = document.getElementById('system-info');
-        
-        if (data.success) {
-            const system = data.system;
-            const memory = data.memory;
-            
-            systemInfo.innerHTML = `
-                <p><strong>平台:</strong> ${system.platform}</p>
-                <p><strong>内存:</strong> ${memory.available_gb}GB / ${memory.total_gb}GB</p>
-                <p><strong>使用率:</strong> ${memory.percent}%</p>
-            `;
-        } else {
-            systemInfo.innerHTML = '<p class="text-error">无法获取系统信息</p>';
-        }
-    }
-
-    updateHealthCheck(data) {
-        const healthCheck = document.getElementById('health-check');
-        
-        if (data.success) {
-            const health = data.health;
-            healthCheck.innerHTML = `
-                <p><strong>Python进程:</strong> ${health.python_processes?.length || 0} 个</p>
-                <p><strong>端口使用:</strong> ${health.port_usage?.length || 0} 个</p>
-            `;
-        } else {
-            healthCheck.innerHTML = '<p class="text-error">无法获取健康检查信息</p>';
-        }
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     // ==================== 文件上传功能 ====================
@@ -1830,124 +1172,55 @@ class SmartMonitorApp {
         }
     }
 
-    // ==================== 工具方法 ====================
-    async fetchAPI(endpoint, options = {}) {
+    // ==================== 其他页面 ====================
+    async loadConfig() {
+        const configContent = document.getElementById('config-content');
+        configContent.innerHTML = '<p>配置管理功能开发中...</p>';
+    }
+
+    async loadSystem() {
         try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                ...options
-            });
+            const [systemInfo, healthCheck] = await Promise.all([
+                this.fetchAPI('/api/system/info'),
+                this.fetchAPI('/api/system/health')
+            ]);
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
+            this.updateSystemInfo(systemInfo);
+            this.updateHealthCheck(healthCheck);
         } catch (error) {
-            console.error(`API call failed for ${endpoint}:`, error);
-            throw error;
+            console.error('Failed to load system info:', error);
         }
     }
 
-    refreshFileList() {
-        this.loadFileList();
-        this.showSuccess('文件列表已刷新');
-    }
-
-    startOldTestAutoRefresh() {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-        }
+    updateSystemInfo(data) {
+        const systemInfo = document.getElementById('system-info');
         
-        this.refreshInterval = setInterval(() => {
-            if (this.currentPage === 'old-test-monitor-panel') {
-                this.loadOldTestMonitoringStatus();
-                this.loadOldTestSessionStats();
-                this.updateOldTestAlarmTable();
-                this.updateOldTestLogViewer();
-            }
-        }, 2000);
+        if (data.success) {
+            const system = data.system;
+            const memory = data.memory;
+            
+            systemInfo.innerHTML = `
+                <p><strong>平台:</strong> ${system.platform}</p>
+                <p><strong>内存:</strong> ${memory.available_gb}GB / ${memory.total_gb}GB</p>
+                <p><strong>使用率:</strong> ${memory.percent}%</p>
+            `;
+        } else {
+            systemInfo.innerHTML = '<p class="text-error">无法获取系统信息</p>';
+        }
     }
 
-    startNewTestAutoRefresh() {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-        }
+    updateHealthCheck(data) {
+        const healthCheck = document.getElementById('health-check');
         
-        this.refreshInterval = setInterval(() => {
-            if (this.currentPage === 'new-test-monitor-panel') {
-                this.loadNewTestMonitoringStatus();
-                this.loadNewTestSessionStats();
-                this.updateNewTestAlarmTable();
-                this.updateNewTestLogViewer();
-            }
-        }, 2000);
-    }
-
-    startAutoRefresh() {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
+        if (data.success) {
+            const health = data.health;
+            healthCheck.innerHTML = `
+                <p><strong>Python进程:</strong> ${health.python_processes?.length || 0} 个</p>
+                <p><strong>端口使用:</strong> ${health.port_usage?.length || 0} 个</p>
+            `;
+        } else {
+            healthCheck.innerHTML = '<p class="text-error">无法获取健康检查信息</p>';
         }
-        
-        this.refreshInterval = setInterval(() => {
-            if (this.currentPage === 'monitor-panel') {
-                this.loadMonitoringStatus();
-                this.loadSessionStats();
-                this.updateAlarmTable();
-                this.updateLogViewer();
-            }
-        }, 2000);
-    }
-
-    stopAutoRefresh() {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-            this.refreshInterval = null;
-        }
-    }
-
-    showSuccess(message) {
-        this.showNotification(message, 'success');
-    }
-
-    showError(message) {
-        this.showNotification(message, 'error');
-    }
-
-    disableConfirmButton() {
-        const confirmButton = document.querySelector('button[onclick="app.confirmAndGoToMonitor()"]');
-        if (confirmButton) {
-            confirmButton.disabled = true;
-            confirmButton.classList.add('disabled');
-            confirmButton.style.opacity = '0.5';
-            confirmButton.style.cursor = 'not-allowed';
-        }
-    }
-
-    enableConfirmButton() {
-        const confirmButton = document.querySelector('button[onclick="app.confirmAndGoToMonitor()"]');
-        if (confirmButton) {
-            confirmButton.disabled = false;
-            confirmButton.classList.remove('disabled');
-            confirmButton.style.opacity = '1';
-            confirmButton.style.cursor = 'pointer';
-        }
-    }
-
-    showNotification(message, type = 'info') {
-        const container = document.getElementById('notification-container');
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        
-        container.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
     }
 }
 

@@ -134,6 +134,16 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">标签匹配配置</h3>
+                        <div class="header-actions">
+                            <button id="load-last-config-btn" class="btn btn-outline btn-sm" onclick="app.loadLastLabelSelection()">
+                                <i class="fas fa-history"></i>
+                                加载上次配置
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="app.confirmConfiguration()">
+                                <i class="fas fa-check"></i>
+                                确认配置
+                            </button>
+                        </div>
                         <div class="status-indicator status-info">等待文件选择</div>
                     </div>
                     <div id="label-selection" class="label-selection-container">
@@ -141,19 +151,15 @@
                     </div>
                 </div>
 
-                <!-- 确认按钮 -->
+                <!-- 进入监控按钮 -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">确认配置</h3>
+                        <h3 class="card-title">启动监控</h3>
                     </div>
                     <div class="flex gap-4">
-                        <button class="btn btn-primary btn-lg" onclick="app.confirmAndGoToMonitor()">
-                            <i class="fas fa-check"></i>
-                            确认配置并进入监控
-                        </button>
-                        <button class="btn btn-outline" onclick="app.loadLastLabelSelection()">
-                            <i class="fas fa-history"></i>
-                            加载上次配置
+                        <button id="start-monitoring-btn" class="btn btn-primary btn-lg" onclick="app.startNewTestMonitoring()" disabled>
+                            <i class="fas fa-play"></i>
+                            进入监控
                         </button>
                     </div>
                 </div>

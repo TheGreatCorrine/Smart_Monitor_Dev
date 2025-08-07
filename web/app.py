@@ -83,6 +83,195 @@ def test_api():
         }
     })
 
+# ==================== 会话管理API ====================
+
+@app.route('/api/session/select-test', methods=['POST'])
+def select_test_type():
+    """选择测试类型"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        test_type = data.get('test_type')
+        
+        if not test_type or test_type not in ['old', 'new']:
+            return jsonify({'error': 'Invalid test type'}), 400
+        
+        result = web_adapter.select_test_type(test_type)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/workstations', methods=['GET'])
+def get_session_workstations():
+    """获取工作台列表"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        result = web_adapter.get_workstations()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/select-workstation', methods=['POST'])
+def select_workstation():
+    """选择工作台"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        workstation_id = data.get('workstation_id')
+        
+        if not workstation_id:
+            return jsonify({'error': 'Workstation ID is required'}), 400
+        
+        result = web_adapter.select_workstation(workstation_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/stop-workstation', methods=['POST'])
+def stop_workstation():
+    """停止工作台"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        workstation_id = data.get('workstation_id')
+        
+        if not workstation_id:
+            return jsonify({'error': 'Workstation ID is required'}), 400
+        
+        result = web_adapter.stop_workstation(workstation_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/configure-new-test', methods=['POST'])
+def configure_new_test_session():
+    """配置New Test会话"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        file_path = data.get('file_path')
+        selected_labels = data.get('selected_labels', {})
+        workstation_id = data.get('workstation_id', '1')
+        
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
+        if not file_path:
+            return jsonify({'error': 'File path is required'}), 400
+        
+        result = web_adapter.configure_new_test_session(session_id, file_path, selected_labels, workstation_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/start-old-test', methods=['POST'])
+def start_old_test_monitoring():
+    """启动Old Test监控"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
+        
+        result = web_adapter.start_old_test_monitoring(session_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/start-new-test', methods=['POST'])
+def start_new_test_monitoring():
+    """启动New Test监控"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
+        
+        result = web_adapter.start_new_test_monitoring(session_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/stop-monitoring', methods=['POST'])
+def stop_session_monitoring():
+    """停止会话监控"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
+        
+        result = web_adapter.stop_session_monitoring(session_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/status', methods=['GET'])
+def get_session_status():
+    """获取会话状态"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        session_id = request.args.get('session_id')
+        result = web_adapter.get_session_status(session_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/list', methods=['GET'])
+def list_sessions():
+    """列出所有会话"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        test_type = request.args.get('test_type')
+        result = web_adapter.list_all_sessions(test_type)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/switch', methods=['POST'])
+def switch_session():
+    """切换到指定会话"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
+        
+        result = web_adapter.switch_to_session(session_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ==================== 配置管理API ====================
 
 @app.route('/api/config/labels', methods=['GET'])

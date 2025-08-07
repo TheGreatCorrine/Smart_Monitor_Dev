@@ -3,6 +3,7 @@ web/adapters/WebAdapter.py
 ------------------------------------
 Web适配器 - 完全独立于GUI版本
 直接使用Clean Architecture的核心服务
+集成SessionController处理业务流程
 """
 import os
 import sys
@@ -17,7 +18,8 @@ import threading
 # Add backend to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-from backend.app.di.config import get_monitor_service, get_channel_service
+from backend.app.di.config import get_monitor_service, get_channel_service, get_session_service
+from backend.app.controllers.SessionController import SessionController
 from backend.app.entities.AlarmEvent import AlarmEvent
 from backend.app.entities.record import Record
 from backend.app.entities.ChannelConfiguration import ChannelCategory, ChannelSubtype
@@ -38,7 +40,7 @@ class WebLogHandler(logging.Handler):
 
 
 class WebAdapter:
-    """Web adapter for clean architecture"""
+    """Web adapter for clean architecture with session management"""
     
     def __init__(self):
         # Change to project root for correct path resolution
@@ -52,6 +54,10 @@ class WebAdapter:
         # Initialize services
         self.monitor_service = get_monitor_service()
         self.channel_service = get_channel_service()
+        self.session_service = get_session_service()
+        
+        # Initialize session controller
+        self.session_controller = SessionController(self.session_service, self.monitor_service)
         
         # Web-specific configuration
         self.web_config = {
@@ -104,6 +110,138 @@ class WebAdapter:
                 'error': f'Failed to get logs: {str(e)}'
             }
     
+    # ==================== 会话管理 API ====================
+    
+    def select_test_type(self, test_type: str) -> Dict[str, Any]:
+        """
+        选择测试类型 - 使用SessionController
+        
+        Parameters
+        ----------
+        test_type : str
+            测试类型 ("old" 或 "new")
+            
+        Returns
+        -------
+        Dict[str, Any]
+            选择结果
+        """
+        return self.session_controller.select_test_type(test_type)
+    
+    def configure_old_test_session(self, session_id: str, workstation_id: str, 
+                                 config_path: str = "config/rules.yaml") -> Dict[str, Any]:
+        """配置Old Test会话"""
+        return self.session_controller.configure_old_test_session(session_id, workstation_id, config_path)
+    
+    def start_old_test_monitoring(self, session_id: str) -> Dict[str, Any]:
+        """启动Old Test监控"""
+        return self.session_controller.start_old_test_monitoring(session_id)
+    
+    def start_old_test_simulation(self, session_id: str) -> Dict[str, Any]:
+        """启动Old Test模拟"""
+        return self.session_controller.start_old_test_simulation(session_id)
+    
+    def configure_new_test_session(self, session_id: str, file_path: str, 
+                                 selected_labels: Dict[str, str], workstation_id: str = "1",
+                                 config_path: str = "config/rules.yaml") -> Dict[str, Any]:
+        """配置New Test会话"""
+        return self.session_controller.configure_new_test_session(session_id, file_path, selected_labels, workstation_id, config_path)
+    
+    def start_new_test_monitoring(self, session_id: str) -> Dict[str, Any]:
+        """启动New Test监控"""
+        return self.session_controller.start_new_test_monitoring(session_id)
+    
+    def start_new_test_simulation(self, session_id: str) -> Dict[str, Any]:
+        """启动New Test模拟"""
+        return self.session_controller.start_new_test_simulation(session_id)
+    
+    def stop_session_monitoring(self, session_id: str) -> Dict[str, Any]:
+        """停止会话监控"""
+        return self.session_controller.stop_session_monitoring(session_id)
+    
+    def get_session_status(self, session_id: str = None) -> Dict[str, Any]:
+        """获取会话状态"""
+        return self.session_controller.get_session_status(session_id)
+    
+    def list_all_sessions(self, test_type: str = None) -> Dict[str, Any]:
+        """列出所有会话"""
+        return self.session_controller.list_all_sessions(test_type)
+    
+    def switch_to_session(self, session_id: str) -> Dict[str, Any]:
+        """切换到指定会话"""
+        return self.session_controller.switch_to_session(session_id)
+    
+    # ==================== 工作台管理 ====================
+    
+    def get_workstations(self) -> Dict[str, Any]:
+        """
+        获取工作台列表 - 基于会话状态
+        
+        Returns
+        -------
+        Dict[str, Any]
+            工作台列表
+        """
+        try:
+            # 获取所有Old Test会话作为工作台
+            old_sessions = self.session_service.list_sessions()
+            old_sessions = [s for s in old_sessions if s.test_type.value == 'old']
+            
+            workstations = []
+            for session in old_sessions:
+                status = 'running' if session.status.value == 'running' else 'stopped'
+                workstations.append({
+                    'id': session.session_id,
+                    'name': f"Old Test - {session.configuration.selected_workstation or 'Unknown'}",
+                    'status': status,
+                    'start_time': session.started_at.isoformat() if session.started_at else None,
+                    'records_processed': session.records_processed,
+                    'alarms_generated': session.alarms_generated,
+                    'test_type': 'old'
+                })
+            
+            return {
+                'success': True,
+                'workstations': workstations
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Failed to get workstations: {str(e)}'
+            }
+    
+    def select_workstation(self, workstation_id: str) -> Dict[str, Any]:
+        """
+        选择工作台 - 切换到指定会话
+        
+        Parameters
+        ----------
+        workstation_id : str
+            工作台ID (实际上是会话ID)
+            
+        Returns
+        -------
+        Dict[str, Any]
+            选择结果
+        """
+        return self.switch_to_session(workstation_id)
+    
+    def stop_workstation(self, workstation_id: str) -> Dict[str, Any]:
+        """
+        停止工作台 - 停止指定会话
+        
+        Parameters
+        ----------
+        workstation_id : str
+            工作台ID (实际上是会话ID)
+            
+        Returns
+        -------
+        Dict[str, Any]
+            停止结果
+        """
+        return self.stop_session_monitoring(workstation_id)
+    
     # ==================== 配置管理 ====================
     
     def get_label_configuration(self) -> Dict[str, Any]:
@@ -117,17 +255,12 @@ class WebAdapter:
             }
     
     def save_label_selection(self, selected_labels: Dict[str, str]) -> Dict[str, Any]:
-        """保存标签选择 - 直接保存到文件"""
+        """保存标签选择 - 使用SessionService"""
         try:
-            label_selection_path = Path("label_selection.json")
-            
-            # 保存到文件
-            with open(label_selection_path, 'w', encoding='utf-8') as f:
-                json.dump(selected_labels, f, ensure_ascii=False, indent=2)
-            
+            success, message = self.session_service.save_label_configuration(selected_labels)
             return {
-                'success': True,
-                'message': 'Label selection saved successfully'
+                'success': success,
+                'message': message
             }
         except Exception as e:
             return {
@@ -136,22 +269,13 @@ class WebAdapter:
             }
     
     def load_label_selection(self) -> Dict[str, Any]:
-        """加载标签选择 - 直接从文件加载"""
+        """加载标签选择 - 使用SessionService"""
         try:
-            label_selection_path = Path("label_selection.json")
-            
-            if not label_selection_path.exists():
-                return {
-                    'success': True,
-                    'labels': {}
-                }
-            
-            with open(label_selection_path, 'r', encoding='utf-8') as f:
-                labels = json.load(f)
-            
+            success, labels, error_msg = self.session_service.load_label_configuration()
             return {
-                'success': True,
-                'labels': labels
+                'success': success,
+                'labels': labels,
+                'error': error_msg if not success else None
             }
         except Exception as e:
             return {
@@ -241,36 +365,42 @@ class WebAdapter:
     
     # ==================== 监控管理 ====================
     
-    def start_monitoring(self, file_path: str = None, config_path: str = "config/rules.yaml", run_id: str = None, workstation_id: str = None) -> Dict[str, Any]:
-        """启动监控 - 直接使用监控服务"""
+    def start_monitoring(self, file_path: str = None, config_path: str = "config/rules.yaml", 
+                        run_id: str = None, workstation_id: str = None) -> Dict[str, Any]:
+        """
+        启动监控 - 使用SessionController
+        
+        Parameters
+        ----------
+        file_path : str, optional
+            数据文件路径 (New Test)
+        config_path : str
+            配置文件路径
+        run_id : str, optional
+            运行ID
+        workstation_id : str, optional
+            工作站ID (Old Test)
+            
+        Returns
+        -------
+        Dict[str, Any]
+            启动结果
+        """
         try:
-            if not run_id:
-                run_id = f"web_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            # 获取当前会话
+            current_session = self.session_service.get_current_session()
+            if not current_session:
+                return {
+                    'success': False,
+                    'error': '没有活动会话，请先选择测试类型'
+                }
             
-            # 如果有文件路径，验证文件
-            if file_path:
-                validation = self.validate_file_path(file_path)
-                if not validation.get('valid', False):
-                    return {
-                        'success': False,
-                        'error': validation.get('message', 'File validation failed')
-                    }
-            
-            # 启动监控
-            success = self.monitor_service.start_continuous_monitoring(run_id)
-            
-            if success:
-                self.web_config['current_file'] = file_path
-                self.web_config['monitoring_active'] = True
-                self.web_config['session_id'] = run_id
-            
-            return {
-                'success': success,
-                'message': 'Monitoring started successfully' if success else 'Failed to start monitoring',
-                'run_id': run_id,
-                'file_path': file_path,
-                'workstation_id': workstation_id
-            }
+            # 根据测试类型启动监控
+            if current_session.test_type.value == 'old':
+                return self.start_old_test_monitoring(current_session.session_id)
+            else:  # New Test
+                return self.start_new_test_monitoring(current_session.session_id)
+                
         except Exception as e:
             return {
                 'success': False,
@@ -279,51 +409,40 @@ class WebAdapter:
     
     def start_simulation(self, file_path: str, config_path: str = "config/rules.yaml", 
                         run_id: str = None, workstation_id: str = "1") -> Dict[str, Any]:
-        """启动模拟 - 直接使用监控服务"""
-        try:
-            if not run_id:
-                run_id = f"web_sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        """
+        启动模拟 - 使用SessionController
+        
+        Parameters
+        ----------
+        file_path : str
+            数据文件路径
+        config_path : str
+            配置文件路径
+        run_id : str, optional
+            运行ID
+        workstation_id : str
+            工作站ID
             
-            # 验证文件
-            validation = self.validate_file_path(file_path)
-            if not validation.get('valid', False):
+        Returns
+        -------
+        Dict[str, Any]
+            启动结果
+        """
+        try:
+            # 获取当前会话
+            current_session = self.session_service.get_current_session()
+            if not current_session:
                 return {
                     'success': False,
-                    'error': validation.get('message', 'File validation failed')
+                    'error': '没有活动会话，请先选择测试类型'
                 }
             
-            # 先停止旧的监控（如果正在运行）
-            if self.monitor_service.is_monitoring:
-                self.monitor_service.stop_continuous_monitoring()
-            
-            # 初始化监控服务
-            self.monitor_service.initialize(config_path)
-            
-            # 创建文件提供者
-            import sys
-            import os
-            sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-            from backend.app.di.config import create_file_provider
-            file_provider = create_file_provider("simulated", file_path)
-            
-            # 设置文件提供者
-            self.monitor_service.set_file_provider(file_provider)
-            
-            # 启动监控
-            success = self.monitor_service.start_continuous_monitoring(run_id)
-            
-            if success:
-                self.web_config['current_file'] = file_path
-                self.web_config['monitoring_active'] = True
-                self.web_config['session_id'] = run_id
-            
-            return {
-                'success': success,
-                'message': 'Simulation started successfully' if success else 'Failed to start simulation',
-                'run_id': run_id,
-                'file_path': file_path,
-                'workstation_id': workstation_id
-            }
+            # 根据测试类型启动模拟
+            if current_session.test_type.value == 'old':
+                return self.start_old_test_simulation(current_session.session_id)
+            else:  # New Test
+                return self.start_new_test_simulation(current_session.session_id)
+                
         except Exception as e:
             return {
                 'success': False,
@@ -331,18 +450,16 @@ class WebAdapter:
             }
     
     def stop_monitoring(self) -> Dict[str, Any]:
-        """停止监控 - 直接使用监控服务"""
+        """停止监控 - 使用SessionController"""
         try:
-            success = self.monitor_service.stop_continuous_monitoring()
+            current_session = self.session_service.get_current_session()
+            if not current_session:
+                return {
+                    'success': False,
+                    'error': '没有活动会话'
+                }
             
-            if success:
-                self.web_config['monitoring_active'] = False
-                self.web_config['session_id'] = None
-            
-            return {
-                'success': success,
-                'message': 'Monitoring stopped successfully' if success else 'Failed to stop monitoring'
-            }
+            return self.stop_session_monitoring(current_session.session_id)
         except Exception as e:
             return {
                 'success': False,
@@ -350,21 +467,21 @@ class WebAdapter:
             }
     
     def get_monitoring_status(self) -> Dict[str, Any]:
-        """获取监控状态 - 直接使用监控服务"""
+        """获取监控状态 - 使用SessionController"""
         try:
-            status = self.monitor_service.get_monitoring_status()
+            current_session = self.session_service.get_current_session()
+            if not current_session:
+                return {
+                    'success': True,
+                    'status': {
+                        'is_monitoring': False,
+                        'web_monitoring_active': False,
+                        'web_session_id': None,
+                        'web_current_file': None
+                    }
+                }
             
-            # 添加Web特有的状态信息
-            status.update({
-                'web_session_id': self.web_config['session_id'],
-                'web_current_file': self.web_config['current_file'],
-                'web_monitoring_active': self.web_config['monitoring_active']
-            })
-            
-            return {
-                'success': True,
-                'status': status
-            }
+            return self.get_session_status(current_session.session_id)
         except Exception as e:
             return {
                 'success': False,
@@ -389,27 +506,23 @@ class WebAdapter:
     
     def get_web_status(self) -> Dict[str, Any]:
         """获取Web应用状态"""
+        current_session = self.session_service.get_current_session()
         return {
             'success': True,
             'web_config': self.web_config,
+            'current_session': current_session.to_dict() if current_session else None,
             'timestamp': datetime.now().isoformat(),
             'version': '1.0.0'
         }
     
     def reset_web_session(self) -> Dict[str, Any]:
-        """重置Web会话"""
+        """Reset web session state"""
         try:
-            # 停止监控
-            if self.web_config['monitoring_active']:
-                self.stop_monitoring()
-            
-            # 重置配置
             self.web_config = {
-                'session_id': None,
                 'current_file': None,
-                'monitoring_active': False
+                'monitoring_active': False,
+                'session_id': None
             }
-            
             return {
                 'success': True,
                 'message': 'Web session reset successfully'

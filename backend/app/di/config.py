@@ -11,6 +11,7 @@ from ..interfaces.IFileProvider import IFileProvider
 
 from ..usecases.Monitor import MonitorService
 from ..services.ChannelConfigurationService import ChannelConfigurationService
+from ..services.SessionService import SessionService
 from ..infra.fileprovider import SimulatedFileProvider, LocalFileProvider
 
 
@@ -21,6 +22,7 @@ def configure_dependencies():
     # Register core services
     container.register(IMonitorService, MonitorService, singleton=True)
     container.register(IChannelConfigurationService, ChannelConfigurationService, singleton=True)
+    container.register(SessionService, SessionService, singleton=True)
     
     # Register file providers (not singletons, create new instances as needed)
     container.register(IFileProvider, SimulatedFileProvider, singleton=False)
@@ -51,6 +53,18 @@ def get_channel_service() -> IChannelConfigurationService:
         Channel configuration service instance
     """
     return container.resolve(IChannelConfigurationService)
+
+
+def get_session_service() -> SessionService:
+    """
+    Get session service instance
+    
+    Returns
+    -------
+    SessionService
+        Session service instance
+    """
+    return container.resolve(SessionService)
 
 
 def create_file_provider(provider_type: str = "simulated", file_path: str = "data/test.dat") -> IFileProvider:
