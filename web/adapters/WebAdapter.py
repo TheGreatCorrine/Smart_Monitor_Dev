@@ -531,4 +531,28 @@ class WebAdapter:
             return {
                 'success': False,
                 'error': f'Failed to reset web session: {str(e)}'
+            }
+    
+    # ==================== 配置状态验证API ====================
+    
+    def validate_configuration_status(self, session_id: str) -> Dict[str, Any]:
+        """
+        验证New Test会话的配置状态
+        
+        Parameters
+        ----------
+        session_id : str
+            会话ID
+            
+        Returns
+        -------
+        Dict[str, Any]
+            配置验证结果
+        """
+        try:
+            return self.session_controller.validate_configuration_status(session_id)
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Failed to validate configuration status: {str(e)}'
             } 

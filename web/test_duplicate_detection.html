@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重复匹配检测测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .test-case {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>重复匹配检测测试</h1>
+    
+    <div class="test-section">
+        <h2>测试1: 同类型重复匹配检测</h2>
+        <div class="test-case">
+            <p><strong>场景:</strong> 在temperature类型中，TRC标签被多个通道使用</p>
+            <button onclick="testDuplicateInSameType()">运行测试</button>
+            <div id="test1-result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试2: 跨类型不检测</h2>
+        <div class="test-case">
+            <p><strong>场景:</strong> 不同大类型使用相同标签名</p>
+            <button onclick="testCrossTypeNoDetection()">运行测试</button>
+            <div id="test2-result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试3: 正常配置</h2>
+        <div class="test-case">
+            <p><strong>场景:</strong> 每个标签只匹配一个通道</p>
+            <button onclick="testNormalConfiguration()">运行测试</button>
+            <div id="test3-result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试4: 通道类型分类</h2>
+        <div class="test-case">
+            <p><strong>场景:</strong> 验证通道类型分类是否正确</p>
+            <button onclick="testChannelTypeClassification()">运行测试</button>
+            <div id="test4-result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试5: None选项特殊处理</h2>
+        <div class="test-case">
+            <p><strong>场景:</strong> 验证None选项是否被正确处理</p>
+            <button onclick="testNoneOptionHandling()">运行测试</button>
+            <div id="test5-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 复制ConfigurationManager类用于测试
+        class TestConfigurationManager {
+            constructor() {
+                this.labelToChannelMap = new Map();
+                this.channelToLabelMap = new Map();
+                this.duplicateMatches = [];
+            }
+
+            addLabelConfiguration(channelId, labelId) {
+                // 先设置映射关系
+                this.labelToChannelMap.set(labelId, channelId);
+                this.channelToLabelMap.set(channelId, labelId);
+                
+                // 然后检查重复匹配
+                this.checkDuplicateMatches(channelId, labelId);
+            }
+
+            removeLabelConfiguration(channelId) {
+                const labelId = this.channelToLabelMap.get(channelId);
+                if (labelId) {
+                    this.labelToChannelMap.delete(labelId);
+                }
+                this.channelToLabelMap.delete(channelId);
+            }
+
+            checkDuplicateMatches(channelId, labelId) {
+                this.duplicateMatches = [];
+                
+                // None是特殊选项，不参与重复匹配检测
+                if (labelId === 'no_match') {
+                    return;
+                }
+                
+                const channelType = this.getChannelType(channelId);
+                
+                // 检查是否有其他通道已经使用了相同的标签
+                const existingChannel = this.labelToChannelMap.get(labelId);
+                if (existingChannel && existingChannel !== channelId) {
+                    // 检查是否是相同类型的通道
+                    const existingChannelType = this.getChannelType(existingChannel);
+                    if (existingChannelType === channelType) {
+                        this.duplicateMatches.push({
+                            labelId: labelId,
+                            channel1: existingChannel,
+                            channel2: channelId,
+                            channelType: channelType
+                        });
+                    }
+                }
+            }
+
+            getChannelType(channelId) {
+                if (channelId.startsWith('T') || channelId.startsWith('TRC') || channelId.startsWith('temp')) {
+                    return 'temperature';
+                }
+                if (channelId.startsWith('P') || channelId.startsWith('pressure')) {
+                    return 'pressure';
+                }
+                if (channelId.startsWith('at') || channelId.startsWith('environment')) {
+                    return 'environment';
+                }
+                if (channelId.startsWith('p') || channelId.startsWith('power')) {
+                    return 'power';
+                }
+                return 'other';
+            }
+
+            hasDuplicateMatches() {
+                return this.duplicateMatches.length > 0;
+            }
+
+            getDuplicateMatches() {
+                return this.duplicateMatches;
+            }
+
+            reset() {
+                this.labelToChannelMap.clear();
+                this.channelToLabelMap.clear();
+                this.duplicateMatches = [];
+            }
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        function testDuplicateInSameType() {
+            const config = new TestConfigurationManager();
+            
+            // 添加第一个配置
+            config.addLabelConfiguration('T1', 'TRC');
+            
+            // 添加重复配置
+            config.addLabelConfiguration('T2', 'TRC');
+            
+            if (config.hasDuplicateMatches()) {
+                const duplicates = config.getDuplicateMatches();
+                showResult('test1-result', 
+                    `✅ 测试通过！检测到重复匹配:<br>
+                    标签 "TRC" 在temperature类型中被多个通道使用<br>
+                    通道1: ${duplicates[0].channel1}<br>
+                    通道2: ${duplicates[0].channel2}`, 'success');
+            } else {
+                showResult('test1-result', '❌ 测试失败！应该检测到重复匹配但没有检测到', 'error');
+            }
+        }
+
+        function testCrossTypeNoDetection() {
+            const config = new TestConfigurationManager();
+            
+            // 添加不同大类型的配置
+            config.addLabelConfiguration('T1', 'TRC');  // temperature类型
+            config.addLabelConfiguration('P1', 'TRC');  // pressure类型
+            
+            if (config.hasDuplicateMatches()) {
+                showResult('test2-result', '❌ 测试失败！跨类型不应该检测到重复匹配', 'error');
+            } else {
+                showResult('test2-result', 
+                    `✅ 测试通过！跨类型不检测重复匹配<br>
+                    T1 -> TRC (temperature类型)<br>
+                    P1 -> TRC (pressure类型)`, 'success');
+            }
+        }
+
+        function testNormalConfiguration() {
+            const config = new TestConfigurationManager();
+            
+            // 添加正常配置
+            config.addLabelConfiguration('T1', 'TRC');
+            config.addLabelConfiguration('T2', 'TEMP');
+            config.addLabelConfiguration('P1', 'pressure');
+            config.addLabelConfiguration('P2', 'None');
+            
+            if (config.hasDuplicateMatches()) {
+                showResult('test3-result', '❌ 测试失败！正常配置不应该有重复匹配', 'error');
+            } else {
+                showResult('test3-result', 
+                    `✅ 测试通过！正常配置没有重复匹配<br>
+                    T1 -> TRC<br>
+                    T2 -> TEMP<br>
+                    P1 -> pressure<br>
+                    P2 -> None`, 'success');
+            }
+        }
+
+        function testChannelTypeClassification() {
+            const config = new TestConfigurationManager();
+            
+            const testCases = [
+                { channel: 'T1', expected: 'temperature' },
+                { channel: 'TRC1', expected: 'temperature' },
+                { channel: 'temp1', expected: 'temperature' },
+                { channel: 'P1', expected: 'pressure' },
+                { channel: 'pressure1', expected: 'pressure' },
+                { channel: 'at1', expected: 'environment' },
+                { channel: 'environment1', expected: 'environment' },
+                { channel: 'p1', expected: 'power' },
+                { channel: 'power1', expected: 'power' },
+                { channel: 'other1', expected: 'other' }
+            ];
+            
+            let results = [];
+            testCases.forEach(testCase => {
+                const actual = config.getChannelType(testCase.channel);
+                const passed = actual === testCase.expected;
+                results.push(`${testCase.channel}: ${passed ? '✅' : '❌'} (期望: ${testCase.expected}, 实际: ${actual})`);
+            });
+            
+            const allPassed = results.every(r => r.includes('✅'));
+            showResult('test4-result', 
+                `通道类型分类测试:<br>${results.join('<br>')}<br><br>
+                ${allPassed ? '✅ 所有测试通过！' : '❌ 部分测试失败！'}`, 
+                allPassed ? 'success' : 'error');
+        }
+
+        function testNoneOptionHandling() {
+            const config = new TestConfigurationManager();
+            
+            // 测试多个None选项
+            config.addLabelConfiguration('T1', 'TRC');
+            config.addLabelConfiguration('T2', 'no_match');  // None选项
+            config.addLabelConfiguration('T3', 'no_match');  // 多个None选项
+            config.addLabelConfiguration('P1', 'pressure');
+            config.addLabelConfiguration('P2', 'no_match');  // 另一个None选项
+            
+            if (config.hasDuplicateMatches()) {
+                showResult('test5-result', '❌ 测试失败！None选项不应该被检测为重复匹配', 'error');
+            } else {
+                showResult('test5-result', 
+                    `✅ 测试通过！None选项被正确处理<br>
+                    T1 -> TRC<br>
+                    T2 -> None<br>
+                    T3 -> None (多个None选项不冲突)<br>
+                    P1 -> pressure<br>
+                    P2 -> None`, 'success');
+            }
+        }
+    </script>
+</body>
+</html> 

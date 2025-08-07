@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI状态同步测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .label-radio {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .label-radio:hover {
+            border-color: #007bff;
+        }
+        .label-radio input[type="radio"] {
+            display: none;
+        }
+        .label-radio.selected {
+            border-color: #2563eb;
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>UI状态同步测试</h1>
+    
+    <div class="test-section">
+        <h2>模拟标签选择界面</h2>
+        <p>这个测试模拟了标签选择的UI状态同步问题</p>
+        
+        <div>
+            <h3>通道 T1:</h3>
+            <label class="label-radio">
+                <input type="radio" name="label_T1" value="TRC">
+                <span>TRC</span>
+            </label>
+            <label class="label-radio">
+                <input type="radio" name="label_T1" value="TEMP">
+                <span>TEMP</span>
+            </label>
+            <label class="label-radio">
+                <input type="radio" name="label_T1" value="no_match">
+                <span>None</span>
+            </label>
+        </div>
+        
+        <div>
+            <h3>通道 T2:</h3>
+            <label class="label-radio">
+                <input type="radio" name="label_T2" value="TRC">
+                <span>TRC</span>
+            </label>
+            <label class="label-radio">
+                <input type="radio" name="label_T2" value="TEMP">
+                <span>TEMP</span>
+            </label>
+            <label class="label-radio">
+                <input type="radio" name="label_T2" value="no_match">
+                <span>None</span>
+            </label>
+        </div>
+        
+        <div>
+            <h3>通道 P1:</h3>
+            <label class="label-radio">
+                <input type="radio" name="label_P1" value="pressure">
+                <span>pressure</span>
+            </label>
+            <label class="label-radio">
+                <input type="radio" name="label_P1" value="no_match">
+                <span>None</span>
+            </label>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="simulateUserSelection()">模拟用户选择</button>
+            <button onclick="simulateLoadLastConfig()">模拟加载上次配置</button>
+            <button onclick="clearAllSelections()">清除所有选择</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // 模拟用户选择
+        function simulateUserSelection() {
+            // 模拟用户选择了 T1->TRC, T2->TEMP, P1->pressure
+            const selections = {
+                'T1': 'TRC',
+                'T2': 'TEMP', 
+                'P1': 'pressure'
+            };
+            
+            updateUIFromSelections(selections);
+            showStatus('模拟用户选择完成: T1->TRC, T2->TEMP, P1->pressure', 'success');
+        }
+        
+        // 模拟加载上次配置
+        function simulateLoadLastConfig() {
+            // 模拟加载的配置是 T1->TEMP, T2->None, P1->None
+            const savedSelections = {
+                'T1': 'TEMP',
+                'T2': 'no_match',
+                'P1': 'no_match'
+            };
+            
+            updateUIFromSelections(savedSelections);
+            showStatus('模拟加载上次配置完成: T1->TEMP, T2->None, P1->None', 'success');
+        }
+        
+        // 清除所有选择
+        function clearAllSelections() {
+            const allRadios = document.querySelectorAll('input[type="radio"]');
+            allRadios.forEach(radio => {
+                radio.checked = false;
+                const labelElement = radio.closest('.label-radio');
+                if (labelElement) {
+                    labelElement.classList.remove('selected');
+                }
+            });
+            showStatus('已清除所有选择', 'success');
+        }
+        
+        // 从选择数据更新UI
+        function updateUIFromSelections(selections) {
+            // 先清除所有radio按钮的选中状态和样式
+            const allRadios = document.querySelectorAll('input[type="radio"]');
+            allRadios.forEach(radio => {
+                radio.checked = false;
+                const labelElement = radio.closest('.label-radio');
+                if (labelElement) {
+                    labelElement.classList.remove('selected');
+                }
+            });
+            
+            // 设置新的选择
+            Object.entries(selections).forEach(([channelId, subtypeId]) => {
+                const radio = document.querySelector(`input[name="label_${channelId}"][value="${subtypeId}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    const labelElement = radio.closest('.label-radio');
+                    if (labelElement) {
+                        labelElement.classList.add('selected');
+                    }
+                }
+            });
+        }
+        
+        // 显示状态
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+        
+        // 添加radio按钮的事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            const radios = document.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // 清除同组其他选项的选中状态
+                    const radioGroup = document.querySelectorAll(`input[name="${this.name}"]`);
+                    radioGroup.forEach(r => {
+                        const labelElement = r.closest('.label-radio');
+                        if (labelElement) {
+                            labelElement.classList.remove('selected');
+                        }
+                    });
+                    
+                    // 设置当前选中项的视觉反馈
+                    if (this.checked) {
+                        const currentLabelElement = this.closest('.label-radio');
+                        if (currentLabelElement) {
+                            currentLabelElement.classList.add('selected');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

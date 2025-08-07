@@ -637,4 +637,143 @@ class SessionController:
             return {
                 'success': False,
                 'error': f"切换会话失败: {str(e)}"
-            } 
+            }
+    
+    # ==================== 配置状态验证 ====================
+    
+    def validate_configuration_status(self, session_id: str) -> Dict[str, Any]:
+        """
+        验证New Test会话的配置状态
+        
+        Parameters
+        ----------
+        session_id : str
+            会话ID
+            
+        Returns
+        -------
+        Dict[str, Any]
+            配置验证结果
+        """
+        try:
+            session = self.session_service.get_session(session_id)
+            if not session:
+                return {
+                    'success': False,
+                    'error': f"会话不存在: {session_id}"
+                }
+            
+            # 验证文件是否已选择且存在
+            file_selected = False
+            file_valid = False
+            if session.file_path:
+                file_selected = True
+                # 检查文件是否真实存在
+                import os
+                if os.path.exists(session.file_path):
+                    file_valid = True
+                else:
+                    return {
+                        'success': False,
+                        'error': f"文件不存在: {session.file_path}"
+                    }
+            
+            # 验证标签是否已配置
+            labels_configured = False
+            if session.selected_labels and len(session.selected_labels) > 0:
+                labels_configured = True
+                # 验证标签配置的完整性
+                if not self._validate_label_configuration(session.selected_labels):
+                    return {
+                        'success': False,
+                        'error': '标签配置不完整或无效'
+                    }
+            
+            # 检查是否完全配置
+            fully_configured = file_valid and labels_configured
+            
+            return {
+                'success': True,
+                'configuration_status': {
+                    'file_selected': file_selected,
+                    'file_valid': file_valid,
+                    'labels_configured': labels_configured,
+                    'fully_configured': fully_configured,
+                    'file_path': session.file_path,
+                    'selected_labels': session.selected_labels
+                },
+                'can_proceed': fully_configured,
+                'validation_messages': self._get_validation_messages(file_selected, file_valid, labels_configured)
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Failed to validate configuration status: {e}")
+            return {
+                'success': False,
+                'error': f"验证配置状态失败: {str(e)}"
+            }
+    
+    def _validate_label_configuration(self, selected_labels: Dict[str, str]) -> bool:
+        """
+        验证标签配置的完整性
+        
+        Parameters
+        ----------
+        selected_labels : Dict[str, str]
+            选择的标签配置
+            
+        Returns
+        -------
+        bool
+            配置是否有效
+        """
+        try:
+            # 这里可以添加更复杂的验证逻辑
+            # 比如检查标签是否在允许的范围内
+            # 检查是否有冲突的标签选择等
+            
+            # 基本验证：确保所有值都是字符串且不为空
+            for channel_id, subtype_id in selected_labels.items():
+                if not isinstance(channel_id, str) or not isinstance(subtype_id, str):
+                    return False
+                if not channel_id.strip() or not subtype_id.strip():
+                    return False
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to validate label configuration: {e}")
+            return False
+    
+    def _get_validation_messages(self, file_selected: bool, file_valid: bool, labels_configured: bool) -> List[str]:
+        """
+        获取验证消息列表
+        
+        Parameters
+        ----------
+        file_selected : bool
+            是否已选择文件
+        file_valid : bool
+            文件是否有效
+        labels_configured : bool
+            是否已配置标签
+            
+        Returns
+        -------
+        List[str]
+            验证消息列表
+        """
+        messages = []
+        
+        if not file_selected:
+            messages.append("请选择数据文件")
+        elif not file_valid:
+            messages.append("选择的文件无效或不存在")
+        
+        if not labels_configured:
+            messages.append("请配置标签匹配")
+        
+        if file_selected and file_valid and labels_configured:
+            messages.append("配置完整，可以启动监控")
+        
+        return messages 

@@ -4,11 +4,216 @@
  * 所有业务逻辑已移到后端SessionController
  */
 
+// ==================== 配置管理器 ====================
+class ConfigurationManager {
+    constructor() {
+        this.localStatus = {
+            file_selected: false,
+            labels_configured: false,
+            fully_configured: false
+        };
+        this.backendValidation = null;
+        this.lastSyncTime = 0;
+        this.syncInProgress = false;
+        this.listeners = [];
+        this.requiredLabels = []; // 存储必需的标签
+        this.configuredLabels = new Set(); // 存储已配置的标签
+        this.labelToChannelMap = new Map(); // 存储标签到通道的映射
+        this.channelToLabelMap = new Map(); // 存储通道到标签的映射
+        this.duplicateMatches = []; // 存储重复匹配
+    }
+    
+    // 添加状态变化监听器
+    addListener(callback) {
+        this.listeners.push(callback);
+    }
+    
+    // 通知所有监听器
+    notifyListeners() {
+        const status = this.getStatus();
+        this.listeners.forEach(callback => callback(status));
+    }
+    
+    // 本地快速响应
+    updateLocalStatus(updates) {
+        Object.assign(this.localStatus, updates);
+        this.notifyListeners();
+        
+        // 异步验证后端
+        this.validateWithBackend();
+    }
+    
+    // 后端验证（可选）
+    async validateWithBackend() {
+        if (this.syncInProgress) return;
+        
+        this.syncInProgress = true;
+        try {
+            const response = await fetch('/api/session/validate-configuration');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    this.backendValidation = data.configuration_status;
+                    this.lastSyncTime = Date.now();
+                    
+                    // 如果后端验证结果与本地不同，更新UI
+                    if (JSON.stringify(this.localStatus) !== JSON.stringify(this.backendValidation)) {
+                        this.notifyListeners();
+                    }
+                }
+            }
+        } catch (error) {
+            console.log('后端验证失败，使用本地状态');
+        } finally {
+            this.syncInProgress = false;
+        }
+    }
+    
+    // 获取最终状态
+    getStatus() {
+        // 优先使用后端验证结果，如果失败则使用本地状态
+        return this.backendValidation || this.localStatus;
+    }
+    
+    // 检查文件选择状态
+    checkFileSelection(filePath) {
+        const fileSelected = Boolean(filePath && filePath.trim() !== '');
+        this.updateLocalStatus({ 
+            file_selected: fileSelected,
+            fully_configured: fileSelected && this.localStatus.labels_configured
+        });
+    }
+    
+    // 设置必需的标签列表
+    setRequiredLabels(labels) {
+        this.requiredLabels = labels;
+        this.checkLabelConfiguration();
+    }
+    
+    // 检查标签配置状态
+    checkLabelConfiguration() {
+        // 检查是否所有必需的标签都已配置
+        const allLabelsConfigured = this.requiredLabels.length > 0 && 
+                                  this.requiredLabels.every(label => this.configuredLabels.has(label));
+        
+        this.updateLocalStatus({ 
+            labels_configured: allLabelsConfigured,
+            fully_configured: this.localStatus.file_selected && allLabelsConfigured
+        });
+    }
+    
+    // 添加标签配置
+    addLabelConfiguration(channelId, labelId) {
+        // 检查是否有重复匹配（在设置新映射之前）
+        this.checkDuplicateMatches(channelId, labelId);
+        
+        // 设置映射关系
+        this.configuredLabels.add(channelId);
+        this.labelToChannelMap.set(labelId, channelId);
+        this.channelToLabelMap.set(channelId, labelId);
+        
+        this.checkLabelConfiguration();
+    }
+    
+    // 移除标签配置
+    removeLabelConfiguration(channelId) {
+        const labelId = this.channelToLabelMap.get(channelId);
+        if (labelId) {
+            this.labelToChannelMap.delete(labelId);
+        }
+        this.channelToLabelMap.delete(channelId);
+        this.configuredLabels.delete(channelId);
+        this.checkLabelConfiguration();
+    }
+    
+    // 检查重复匹配
+    checkDuplicateMatches(channelId, labelId) {
+        this.duplicateMatches = [];
+        
+        // None是特殊选项，不参与重复匹配检测
+        if (labelId === 'no_match') {
+            return;
+        }
+        
+        // 获取通道类型（temperature、pressure、environment、power等）
+        const channelType = this.getChannelType(channelId);
+        
+        // 检查是否有其他通道已经使用了相同的标签
+        const existingChannel = this.labelToChannelMap.get(labelId);
+        if (existingChannel && existingChannel !== channelId) {
+            // 检查是否是相同类型的通道
+            const existingChannelType = this.getChannelType(existingChannel);
+            if (existingChannelType === channelType) {
+                this.duplicateMatches.push({
+                    labelId: labelId,
+                    channel1: existingChannel,
+                    channel2: channelId,
+                    channelType: channelType
+                });
+            }
+        }
+    }
+    
+    // 获取通道类型
+    getChannelType(channelId) {
+        // 根据通道ID判断属于哪个大类型
+        if (channelId.startsWith('T') || channelId.startsWith('TRC') || channelId.startsWith('temp')) {
+            return 'temperature';
+        }
+        if (channelId.startsWith('P') || channelId.startsWith('pressure')) {
+            return 'pressure';
+        }
+        if (channelId.startsWith('at') || channelId.startsWith('environment')) {
+            return 'environment';
+        }
+        if (channelId.startsWith('p') || channelId.startsWith('power')) {
+            return 'power';
+        }
+        // 默认类型
+        return 'other';
+    }
+    
+    // 获取重复匹配信息
+    getDuplicateMatches() {
+        return this.duplicateMatches;
+    }
+    
+    // 检查是否有重复匹配
+    hasDuplicateMatches() {
+        return this.duplicateMatches.length > 0;
+    }
+    
+    // 重置状态
+    reset() {
+        this.localStatus = {
+            file_selected: false,
+            labels_configured: false,
+            fully_configured: false
+        };
+        this.backendValidation = null;
+        this.lastSyncTime = 0;
+        this.requiredLabels = [];
+        this.configuredLabels.clear();
+        this.labelToChannelMap.clear();
+        this.channelToLabelMap.clear();
+        this.duplicateMatches = [];
+        this.notifyListeners();
+    }
+}
+
 class SmartMonitorApp {
     constructor() {
         this.currentPage = 'test-selection';
         this.refreshInterval = null;
         this.currentSessionId = null;
+        
+        // 初始化配置管理器
+        this.configManager = new ConfigurationManager();
+        this.configManager.addListener((status) => {
+            this.updateConfigurationStatus(status);
+            this.updateStartMonitoringButton(status.fully_configured);
+        });
+        
         this.init();
     }
 
@@ -253,6 +458,7 @@ class SmartMonitorApp {
     async onFileSelected(filePath) {
         if (!filePath) {
             this.updateFileInfo('请选择数据文件以查看详细信息');
+            this.configManager.checkFileSelection('');
             return;
         }
 
@@ -277,8 +483,8 @@ class SmartMonitorApp {
             
             await this.loadLabelConfiguration();
             
-            // 检查配置状态
-            await this.checkConfigurationStatus();
+            // 使用配置管理器检查文件选择状态
+            this.configManager.checkFileSelection(filePath);
 
         } catch (error) {
             console.error('Failed to get file info:', error);
@@ -311,36 +517,12 @@ class SmartMonitorApp {
             statusIndicator.className = 'status-indicator status-info';
         }
 
-        // 检查配置状态
-        this.checkConfigurationStatus();
+        // 使用配置管理器重置文件选择状态
+        this.configManager.checkFileSelection('');
     }
 
-    // ==================== 配置状态检查 ====================
+    // ==================== 配置状态管理 ====================
     
-    async checkConfigurationStatus() {
-        // 检查文件是否已选择
-        const fileSelector = document.getElementById('file-selector');
-        const selectedFile = fileSelector?.value;
-        const fileSelected = Boolean(selectedFile && selectedFile.trim() !== '');
-        
-        // 检查标签是否已配置
-        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
-        const labelsConfigured = radioButtons.length > 0;
-        
-        // 检查是否完全配置
-        const fullyConfigured = fileSelected && labelsConfigured;
-        
-        // 更新状态
-        const status = {
-            file_selected: fileSelected,
-            labels_configured: labelsConfigured,
-            fully_configured: fullyConfigured
-        };
-        
-        this.updateConfigurationStatus(status);
-        this.updateStartMonitoringButton(fullyConfigured);
-    }
-
     updateConfigurationStatus(status) {
         // 更新状态指示器
         const statusIndicator = document.querySelector('#file-config .card-header .status-indicator');
@@ -355,6 +537,21 @@ class SmartMonitorApp {
                 statusIndicator.textContent = '等待文件选择';
                 statusIndicator.className = 'status-indicator status-info';
             }
+        }
+        
+        // 检查并显示重复匹配警告
+        this.checkAndShowDuplicateWarning();
+    }
+    
+    checkAndShowDuplicateWarning() {
+        if (this.configManager.hasDuplicateMatches()) {
+            const duplicates = this.configManager.getDuplicateMatches();
+            let warningMessage = '⚠️ 检测到同类型重复匹配:\n';
+            duplicates.forEach(dup => {
+                warningMessage += `• 标签 "${dup.labelId}" 在${dup.channelType}类型中被多个通道使用\n`;
+            });
+            warningMessage += '\n请检查并修正重复匹配，确保同类型内每个标签只对应一个通道。';
+            this.showNotification(warningMessage, 'warning');
         }
     }
 
@@ -373,27 +570,39 @@ class SmartMonitorApp {
     }
 
     async confirmConfiguration() {
-        // 前端本地检查配置状态
-        const fileSelector = document.getElementById('file-selector');
-        const selectedFile = fileSelector?.value;
-        const fileSelected = Boolean(selectedFile && selectedFile.trim() !== '');
+        // 使用配置管理器获取当前状态
+        const status = this.configManager.getStatus();
         
-        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
-        const labelsConfigured = radioButtons.length > 0;
-        
-        if (!fileSelected) {
+        if (!status.file_selected) {
             this.showError('请先选择数据文件');
             return;
         }
         
-        if (!labelsConfigured) {
-            this.showError('请配置标签匹配');
+        if (!status.labels_configured) {
+            const missingLabels = this.configManager.requiredLabels.filter(
+                label => !this.configManager.configuredLabels.has(label)
+            );
+            this.showError(`请配置所有必需的标签: ${missingLabels.join(', ')}`);
+            return;
+        }
+        
+        // 检查重复匹配
+        if (this.configManager.hasDuplicateMatches()) {
+            const duplicates = this.configManager.getDuplicateMatches();
+            let duplicateMessage = '检测到同类型重复匹配:\n';
+            duplicates.forEach(dup => {
+                duplicateMessage += `- 标签 "${dup.labelId}" 在${dup.channelType}类型中被多个通道使用\n`;
+            });
+            duplicateMessage += '\n请检查并修正重复匹配，确保同类型内每个标签只对应一个通道。';
+            this.showError(duplicateMessage);
             return;
         }
         
         // 配置完整，可以启动监控
         this.showSuccess('配置已确认');
-        await this.checkConfigurationStatus();
+        
+        // 强制同步后端验证
+        await this.configManager.validateWithBackend();
     }
 
     updateFileInfo(data) {
@@ -445,13 +654,26 @@ class SmartMonitorApp {
             const priorityCategories = [];
             const otherCategories = [];
             
+            // 收集所有必需的标签
+            const requiredLabels = [];
+            
             Object.entries(data.categories).forEach(([categoryKey, category]) => {
                 if (priorityOrder.includes(categoryKey)) {
                     priorityCategories.push([categoryKey, category]);
                 } else {
                     otherCategories.push([categoryKey, category]);
                 }
+                
+                // 收集所有通道ID作为必需标签
+                if (category.channels) {
+                    category.channels.forEach(channel => {
+                        requiredLabels.push(channel.channel_id);
+                    });
+                }
             });
+            
+            // 设置必需的标签列表
+            this.configManager.setRequiredLabels(requiredLabels);
             
             otherCategories.sort((a, b) => a[0].localeCompare(b[0]));
             const sortedCategories = [...priorityCategories, ...otherCategories];
@@ -485,6 +707,17 @@ class SmartMonitorApp {
                                     </label>
                                 `;
                             });
+                        }
+                        
+                        // 为除了at和p之外的通道添加"None"选项
+                        if (!channel.channel_id.startsWith('at') && !channel.channel_id.startsWith('p')) {
+                            html += `
+                                <label class="label-radio">
+                                    <input type="radio" name="label_${channel.channel_id}" 
+                                           value="no_match">
+                                    <span>None</span>
+                                </label>
+                            `;
                         }
                         
                         html += `
@@ -543,11 +776,21 @@ class SmartMonitorApp {
             currentLabelElement.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
         }
 
+        // 更新配置管理器中的标签状态
+        if (event.target.checked) {
+            if (subtypeId === 'no_match') {
+                // 选择"无需匹配"时，只标记为已配置，不建立映射关系
+                this.configManager.configuredLabels.add(channelId);
+                this.configManager.checkLabelConfiguration();
+            } else {
+                this.configManager.addLabelConfiguration(channelId, subtypeId);
+            }
+        } else {
+            this.configManager.removeLabelConfiguration(channelId);
+        }
+
         // 保存标签选择到会话
         this.saveLabelSelectionToSession();
-        
-        // 检查配置状态
-        this.checkConfigurationStatus();
     }
 
     async saveLabelSelectionToSession() {
@@ -644,9 +887,9 @@ class SmartMonitorApp {
                 this.updateLabelSelectionFromSaved(data.labels);
                 this.showSuccess('已加载上次配置');
                 
-                // 保存到会话并检查配置状态
+                // 保存到会话并使用配置管理器检查状态
                 await this.saveLabelSelectionToSession();
-                await this.checkConfigurationStatus();
+                this.configManager.checkLabelConfiguration();
             } else {
                 this.showError('没有找到保存的配置');
                 // 更新按钮状态为禁用
@@ -693,6 +936,23 @@ class SmartMonitorApp {
     }
 
     updateLabelSelectionFromSaved(labels) {
+        // 清除所有已配置的标签
+        this.configManager.configuredLabels.clear();
+        this.configManager.labelToChannelMap.clear();
+        this.configManager.channelToLabelMap.clear();
+        this.configManager.duplicateMatches = [];
+        
+        // 先清除所有radio按钮的选中状态和样式
+        const allRadios = document.querySelectorAll('input[type="radio"]');
+        allRadios.forEach(radio => {
+            radio.checked = false;
+            const labelElement = radio.closest('.label-radio');
+            if (labelElement) {
+                labelElement.style.borderColor = '';
+                labelElement.style.backgroundColor = '';
+            }
+        });
+        
         Object.entries(labels).forEach(([channelId, subtypeId]) => {
             const radio = document.querySelector(`input[name="label_${channelId}"][value="${subtypeId}"]`);
             if (radio) {
@@ -701,6 +961,13 @@ class SmartMonitorApp {
                 if (labelElement) {
                     labelElement.style.borderColor = '#2563eb';
                     labelElement.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+                }
+                
+                // 添加到已配置标签列表
+                if (subtypeId === 'no_match') {
+                    this.configManager.configuredLabels.add(channelId);
+                } else {
+                    this.configManager.addLabelConfiguration(channelId, subtypeId);
                 }
             }
         });
@@ -923,20 +1190,15 @@ class SmartMonitorApp {
             return;
         }
 
-        // 前端本地检查配置状态
-        const fileSelector = document.getElementById('file-selector');
-        const selectedFile = fileSelector?.value;
-        const fileSelected = Boolean(selectedFile && selectedFile.trim() !== '');
+        // 使用配置管理器获取当前状态
+        const status = this.configManager.getStatus();
         
-        const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
-        const labelsConfigured = radioButtons.length > 0;
-        
-        if (!fileSelected) {
+        if (!status.file_selected) {
             this.showError('请先选择数据文件');
             return;
         }
         
-        if (!labelsConfigured) {
+        if (!status.labels_configured) {
             this.showError('请配置标签匹配');
             return;
         }

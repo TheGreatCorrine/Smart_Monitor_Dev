@@ -886,6 +886,24 @@ def reset_web_session():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ==================== 配置状态验证API ====================
+
+@app.route('/api/session/validate-configuration', methods=['GET'])
+def validate_session_configuration():
+    """验证会话配置状态"""
+    if not web_adapter:
+        return jsonify({'error': 'Web adapter not available'}), 500
+    
+    try:
+        session_id = request.args.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
+        
+        result = web_adapter.validate_configuration_status(session_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ==================== 错误处理 ====================
 
 @app.errorhandler(404)
