@@ -305,6 +305,36 @@ class WebAdapter:
             import os
             sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
             from backend.app.di.config import create_file_provider
+            
+            # For Old Test simulation without file_path, use a default MPL file
+            if not file_path:
+                # Try to find an existing MPL file for simulation
+                import glob
+                mpl_files = glob.glob("data/MPL*.dat")
+                if mpl_files:
+                    file_path = mpl_files[0]  # Use first available MPL file
+                    logging.info(f"Using default MPL file for Old Test simulation: {file_path}")
+                else:
+                    # Create a minimal simulated file provider for Old Test
+                    from backend.app.infra.fileprovider.SimulatedFileProvider import SimulatedFileProvider
+                    file_provider = SimulatedFileProvider(".", workstation_id)
+                    file_provider._initialize_temp_file()  # Initialize empty temp file
+                    self.monitor_service.set_file_provider(file_provider)
+                    success = self.monitor_service.start_continuous_monitoring(run_id)
+                    
+                    if success:
+                        self.web_config['current_file'] = file_path
+                        self.web_config['monitoring_active'] = True
+                        self.web_config['session_id'] = run_id
+                    
+                    return {
+                        'success': success,
+                        'message': 'Old Test simulation started successfully' if success else 'Failed to start Old Test simulation',
+                        'run_id': run_id,
+                        'file_path': file_path,
+                        'workstation_id': workstation_id
+                    }
+            
             file_provider = create_file_provider("simulated", file_path)
             
             # Set file provider

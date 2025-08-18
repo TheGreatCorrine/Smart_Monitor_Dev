@@ -16,6 +16,7 @@ class SmartMonitorApp {
         this.alarms = [];
         this.logs = [];
         this.testType = null;
+        this.monitoringActive = false;
         this.init();
     }
 
@@ -23,6 +24,7 @@ class SmartMonitorApp {
         this.loadTestSelection();
         this.setupFileUpload();
         this.disableConfirmButton();
+        this.startStatusPolling();
     }
 
     // ==================== Navigation Management ====================
@@ -1488,6 +1490,9 @@ class SmartMonitorApp {
                 this.currentSessionId = data.session_id;
                 this.currentSessionName = data.session_name;
                 
+                // Set monitoring as active to start status polling
+                this.monitoringActive = true;
+                
                 this.showSuccess(`Simulation started successfully - ${data.session_name}`);
                 this.loadMonitoringStatus();
                 
@@ -1977,6 +1982,76 @@ class SmartMonitorApp {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    // ==================== Status Polling ====================
+    
+    startStatusPolling() {
+        // Poll status every 2 seconds when monitoring is active
+        setInterval(() => {
+            if (this.monitoringActive && this.currentSessionId) {
+                this.pollMonitoringStatus();
+            }
+        }, 2000);
+    }
+
+    async pollMonitoringStatus() {
+        try {
+            const status = await this.fetchAPI('/api/monitor/status');
+            if (status.success && status.status) {
+                this.updateMonitoringDisplay(status.status);
+            }
+        } catch (error) {
+            console.error('Failed to poll monitoring status:', error);
+        }
+    }
+
+    updateMonitoringDisplay(status) {
+        // Update monitoring status display for both Old Test and New Test panels
+        if (status.is_monitoring) {
+            const stats = status.stats || {};
+            const recordsProcessed = stats.total_records_processed || 0;
+            const alarmsGenerated = stats.total_alarms_generated || 0;
+            
+            // Update Old Test monitoring status
+            const oldStatusElement = document.getElementById('old-monitoring-status');
+            if (oldStatusElement) {
+                oldStatusElement.className = 'status-indicator status-success';
+                oldStatusElement.innerHTML = `
+                    <div class="status-info">
+                        <p><strong>Status:</strong> Running</p>
+                        <p><strong>Records:</strong> ${recordsProcessed}</p>
+                        <p><strong>Alarms:</strong> ${alarmsGenerated}</p>
+                    </div>
+                `;
+            }
+            
+            // Update New Test monitoring status
+            const newStatusElement = document.getElementById('new-monitoring-status');
+            if (newStatusElement) {
+                newStatusElement.className = 'status-indicator status-success';
+                newStatusElement.innerHTML = `
+                    <div class="status-info">
+                        <p><strong>Status:</strong> Running</p>
+                        <p><strong>Records:</strong> ${recordsProcessed}</p>
+                        <p><strong>Alarms:</strong> ${alarmsGenerated}</p>
+                    </div>
+                `;
+            }
+        } else {
+            // Reset status when not monitoring
+            const oldStatusElement = document.getElementById('old-monitoring-status');
+            if (oldStatusElement) {
+                oldStatusElement.className = 'status-indicator status-info';
+                oldStatusElement.textContent = 'Not Started';
+            }
+            
+            const newStatusElement = document.getElementById('new-monitoring-status');
+            if (newStatusElement) {
+                newStatusElement.className = 'status-indicator status-info';
+                newStatusElement.textContent = 'Not Started';
+            }
+        }
     }
 }
 
