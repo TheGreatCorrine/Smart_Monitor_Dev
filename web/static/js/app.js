@@ -2000,6 +2000,11 @@ class SmartMonitorApp {
             const status = await this.fetchAPI('/api/monitor/status');
             if (status.success && status.status) {
                 this.updateMonitoringDisplay(status.status);
+                
+                // Also update workstation list if we're on the workstation selection page
+                if (this.currentPage === 'workstation-selection') {
+                    await this.loadWorkstationList();
+                }
             }
         } catch (error) {
             console.error('Failed to poll monitoring status:', error);

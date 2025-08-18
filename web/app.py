@@ -380,6 +380,19 @@ def get_monitoring_status():
     
     try:
         result = web_adapter.get_monitoring_status()
+        
+        # Update active sessions with real-time monitoring data
+        if result.get('success') and result.get('status'):
+            status = result['status']
+            stats = status.get('stats', {})
+            
+            # Update all running sessions with current monitoring data
+            for session_id, session in active_sessions.items():
+                if session['status'] == 'running':
+                    session['records_processed'] = stats.get('total_records_processed', 0)
+                    session['alarms_generated'] = stats.get('total_alarms_generated', 0)
+                    session['last_update'] = datetime.now().isoformat()
+        
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
