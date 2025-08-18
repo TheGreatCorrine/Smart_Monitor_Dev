@@ -351,7 +351,7 @@ class SmartMonitorApp {
 
         this.selectedFile = filePath;
         
-        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
+        const statusIndicator = document.querySelector('.card-header .status-indicator');
         if (statusIndicator) {
             statusIndicator.className = 'status-indicator status-info';
             statusIndicator.textContent = 'Loading label configuration...';
@@ -397,7 +397,7 @@ class SmartMonitorApp {
             labelSelection.innerHTML = '<p>Please select a data file first to configure label matching</p>';
         }
         
-        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
+        const statusIndicator = document.querySelector('.card-header .status-indicator');
         if (statusIndicator) {
             statusIndicator.className = 'status-indicator status-info';
             statusIndicator.textContent = 'Waiting for file selection';
@@ -441,7 +441,7 @@ class SmartMonitorApp {
 
     updateLabelSelection(data) {
         const labelSelection = document.getElementById('label-selection');
-        const statusIndicator = document.querySelector('.label-selection-container .status-indicator');
+        const statusIndicator = document.querySelector('.card-header .status-indicator');
         
         if (data.categories && Object.keys(data.categories).length > 0) {
             if (statusIndicator) {
