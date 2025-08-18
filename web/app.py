@@ -709,8 +709,8 @@ def internal_error(error):
 
 if __name__ == '__main__':
     print("Starting Smart Monitor Web Application...")
-    print("Access the application at: http://localhost:5001")
-    print("Health check: http://localhost:5001/api/health")
+    print("Access the application at: http://localhost:5002")
+    print("Health check: http://localhost:5002/api/health")
     print("Web adapter status:", "✅ Ready" if web_adapter else "❌ Failed")
     # Change to project root directory
     import os

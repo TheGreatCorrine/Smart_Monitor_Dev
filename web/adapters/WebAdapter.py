@@ -284,13 +284,14 @@ class WebAdapter:
             if not run_id:
                 run_id = f"web_sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            # Validate file
-            validation = self.validate_file_path(file_path)
-            if not validation.get('valid', False):
-                return {
-                    'success': False,
-                    'error': validation.get('message', 'File validation failed')
-                }
+            # Validate file only if file_path is provided (for New Test)
+            if file_path:
+                validation = self.validate_file_path(file_path)
+                if not validation.get('valid', False):
+                    return {
+                        'success': False,
+                        'error': validation.get('message', 'File validation failed')
+                    }
             
             # Stop old monitoring first (if running)
             if self.monitor_service.is_monitoring:
