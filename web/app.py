@@ -2,17 +2,17 @@
 web/app.py
 ------------------------------------
 Smart Monitor Web Application
-基于Flask的Web界面，复用现有Clean Architecture
+Flask-based Web interface, reusing existing Clean Architecture
 """
 from flask import Flask, render_template, request, jsonify
 import os
 import sys
 import traceback
 
-# 添加backend路径到Python路径
+# Add backend path to Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# 导入Web适配器
+# Import Web Adapter
 from adapters.WebAdapter import WebAdapter
 import uuid
 import time
@@ -21,26 +21,26 @@ import threading
 
 app = Flask(__name__)
 
-# 会话管理器 - 存储所有活动的监控会话
+# Session Manager - Store all active monitoring sessions
 active_sessions = {}
 session_counter = 0
 
-# 初始化Web适配器
+# Initialize Web Adapter
 try:
     web_adapter = WebAdapter()
-    print("✅ Web适配器初始化成功")
+    print("✅ Web Adapter initialized successfully")
 except Exception as e:
-    print(f"❌ Web适配器初始化失败: {e}")
+    print(f"❌ Web Adapter initialization failed: {e}")
     web_adapter = None
 
 def create_session_id():
-    """创建唯一的会话ID"""
+    """Create unique session ID"""
     global session_counter
     session_counter += 1
     return f"WS{session_counter:03d}"
 
 def get_session_info(session_id):
-    """获取会话信息"""
+    """Get session information"""
     if session_id in active_sessions:
         session = active_sessions[session_id]
         return {
@@ -58,12 +58,12 @@ def get_session_info(session_id):
 
 @app.route('/')
 def index():
-    """主页面 - 现代化仪表板"""
+    """Main page - Modern dashboard"""
     return render_template('dashboard.html')
 
 @app.route('/api/health')
 def health_check():
-    """健康检查API"""
+    """Health check API"""
     return jsonify({
         'status': 'ok',
         'message': 'Smart Monitor Web API is running',
@@ -73,7 +73,7 @@ def health_check():
 
 @app.route('/api/test')
 def test_api():
-    """测试API"""
+    """Test API"""
     return jsonify({
         'status': 'success',
         'data': {
@@ -83,11 +83,11 @@ def test_api():
         }
     })
 
-# ==================== 配置管理API ====================
+# ==================== Configuration Management API ====================
 
 @app.route('/api/config/labels', methods=['GET'])
 def get_label_configuration():
-    """获取标签配置"""
+    """Get label configuration"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -99,7 +99,7 @@ def get_label_configuration():
 
 @app.route('/api/config/labels', methods=['POST'])
 def save_label_selection():
-    """保存标签选择"""
+    """Save label selection"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -114,7 +114,7 @@ def save_label_selection():
 
 @app.route('/api/config/labels/load', methods=['GET'])
 def load_label_selection():
-    """加载标签选择"""
+    """Load label selection"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -126,7 +126,7 @@ def load_label_selection():
 
 @app.route('/api/config/labels/save', methods=['POST'])
 def save_label_selection_save():
-    """保存标签选择 (save端点)"""
+    """Save label selection (save endpoint)"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -141,7 +141,7 @@ def save_label_selection_save():
 
 @app.route('/api/logs', methods=['GET'])
 def get_logs():
-    """获取系统日志"""
+    """Get system logs"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -151,11 +151,11 @@ def get_logs():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== 文件管理API ====================
+# ==================== File Management API ====================
 
 @app.route('/api/file/upload', methods=['POST'])
 def upload_file():
-    """上传数据文件"""
+    """Upload data file"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -163,7 +163,7 @@ def upload_file():
         from pathlib import Path
         import shutil
         
-        # 检查是否有文件上传
+        # Check if a file is uploaded
         if 'file' not in request.files:
             return jsonify({'error': 'No file uploaded'}), 400
         
@@ -171,23 +171,23 @@ def upload_file():
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
         
-        # 检查文件扩展名
+        # Check file extension
         if not file.filename.lower().endswith('.dat'):
             return jsonify({'error': 'Only .dat files are allowed'}), 400
         
-        # 获取项目根目录的data文件夹
+        # Get the data directory of the project root
         current_dir = Path(__file__).parent
         project_root = current_dir.parent
         data_dir = project_root / "data"
         
-        # 确保data目录存在
+        # Ensure data directory exists
         data_dir.mkdir(exist_ok=True)
         
-        # 保存文件
+        # Save file
         filename = file.filename
         file_path = data_dir / filename
         
-        # 如果文件已存在，添加时间戳
+        # If file already exists, add timestamp
         if file_path.exists():
             from datetime import datetime
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -197,7 +197,7 @@ def upload_file():
         
         file.save(str(file_path))
         
-        # 获取文件信息
+        # Get file information
         stat = file_path.stat()
         file_info = {
             'name': filename,
@@ -218,7 +218,7 @@ def upload_file():
 
 @app.route('/api/file/validate', methods=['POST'])
 def validate_file():
-    """验证文件路径"""
+    """Validate file path"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -233,7 +233,7 @@ def validate_file():
 
 @app.route('/api/file/infer-workstation', methods=['POST'])
 def infer_workstation_id():
-    """自动推断工作站ID"""
+    """Automatically infer workstation ID"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -246,11 +246,11 @@ def infer_workstation_id():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== 监控管理API ====================
+# ==================== Monitoring Management API ====================
 
 @app.route('/api/monitor/start', methods=['POST'])
 def start_monitoring():
-    """启动监控"""
+    """Start monitoring"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -261,11 +261,11 @@ def start_monitoring():
         run_id = data.get('run_id')
         workstation_id = data.get('workstation_id')
         
-        # 创建新的会话
+        # Create new session
         session_id = create_session_id()
-        session_name = f"工作站 {session_id}"
+        session_name = f"Workstation {session_id}"
         
-        # 创建会话记录
+        # Create session record
         active_sessions[session_id] = {
             'name': session_name,
             'status': 'running',
@@ -279,7 +279,7 @@ def start_monitoring():
             'run_id': run_id
         }
         
-        # 调用后端启动监控
+        # Call backend to start monitoring
         result = web_adapter.start_monitoring(file_path, config_path, run_id)
         
         if result.get('success'):
@@ -292,7 +292,7 @@ def start_monitoring():
 
 @app.route('/api/monitor/simulation', methods=['POST'])
 def start_simulation():
-    """启动模拟"""
+    """Start simulation"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -303,17 +303,17 @@ def start_simulation():
         run_id = data.get('run_id')
         workstation_id = data.get('workstation_id', '1')
         
-        # 从文件名推断工作站ID
+        # Infer workstation ID from filename
         if file_path:
             workstation_info = web_adapter.auto_infer_workstation_id(file_path)
             if workstation_info.get('success') and workstation_info.get('workstation_id'):
                 workstation_id = workstation_info['workstation_id']
         
-        # 创建新的会话
+        # Create new session
         session_id = create_session_id()
-        session_name = f"工作站 {workstation_id}"
+        session_name = f"Workstation {workstation_id}"
         
-        # 创建会话记录
+        # Create session record
         active_sessions[session_id] = {
             'name': session_name,
             'status': 'running',
@@ -327,7 +327,7 @@ def start_simulation():
             'run_id': run_id
         }
         
-        # 调用后端启动模拟
+        # Call backend to start simulation
         result = web_adapter.start_simulation(file_path, config_path, run_id, workstation_id)
         
         if result.get('success'):
@@ -341,7 +341,7 @@ def start_simulation():
 
 @app.route('/api/monitor/stop', methods=['POST'])
 def stop_monitoring():
-    """停止监控"""
+    """Stop monitoring"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -350,22 +350,22 @@ def stop_monitoring():
         session_id = data.get('session_id')
         
         if session_id and session_id in active_sessions:
-            # 更新会话状态
+            # Update session status
             active_sessions[session_id]['status'] = 'stopped'
             
-            # 调用后端停止监控
+            # Call backend to stop monitoring
             result = web_adapter.stop_monitoring()
             
-            # 从活动会话中移除
+            # Remove from active sessions
             del active_sessions[session_id]
             
             result['session_id'] = session_id
             return jsonify(result)
         else:
-            # 如果没有指定session_id，停止所有监控
+            # If no session_id is specified, stop all monitoring
             result = web_adapter.stop_monitoring()
             
-            # 清空所有会话
+            # Clear all sessions
             active_sessions.clear()
             
             return jsonify(result)
@@ -374,7 +374,7 @@ def stop_monitoring():
 
 @app.route('/api/monitor/status', methods=['GET'])
 def get_monitoring_status():
-    """获取监控状态"""
+    """Get monitoring status"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -386,12 +386,12 @@ def get_monitoring_status():
 
 @app.route('/api/monitor/workstations', methods=['GET'])
 def get_workstations():
-    """获取可用工作台列表"""
+    """Get available workstation list"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
     try:
-        # 从活动会话中获取工作台数据
+        # Get workstation data from active sessions
         workstations = []
         
         for session_id, session in active_sessions.items():
@@ -415,11 +415,11 @@ def get_workstations():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== 文件管理增强API ====================
+# ==================== File Management Enhanced API ====================
 
 @app.route('/api/file/list', methods=['GET'])
 def list_data_files():
-    """列出可用的数据文件"""
+    """List available data files"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -427,10 +427,10 @@ def list_data_files():
         import os
         from pathlib import Path
         
-        # 修复路径问题：从web目录找到项目根目录的data文件夹
-        current_dir = Path(__file__).parent  # web目录
-        project_root = current_dir.parent     # 项目根目录
-        data_dir = project_root / "data"     # data目录
+        # Fix path issue: find the project root's data directory from the web directory
+        current_dir = Path(__file__).parent  # web directory
+        project_root = current_dir.parent     # project root directory
+        data_dir = project_root / "data"     # data directory
         
         if not data_dir.exists():
             return jsonify({
@@ -439,7 +439,7 @@ def list_data_files():
                 'message': f'Data directory not found at {data_dir}'
             })
         
-        # 查找所有.dat文件
+        # Find all .dat files
         dat_files = []
         for file_path in data_dir.glob("*.dat"):
             try:
@@ -454,7 +454,7 @@ def list_data_files():
             except Exception as e:
                 print(f"Error reading file {file_path}: {e}")
         
-        # 按修改时间排序
+        # Sort by modification time
         dat_files.sort(key=lambda x: x['modified'], reverse=True)
         
         return jsonify({
@@ -467,7 +467,7 @@ def list_data_files():
 
 @app.route('/api/file/info/<path:filename>', methods=['GET'])
 def get_file_info(filename):
-    """获取文件详细信息"""
+    """Get detailed file information"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -475,9 +475,9 @@ def get_file_info(filename):
         from pathlib import Path
         from datetime import datetime
         
-        # 修复路径问题：从web目录找到项目根目录的data文件夹
-        current_dir = Path(__file__).parent  # web目录
-        project_root = current_dir.parent     # 项目根目录
+        # Fix path issue: find the project root's data directory from the web directory
+        current_dir = Path(__file__).parent  # web directory
+        project_root = current_dir.parent     # project root directory
         file_path = project_root / "data" / filename
         
         if not file_path.exists():
@@ -485,10 +485,10 @@ def get_file_info(filename):
         
         stat = file_path.stat()
         
-        # 验证文件
+        # Validate file
         validation = web_adapter.validate_file_path(str(file_path))
         
-        # 推断工作站ID
+        # Infer workstation ID
         workstation_info = web_adapter.auto_infer_workstation_id(str(file_path))
         
         return jsonify({
@@ -507,11 +507,11 @@ def get_file_info(filename):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== 配置管理增强API ====================
+# ==================== Configuration Management Enhanced API ====================
 
 @app.route('/api/config/rules', methods=['GET'])
 def get_rules_config():
-    """获取规则配置"""
+    """Get rule configuration"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -538,7 +538,7 @@ def get_rules_config():
 
 @app.route('/api/config/channels', methods=['GET'])
 def get_channels_config():
-    """获取通道配置"""
+    """Get channel configuration"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -563,18 +563,18 @@ def get_channels_config():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== 系统信息API ====================
+# ==================== System Information API ====================
 
 @app.route('/api/system/info', methods=['GET'])
 def get_system_info():
-    """获取系统信息"""
+    """Get system information"""
     try:
         import platform
         import psutil
         from datetime import datetime
         from pathlib import Path
         
-        # 基本系统信息
+        # Basic system information
         system_info = {
             'platform': platform.system(),
             'platform_version': platform.version(),
@@ -583,7 +583,7 @@ def get_system_info():
             'machine': platform.machine()
         }
         
-        # 内存信息
+        # Memory information
         memory = psutil.virtual_memory()
         memory_info = {
             'total': memory.total,
@@ -593,7 +593,7 @@ def get_system_info():
             'available_gb': round(memory.available / (1024**3), 2)
         }
         
-        # 磁盘信息
+        # Disk information
         disk = psutil.disk_usage('/')
         disk_info = {
             'total': disk.total,
@@ -604,7 +604,7 @@ def get_system_info():
             'free_gb': round(disk.free / (1024**3), 2)
         }
         
-        # 项目文件信息
+        # Project file information
         project_info = {
             'data_dir_exists': Path("data").exists(),
             'config_dir_exists': Path("config").exists(),
@@ -625,11 +625,11 @@ def get_system_info():
 
 @app.route('/api/system/health', methods=['GET'])
 def get_system_health():
-    """获取系统健康状态"""
+    """Get system health status"""
     try:
         import psutil
         
-        # 检查关键进程
+        # Check critical processes
         processes = []
         for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
             try:
@@ -643,7 +643,7 @@ def get_system_health():
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 pass
         
-        # 检查端口占用
+        # Check port usage
         ports = []
         try:
             import socket
@@ -671,11 +671,11 @@ def get_system_health():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== Web状态API ====================
+# ==================== Web Status API ====================
 
 @app.route('/api/web/status', methods=['GET'])
 def get_web_status():
-    """获取Web应用状态"""
+    """Get Web application status"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -687,7 +687,7 @@ def get_web_status():
 
 @app.route('/api/web/reset', methods=['POST'])
 def reset_web_session():
-    """重置Web会话"""
+    """Reset Web session"""
     if not web_adapter:
         return jsonify({'error': 'Web adapter not available'}), 500
     
@@ -697,7 +697,7 @@ def reset_web_session():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== 错误处理 ====================
+# ==================== Error Handling ====================
 
 @app.errorhandler(404)
 def not_found(error):

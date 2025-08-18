@@ -1,5 +1,3 @@
 """
-web/adapters/__init__.py
-------------------------------------
-Web适配器包
+Web adapters package
 """ 

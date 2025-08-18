@@ -1,8 +1,8 @@
 """
 web/adapters/WebAdapter.py
 ------------------------------------
-Web适配器 - 完全独立于GUI版本
-直接使用Clean Architecture的核心服务
+Web Adapter - Completely independent from GUI version
+Directly uses Clean Architecture core services
 """
 import os
 import sys
@@ -104,10 +104,10 @@ class WebAdapter:
                 'error': f'Failed to get logs: {str(e)}'
             }
     
-    # ==================== 配置管理 ====================
+    # ==================== Configuration Management ====================
     
     def get_label_configuration(self) -> Dict[str, Any]:
-        """获取标签配置 - 直接使用通道服务"""
+        """Get label configuration - directly use channel service"""
         try:
             return self.channel_service.get_configuration_for_ui()
         except Exception as e:
@@ -117,11 +117,11 @@ class WebAdapter:
             }
     
     def save_label_selection(self, selected_labels: Dict[str, str]) -> Dict[str, Any]:
-        """保存标签选择 - 直接保存到文件"""
+        """Save label selection - directly save to file"""
         try:
             label_selection_path = Path("label_selection.json")
             
-            # 保存到文件
+            # Save to file
             with open(label_selection_path, 'w', encoding='utf-8') as f:
                 json.dump(selected_labels, f, ensure_ascii=False, indent=2)
             
@@ -136,7 +136,7 @@ class WebAdapter:
             }
     
     def load_label_selection(self) -> Dict[str, Any]:
-        """加载标签选择 - 直接从文件加载"""
+        """Load label selection - directly load from file"""
         try:
             label_selection_path = Path("label_selection.json")
             
@@ -159,10 +159,10 @@ class WebAdapter:
                 'error': f'Failed to load labels: {str(e)}'
             }
     
-    # ==================== 文件管理 ====================
+    # ==================== File Management ====================
     
     def validate_file_path(self, file_path: str) -> Dict[str, Any]:
-        """验证文件路径 - 直接验证"""
+        """Validate file path - direct validation"""
         try:
             path = Path(file_path)
             
@@ -180,7 +180,7 @@ class WebAdapter:
                     'message': 'File is not a .dat file'
                 }
             
-            # 检查文件大小
+            # Check file size
             file_size = path.stat().st_size
             if file_size == 0:
                 return {
@@ -203,18 +203,18 @@ class WebAdapter:
             }
     
     def auto_infer_workstation_id(self, file_path: str) -> Dict[str, Any]:
-        """自动推断工作站ID - 从文件名推断"""
+        """Automatically infer workstation ID - infer from filename"""
         try:
             import re
             
             path = Path(file_path)
             filename = path.stem
             
-            # 尝试从文件名推断工作站ID
-            # 匹配模式: MPL数字 或 包含数字的文件名
+            # Try to infer workstation ID from filename
+            # Match patterns: MPL number or filename containing numbers
             patterns = [
-                r'MPL(\d+)',  # MPL6, MPL12 等
-                r'(\d+)',      # 任何数字
+                r'MPL(\d+)',  # MPL6, MPL12, etc.
+                r'(\d+)',      # Any number
             ]
             
             for pattern in patterns:
@@ -239,15 +239,15 @@ class WebAdapter:
                 'error': f'Workstation ID inference failed: {str(e)}'
             }
     
-    # ==================== 监控管理 ====================
+    # ==================== Monitoring Management ====================
     
     def start_monitoring(self, file_path: str = None, config_path: str = "config/rules.yaml", run_id: str = None, workstation_id: str = None) -> Dict[str, Any]:
-        """启动监控 - 直接使用监控服务"""
+        """Start monitoring - directly use monitoring service"""
         try:
             if not run_id:
                 run_id = f"web_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            # 如果有文件路径，验证文件
+            # If file path exists, validate file
             if file_path:
                 validation = self.validate_file_path(file_path)
                 if not validation.get('valid', False):
@@ -256,7 +256,7 @@ class WebAdapter:
                         'error': validation.get('message', 'File validation failed')
                     }
             
-            # 启动监控
+            # Start monitoring
             success = self.monitor_service.start_continuous_monitoring(run_id)
             
             if success:
@@ -279,12 +279,12 @@ class WebAdapter:
     
     def start_simulation(self, file_path: str, config_path: str = "config/rules.yaml", 
                         run_id: str = None, workstation_id: str = "1") -> Dict[str, Any]:
-        """启动模拟 - 直接使用监控服务"""
+        """Start simulation - directly use monitoring service"""
         try:
             if not run_id:
                 run_id = f"web_sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            # 验证文件
+            # Validate file
             validation = self.validate_file_path(file_path)
             if not validation.get('valid', False):
                 return {
@@ -292,24 +292,24 @@ class WebAdapter:
                     'error': validation.get('message', 'File validation failed')
                 }
             
-            # 先停止旧的监控（如果正在运行）
+            # Stop old monitoring first (if running)
             if self.monitor_service.is_monitoring:
                 self.monitor_service.stop_continuous_monitoring()
             
-            # 初始化监控服务
+            # Initialize monitoring service
             self.monitor_service.initialize(config_path)
             
-            # 创建文件提供者
+            # Create file provider
             import sys
             import os
             sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
             from backend.app.di.config import create_file_provider
             file_provider = create_file_provider("simulated", file_path)
             
-            # 设置文件提供者
+            # Set file provider
             self.monitor_service.set_file_provider(file_provider)
             
-            # 启动监控
+            # Start monitoring
             success = self.monitor_service.start_continuous_monitoring(run_id)
             
             if success:
@@ -331,7 +331,7 @@ class WebAdapter:
             }
     
     def stop_monitoring(self) -> Dict[str, Any]:
-        """停止监控 - 直接使用监控服务"""
+        """Stop monitoring - directly use monitoring service"""
         try:
             success = self.monitor_service.stop_continuous_monitoring()
             
@@ -350,11 +350,11 @@ class WebAdapter:
             }
     
     def get_monitoring_status(self) -> Dict[str, Any]:
-        """获取监控状态 - 直接使用监控服务"""
+        """Get monitoring status - directly use monitoring service"""
         try:
             status = self.monitor_service.get_monitoring_status()
             
-            # 添加Web特有的状态信息
+            # Add Web-specific status information
             status.update({
                 'web_session_id': self.web_config['session_id'],
                 'web_current_file': self.web_config['current_file'],
@@ -372,7 +372,7 @@ class WebAdapter:
             }
     
     def add_alarm_handler(self, handler: Callable[[AlarmEvent], None]) -> Dict[str, Any]:
-        """添加告警处理器 - 直接使用监控服务"""
+        """Add alarm handler - directly use monitoring service"""
         try:
             self.monitor_service.add_alarm_handler(handler)
             return {
@@ -385,10 +385,10 @@ class WebAdapter:
                 'error': f'Failed to add alarm handler: {str(e)}'
             }
     
-    # ==================== Web特有功能 ====================
+    # ==================== Web-specific Features ====================
     
     def get_web_status(self) -> Dict[str, Any]:
-        """获取Web应用状态"""
+        """Get Web application status"""
         return {
             'success': True,
             'web_config': self.web_config,
@@ -397,13 +397,13 @@ class WebAdapter:
         }
     
     def reset_web_session(self) -> Dict[str, Any]:
-        """重置Web会话"""
+        """Reset Web session"""
         try:
-            # 停止监控
+            # Stop monitoring
             if self.web_config['monitoring_active']:
                 self.stop_monitoring()
             
-            # 重置配置
+            # Reset configuration
             self.web_config = {
                 'session_id': None,
                 'current_file': None,

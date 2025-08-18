@@ -9,14 +9,14 @@
 </head>
 <body>
     <div class="container">
-        <!-- 主内容区域 -->
+        <!-- Main Content Area -->
         <main class="main-content">
-            <!-- 主页面: 测试选择 -->
+            <!-- Main Page: Test Selection -->
             <div id="test-selection" class="page active">
                 <div class="test-selection-page">
                     <div class="test-selection-header">
                         <h1>🔍 Smart Monitor</h1>
-                        <p>智能监控系统 - 测试选择</p>
+                        <p>Smart Monitoring System - Test Selection</p>
                     </div>
 
                     <div class="test-selection-container">
@@ -25,11 +25,11 @@
                                 <i class="fas fa-history"></i>
                             </div>
                             <h3>Old Test</h3>
-                            <p>使用现有的测试配置</p>
+                            <p>Use Existing Test Configuration</p>
                             <div class="test-description">
-                                <p>选择正在运行的测试工作台</p>
-                                <p>快速进入监控状态</p>
-                                <p>适用于已配置的测试环境</p>
+                                <p>Select Running Test Workstation</p>
+                                <p>Quickly Enter Monitoring State</p>
+                                <p>Suitable for Pre-configured Test Environment</p>
                             </div>
                         </div>
                         
@@ -38,82 +38,82 @@
                                 <i class="fas fa-plus-circle"></i>
                             </div>
                             <h3>New Test</h3>
-                            <p>创建新的测试配置</p>
+                            <p>Create New Test Configuration</p>
                             <div class="test-description">
-                                <p>上传数据文件</p>
-                                <p>配置标签匹配</p>
-                                <p>启动新的监控会话</p>
+                                <p>Upload Data Files</p>
+                                <p>Configure Label Matching</p>
+                                <p>Start New Monitoring Session</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 工作台选择页面 -->
+            <!-- Workstation Selection Page -->
             <div id="workstation-selection" class="page hidden">
                 <div class="page-header">
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="app.showTestSelection()">
                             <i class="fas fa-home"></i>
-                            返回主页
+                            Back to Home
                         </button>
                     </div>
-                    <h2>🖥️ 工作台选择</h2>
-                    <p>选择正在运行的测试工作台</p>
+                    <h2>🖥️ Workstation Selection</h2>
+                    <p>Select Running Test Workstation</p>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">可用工作台</h3>
+                        <h3 class="card-title">Available Workstations</h3>
                     </div>
                     <div id="workstation-list" class="workstation-list">
-                        <div class="loading">正在加载工作台列表...</div>
+                        <div class="loading">Loading workstation list...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 文件选择和标签匹配页面 -->
+            <!-- File Selection and Label Matching Page -->
             <div id="file-config" class="page hidden">
                 <div class="page-header">
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="app.showTestSelection()">
                             <i class="fas fa-home"></i>
-                            返回主页
+                            Back to Home
                         </button>
                     </div>
-                    <h2>📁 文件选择 & 标签匹配</h2>
-                    <p>选择数据文件并配置标签匹配</p>
+                    <h2>📁 File Selection & Label Matching</h2>
+                    <p>Select Data Files and Configure Label Matching</p>
                 </div>
 
-                <!-- 文件选择区域 -->
+                <!-- File Selection Area -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">数据文件选择</h3>
+                        <h3 class="card-title">Data File Selection</h3>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">选择 .dat 文件</label>
+                        <label class="form-label">Select .dat File</label>
                         <div class="flex gap-2 mb-4">
                             <select id="file-selector" class="form-select">
-                                <option value="">请选择数据文件...</option>
+                                <option value="">Please select data file...</option>
                             </select>
                             <button class="btn btn-primary" onclick="app.refreshFileList()">
                                 <i class="fas fa-sync"></i>
-                                刷新文件列表
+                                Refresh File List
                             </button>
                         </div>
                         
-                        <!-- 文件上传区域 -->
+                        <!-- File Upload Area -->
                         <div class="upload-section">
-                            <label class="form-label">或上传本地文件</label>
+                            <label class="form-label">Or Upload Local File</label>
                             <div class="upload-area" id="upload-area">
                                 <div class="upload-content">
                                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <p class="upload-text">拖拽文件到此处或点击选择文件</p>
-                                    <p class="upload-hint">支持 .dat 文件</p>
+                                    <p class="upload-text">Drag files here or click to select</p>
+                                    <p class="upload-hint">Supports .dat files</p>
                                     <input type="file" id="file-upload" accept=".dat" style="display: none;">
                                     <button class="btn btn-outline" onclick="document.getElementById('file-upload').click()">
                                         <i class="fas fa-folder-open"></i>
-                                        选择文件
+                                        Select File
                                     </button>
                                 </div>
                             </div>
@@ -121,370 +121,376 @@
                                 <div class="progress-bar">
                                     <div class="progress-fill" id="progress-fill"></div>
                                 </div>
-                                <p class="progress-text" id="progress-text">上传中...</p>
+                                <p class="progress-text" id="progress-text">Uploading...</p>
                             </div>
                         </div>
                     </div>
                     <div id="file-info" class="mt-4">
-                        <p>请选择数据文件以查看详细信息</p>
+                        <p>Please select a data file to view details</p>
                     </div>
                 </div>
 
-                <!-- 标签匹配区域 -->
+                <!-- Label Matching Configuration -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">标签匹配配置</h3>
-                        <div class="status-indicator status-info">等待文件选择</div>
+                        <h3 class="card-title">Label Matching Configuration</h3>
+                        <div class="flex items-center gap-4">
+                            <div class="status-indicator status-info">Waiting for file selection</div>
+                            <button class="btn btn-secondary btn-sm" onclick="app.quickMatchTest()">
+                                <i class="fas fa-magic"></i>
+                                Quick Match (Test)
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="app.loadLastLabelSelection()">
+                                <i class="fas fa-history"></i>
+                                Load Last Configuration
+                            </button>
+                        </div>
                     </div>
                     <div id="label-selection" class="label-selection-container">
-                        <p>请先选择数据文件以配置标签匹配</p>
+                        <p>Please select a data file first to configure label matching</p>
                     </div>
                 </div>
 
-                <!-- 确认按钮 -->
+                <!-- Confirm Configuration -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">确认配置</h3>
+                        <h3 class="card-title">Confirm Configuration</h3>
                     </div>
                     <div class="flex gap-4">
                         <button class="btn btn-primary btn-lg" onclick="app.confirmAndGoToMonitor()">
                             <i class="fas fa-check"></i>
-                            确认配置并进入监控
-                        </button>
-                        <button class="btn btn-outline" onclick="app.loadLastLabelSelection()">
-                            <i class="fas fa-history"></i>
-                            加载上次配置
+                            Confirm Configuration & Enter Monitoring
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Old Test 控制面板和监控状态页面 -->
+            <!-- Old Test Control Panel and Monitoring Status Page -->
             <div id="old-test-monitor-panel" class="page hidden">
                 <div class="page-header">
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="app.showTestSelection()">
                             <i class="fas fa-home"></i>
-                            返回主页
+                            Back to Home
                         </button>
                     </div>
-                    <h2>📊 Old Test 控制面板</h2>
-                    <p>现有测试工作台的监控控制</p>
+                    <h2>📊 Old Test Control Panel</h2>
+                    <p>Monitoring Control for Existing Test Workstations</p>
                 </div>
 
-                <!-- 工作台信息 -->
+                <!-- Workstation Information -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">当前工作台</h3>
-                        <div id="current-workstation-status" class="status-indicator status-info">未选择</div>
+                        <h3 class="card-title">Current Workstation</h3>
+                        <div id="current-workstation-status" class="status-indicator status-info">Not Selected</div>
                     </div>
                     <div id="workstation-info">
-                        <p>请先选择工作台</p>
+                        <p>Please select a workstation first</p>
                     </div>
                 </div>
 
-                <!-- 控制面板 -->
+                <!-- Control Panel -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">监控控制</h3>
+                        <h3 class="card-title">Monitoring Control</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <div class="form-group">
-                                <label class="form-label">配置文件</label>
+                                <label class="form-label">Configuration File</label>
                                 <select id="old-config-selector" class="form-select">
-                                    <option value="config/rules.yaml">config/rules.yaml (默认)</option>
+                                    <option value="config/rules.yaml">config/rules.yaml (Default)</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">运行ID</label>
-                                <input type="text" id="old-run-id" class="form-input" placeholder="自动生成">
+                                <label class="form-label">Run ID</label>
+                                <input type="text" id="old-run-id" class="form-input" placeholder="Auto-generated">
                             </div>
                         </div>
                         <div class="flex flex-col gap-2">
                             <button class="btn btn-success" onclick="app.startOldTestMonitoring()">
                                 <i class="fas fa-play"></i>
-                                启动监控
+                                Start Monitoring
                             </button>
                             <button class="btn btn-warning" onclick="app.stopOldTestMonitoring()">
                                 <i class="fas fa-stop"></i>
-                                停止监控
+                                Stop Monitoring
                             </button>
                             <button class="btn btn-secondary" onclick="app.startOldTestSimulation()">
                                 <i class="fas fa-gamepad"></i>
-                                启动模拟
+                                Start Simulation
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 状态面板 -->
+                <!-- Status Panel -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">监控状态</h3>
-                            <div id="old-monitoring-status" class="status-indicator status-info">未启动</div>
+                            <h3 class="card-title">Monitoring Status</h3>
+                            <div id="old-monitoring-status" class="status-indicator status-info">Not Started</div>
                         </div>
                         <div id="old-monitoring-details">
-                            <p>监控未启动</p>
+                            <p>Monitoring not started</p>
                         </div>
                     </div>
 
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">会话统计</h3>
+                            <h3 class="card-title">Session Statistics</h3>
                         </div>
                         <div id="old-session-stats">
-                            <p><strong>开始时间:</strong> <span id="old-session-start">-</span></p>
-                            <p><strong>处理记录:</strong> <span id="old-total-records">0</span></p>
-                            <p><strong>告警数量:</strong> <span id="old-total-alarms">0</span></p>
-                            <p><strong>处理速度:</strong> <span id="old-processing-speed">0</span> 记录/秒</p>
+                            <p><strong>Start Time:</strong> <span id="old-session-start">-</span></p>
+                            <p><strong>Records Processed:</strong> <span id="old-total-records">0</span></p>
+                            <p><strong>Alarm Count:</strong> <span id="old-total-alarms">0</span></p>
+                            <p><strong>Processing Speed:</strong> <span id="old-processing-speed">0</span> records/sec</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 告警表格 -->
+                <!-- Alarm Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">告警记录</h3>
+                        <h3 class="card-title">Alarm Records</h3>
                         <button class="btn btn-outline btn-sm" onclick="app.clearOldTestAlarms()">
                             <i class="fas fa-trash"></i>
-                            清空告警
+                            Clear Alarms
                         </button>
                     </div>
                     <div class="table-container">
                         <table class="table" id="old-alarm-table">
                             <thead>
                                 <tr>
-                                    <th>时间</th>
-                                    <th>工作站ID</th>
-                                    <th>通道</th>
-                                    <th>值</th>
-                                    <th>阈值</th>
-                                    <th>规则</th>
+                                    <th>Time</th>
+                                    <th>Workstation ID</th>
+                                    <th>Channel</th>
+                                    <th>Value</th>
+                                    <th>Threshold</th>
+                                    <th>Rule</th>
                                 </tr>
                             </thead>
                             <tbody id="old-alarm-tbody">
                                 <tr>
-                                    <td colspan="6" class="text-center">暂无告警记录</td>
+                                    <td colspan="6" class="text-center">No alarm records</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 日志查看器 -->
+                <!-- Log Viewer -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">系统日志</h3>
+                        <h3 class="card-title">System Logs</h3>
                         <button class="btn btn-outline btn-sm" onclick="app.clearOldTestLogs()">
                             <i class="fas fa-trash"></i>
-                            清空日志
+                            Clear Logs
                         </button>
                     </div>
                     <div class="log-container">
                         <div id="old-log-viewer" class="log-viewer">
-                            <p>系统日志将在这里显示...</p>
+                            <p>System logs will be displayed here...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- New Test 控制面板和监控状态页面 -->
+            <!-- New Test Control Panel and Monitoring Status Page -->
             <div id="new-test-monitor-panel" class="page hidden">
                 <div class="page-header">
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="app.showTestSelection()">
                             <i class="fas fa-home"></i>
-                            返回主页
+                            Back to Home
                         </button>
                     </div>
-                    <h2>📊 New Test 控制面板</h2>
-                    <p>新测试会话的监控控制</p>
+                    <h2>📊 New Test Control Panel</h2>
+                    <p>Monitoring Control for New Test Sessions</p>
                 </div>
 
-                <!-- 文件信息 -->
+                <!-- File Information -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">当前文件</h3>
-                        <div id="current-file-status" class="status-indicator status-info">未选择</div>
+                        <h3 class="card-title">Current File</h3>
+                        <div id="current-file-status" class="status-indicator status-info">Not Selected</div>
                     </div>
                     <div id="file-info-display">
-                        <p>请先选择数据文件</p>
+                        <p>Please select a data file first</p>
                     </div>
                 </div>
 
-                <!-- 控制面板 -->
+                <!-- Control Panel -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">监控控制</h3>
+                        <h3 class="card-title">Monitoring Control</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <div class="form-group">
-                                <label class="form-label">配置文件</label>
+                                <label class="form-label">Configuration File</label>
                                 <select id="new-config-selector" class="form-select">
-                                    <option value="config/rules.yaml">config/rules.yaml (默认)</option>
+                                    <option value="config/rules.yaml">config/rules.yaml (Default)</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">运行ID</label>
-                                <input type="text" id="new-run-id" class="form-input" placeholder="自动生成">
+                                <label class="form-label">Run ID</label>
+                                <input type="text" id="new-run-id" class="form-input" placeholder="Auto-generated">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">工作站ID</label>
-                                <input type="text" id="new-workstation-id" class="form-input" placeholder="自动推断">
+                                <label class="form-label">Workstation ID</label>
+                                <input type="text" id="new-workstation-id" class="form-input" placeholder="Auto-inferred">
                             </div>
                         </div>
                         <div class="flex flex-col gap-2">
                             <button class="btn btn-success" onclick="app.startNewTestMonitoring()">
                                 <i class="fas fa-play"></i>
-                                启动监控
+                                Start Monitoring
                             </button>
                             <button class="btn btn-warning" onclick="app.stopNewTestMonitoring()">
                                 <i class="fas fa-stop"></i>
-                                停止监控
+                                Stop Monitoring
                             </button>
                             <button class="btn btn-secondary" onclick="app.startNewTestSimulation()">
                                 <i class="fas fa-gamepad"></i>
-                                启动模拟
+                                Start Simulation
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 状态面板 -->
+                <!-- Status Panel -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">监控状态</h3>
-                            <div id="new-monitoring-status" class="status-indicator status-info">未启动</div>
+                            <h3 class="card-title">Monitoring Status</h3>
+                            <div id="new-monitoring-status" class="status-indicator status-info">Not Started</div>
                         </div>
                         <div id="new-monitoring-details">
-                            <p>监控未启动</p>
+                            <p>Monitoring not started</p>
                         </div>
                     </div>
 
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">会话统计</h3>
+                            <h3 class="card-title">Session Statistics</h3>
                         </div>
                         <div id="new-session-stats">
-                            <p><strong>开始时间:</strong> <span id="new-session-start">-</span></p>
-                            <p><strong>处理记录:</strong> <span id="new-total-records">0</span></p>
-                            <p><strong>告警数量:</strong> <span id="new-total-alarms">0</span></p>
-                            <p><strong>处理速度:</strong> <span id="new-processing-speed">0</span> 记录/秒</p>
+                            <p><strong>Start Time:</strong> <span id="new-session-start">-</span></p>
+                            <p><strong>Records Processed:</strong> <span id="new-total-records">0</span></p>
+                            <p><strong>Alarm Count:</strong> <span id="new-total-alarms">0</span></p>
+                            <p><strong>Processing Speed:</strong> <span id="new-processing-speed">0</span> records/sec</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 标签配置显示 -->
+                <!-- Label Configuration Display -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">标签配置</h3>
-                        <div id="label-config-status" class="status-indicator status-info">未配置</div>
+                        <h3 class="card-title">Label Configuration</h3>
+                        <div id="label-config-status" class="status-indicator status-info">Not Configured</div>
                     </div>
                     <div id="label-config-display">
-                        <p>请先配置标签匹配</p>
+                        <p>Please configure label matching first</p>
                     </div>
                 </div>
 
-                <!-- 告警表格 -->
+                <!-- Alarm Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">告警记录</h3>
+                        <h3 class="card-title">Alarm Records</h3>
                         <button class="btn btn-outline btn-sm" onclick="app.clearNewTestAlarms()">
                             <i class="fas fa-trash"></i>
-                            清空告警
+                            Clear Alarms
                         </button>
                     </div>
                     <div class="table-container">
                         <table class="table" id="new-alarm-table">
                             <thead>
                                 <tr>
-                                    <th>时间</th>
-                                    <th>工作站ID</th>
-                                    <th>通道</th>
-                                    <th>值</th>
-                                    <th>阈值</th>
-                                    <th>规则</th>
+                                    <th>Time</th>
+                                    <th>Workstation ID</th>
+                                    <th>Channel</th>
+                                    <th>Value</th>
+                                    <th>Threshold</th>
+                                    <th>Rule</th>
                                 </tr>
                             </thead>
                             <tbody id="new-alarm-tbody">
                                 <tr>
-                                    <td colspan="6" class="text-center">暂无告警记录</td>
+                                    <td colspan="6" class="text-center">No alarm records</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 日志查看器 -->
+                <!-- Log Viewer -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">系统日志</h3>
+                        <h3 class="card-title">System Logs</h3>
                         <button class="btn btn-outline btn-sm" onclick="app.clearNewTestLogs()">
                             <i class="fas fa-trash"></i>
-                            清空日志
+                            Clear Logs
                         </button>
                     </div>
                     <div class="log-container">
                         <div id="new-log-viewer" class="log-viewer">
-                            <p>系统日志将在这里显示...</p>
+                            <p>System logs will be displayed here...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 配置管理页面 -->
+            <!-- Configuration Management Page -->
             <div id="config-page" class="page hidden">
                 <div class="page-header">
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="app.showTestSelection()">
                             <i class="fas fa-home"></i>
-                            返回主页
+                            Back to Home
                         </button>
                     </div>
-                    <h2>⚙️ 配置管理</h2>
-                    <p>管理标签配置和规则设置</p>
+                    <h2>⚙️ Configuration Management</h2>
+                    <p>Manage Label Configuration and Rule Settings</p>
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">标签配置</h3>
+                        <h3 class="card-title">Label Configuration</h3>
                     </div>
                     <div id="config-content">
-                        <p>配置管理功能开发中...</p>
+                        <p>Configuration management features under development...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- 系统信息页面 -->
+            <!-- System Information Page -->
             <div id="system-page" class="page hidden">
                 <div class="page-header">
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="app.showTestSelection()">
                             <i class="fas fa-home"></i>
-                            返回主页
+                            Back to Home
                         </button>
                     </div>
-                    <h2>🖥️ 系统信息</h2>
-                    <p>系统状态和健康检查</p>
+                    <h2>🖥️ System Information</h2>
+                    <p>System Status and Health Check</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">系统状态</h3>
+                            <h3 class="card-title">System Status</h3>
                         </div>
                         <div id="system-info">
-                            <p>正在加载系统信息...</p>
+                            <p>Loading system information...</p>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">健康检查</h3>
+                            <h3 class="card-title">Health Check</h3>
                         </div>
                         <div id="health-check">
-                            <p>正在检查系统健康状态...</p>
+                            <p>Checking system health status...</p>
                         </div>
                     </div>
                 </div>
@@ -492,13 +498,13 @@
         </main>
     </div>
 
-    <!-- 通知容器 -->
+    <!-- Notification Container -->
     <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
 
-    <!-- 加载JavaScript -->
+    <!-- Load JavaScript -->
     <script src="/static/js/app.js"></script>
     
-    <!-- 页面样式 -->
+                    <!-- Page Styles -->
     <style>
         .page {
             display: none;
@@ -621,12 +627,12 @@
         }
     </style>
 
-    <!-- 通知容器 -->
+    <!-- Notification Container -->
     <div id="notification-container" class="notification-container"></div>
 
     <script src="/static/js/app.js"></script>
     <script>
-        // 初始化应用
+        // Initialize application
         let app;
         document.addEventListener('DOMContentLoaded', () => {
             app = new SmartMonitorApp();

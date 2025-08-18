@@ -1,6 +1,6 @@
-/* Smart Monitor Web - 现代化CSS样式 */
+/* Smart Monitor Web - Modern CSS Styles */
 
-/* ==================== 基础样式 ==================== */
+/* ==================== Base Styles ==================== */
 * {
     margin: 0;
     padding: 0;
@@ -30,7 +30,7 @@ body {
     line-height: 1.6;
 }
 
-/* ==================== 布局 ==================== */
+/* ==================== Layout ==================== */
 .container {
     min-height: 100vh;
     background-color: var(--background-color);
@@ -43,7 +43,7 @@ body {
     overflow-y: auto;
 }
 
-/* ==================== 页面样式 ==================== */
+/* ==================== Page Styles ==================== */
 .page {
     display: none;
 }
@@ -68,7 +68,7 @@ body {
     font-size: 1.125rem;
 }
 
-/* ==================== 测试选择页面 ==================== */
+/* ==================== Test Selection Page ==================== */
 .test-selection-page {
     text-align: center;
     padding: 2rem 0;
@@ -191,7 +191,7 @@ body {
     margin-bottom: 0;
 }
 
-/* ==================== 工作台列表 ==================== */
+/* ==================== Workstation List ==================== */
 .workstation-list {
     display: grid;
     gap: 1rem;
@@ -255,7 +255,7 @@ body {
     font-size: 0.875rem;
 }
 
-/* ==================== 卡片组件 ==================== */
+/* ==================== Card Components ==================== */
 .card {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
@@ -287,7 +287,7 @@ body {
     margin: 0;
 }
 
-/* ==================== 按钮样式 ==================== */
+/* ==================== Button Styles ==================== */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -389,7 +389,7 @@ body {
     box-shadow: none;
 }
 
-/* ==================== 表单样式 ==================== */
+/* ==================== Form Styles ==================== */
 .form-group {
     margin-bottom: 1rem;
 }
@@ -435,7 +435,7 @@ body {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* ==================== 状态指示器 ==================== */
+/* ==================== Status Indicators ==================== */
 .status-indicator {
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
@@ -465,7 +465,7 @@ body {
     color: white;
 }
 
-/* ==================== 表格样式 ==================== */
+/* ==================== Table Styles ==================== */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -489,7 +489,7 @@ body {
     background-color: var(--background-color);
 }
 
-/* ==================== 工具类 ==================== */
+/* ==================== Utility Classes ==================== */
 .grid {
     display: grid;
 }
@@ -562,7 +562,7 @@ body {
     display: none !important;
 }
 
-/* ==================== 响应式设计 ==================== */
+/* ==================== Responsive Design ==================== */
 @media (max-width: 1024px) {
     .container {
         grid-template-columns: 1fr;
@@ -590,7 +590,7 @@ body {
     }
 }
 
-/* ==================== 动画 ==================== */
+/* ==================== Animations ==================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -631,7 +631,7 @@ body {
     }
 }
 
-/* ==================== 文件上传 ==================== */
+/* ==================== File Upload ==================== */
 .upload-section {
     margin-top: 1rem;
 }
@@ -715,7 +715,7 @@ body {
     display: none !important;
 }
 
-/* ==================== 日志查看器 ==================== */
+/* ==================== Log Viewer ==================== */
 .log-viewer {
     background-color: #1e293b;
     color: #e2e8f0;
@@ -752,7 +752,7 @@ body {
     border-radius: 0.5rem;
 }
 
-/* ==================== 通知系统 ==================== */
+/* ==================== Notification System ==================== */
 .notification-container {
     position: fixed;
     top: 20px;
@@ -794,7 +794,7 @@ body {
     }
 }
 
-/* ==================== 标签选择 ==================== */
+/* ==================== Label Selection ==================== */
 .label-selection-container {
     max-height: 400px;
     overflow-y: auto;
@@ -851,7 +851,7 @@ body {
     margin: 0;
 }
 
-/* ==================== 统计项 ==================== */
+/* ==================== Statistics ==================== */
 .stat-item {
     display: flex;
     justify-content: space-between;
@@ -874,7 +874,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ==================== 页面特定样式 ==================== */
+/* ==================== Page Specific Styles ==================== */
 .workstation-selection .card {
     margin-bottom: 1rem;
 }
