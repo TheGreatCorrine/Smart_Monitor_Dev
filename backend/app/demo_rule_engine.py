@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-demo_rule_engine.py
+backend/app/demo_rule_engine.py
 ------------------------------------
 规则引擎演示脚本
 演示如何使用规则引擎进行数据监控
@@ -9,9 +9,9 @@ import sys
 import os
 from pathlib import Path
 
-# 添加backend目录到Python路径
-backend_path = Path(__file__).parent / "backend"
-sys.path.insert(0, str(backend_path))
+# 添加项目根目录到Python路径，确保能找到所有模块
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 from datetime import datetime, timedelta
 import logging
@@ -40,37 +40,37 @@ def create_test_data():
         Record(
             run_id="demo_session_001",
             ts=base_time,
-            metrics={"温度": 4.5, "压力": 0.9, "湿度": 65.0}
+            metrics={"Temperature": 4.5, "Pressure": 0.9, "Humidity": 65.0}
         ),
         # 温度开始升高
         Record(
             run_id="demo_session_001",
             ts=base_time + timedelta(minutes=1),
-            metrics={"温度": 6.2, "压力": 0.8, "湿度": 68.0}
+            metrics={"Temperature": 6.2, "Pressure": 0.8, "Humidity": 68.0}
         ),
         # 温度继续升高，压力下降
         Record(
             run_id="demo_session_001",
             ts=base_time + timedelta(minutes=2),
-            metrics={"温度": 7.8, "压力": 0.6, "湿度": 72.0}
+            metrics={"Temperature": 7.8, "Pressure": 0.6, "Humidity": 72.0}
         ),
         # 温度过高，压力过低
         Record(
             run_id="demo_session_001",
             ts=base_time + timedelta(minutes=3),
-            metrics={"温度": 9.5, "压力": 0.4, "湿度": 75.0}
+            metrics={"Temperature": 9.5, "Pressure": 0.4, "Humidity": 75.0}
         ),
         # 温度持续过高
         Record(
             run_id="demo_session_001",
             ts=base_time + timedelta(minutes=4),
-            metrics={"温度": 9.8, "压力": 0.3, "湿度": 78.0}
+            metrics={"Temperature": 9.8, "Pressure": 0.3, "Humidity": 78.0}
         ),
         # 温度持续过高，湿度也异常
         Record(
             run_id="demo_session_001",
             ts=base_time + timedelta(minutes=5),
-            metrics={"温度": 10.2, "压力": 0.2, "湿度": 85.0}
+            metrics={"Temperature": 10.2, "Pressure": 0.2, "Humidity": 85.0}
         ),
     ]
     
@@ -102,13 +102,13 @@ def main():
     
     # 初始化服务
     try:
-        monitor_service.initialize("config/rules.yaml")
+        # 使用相对于项目根目录的配置文件路径
+        config_path = Path(__file__).parent.parent.parent / "config" / "rules.yaml"
+        monitor_service.initialize(str(config_path))
         print("✓ 监控服务初始化成功")
         
         # 显示规则摘要
-        summary = monitor_service.get_rule_summary()
-        print(f"✓ 加载了 {summary['enabled_rules']} 条规则")
-        print(f"   规则ID: {', '.join(summary['rule_ids'])}")
+        print(f"✓ 规则引擎初始化成功")
         
     except Exception as e:
         print(f"❌ 初始化失败: {e}")
