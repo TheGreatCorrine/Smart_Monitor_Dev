@@ -1,8 +1,8 @@
-# Smart Monitor 智能监测系统
+# Smart Monitor and Alert System 智能监测报警系统
 
 ## 🎯 项目简介
 
-Smart Monitor 是一个基于Python的智能监测系统，支持GUI和Web两种界面，采用Clean Architecture架构设计。
+Smart Monitor and Alert System 是一个基于Python的智能监测报警系统，支持CLI, GUI, 以及Web三种界面，采用Clean Architecture架构设计。
 
 ## 🚀 快速开始
 
@@ -14,11 +14,13 @@ docs/SETUP_GUIDE.md
 
 ### 2. 启动应用
 ```bash
+# CLI模式
+python -m backend.app --cli data/MPL6.dat
+
 # GUI模式 (推荐)
 python -m backend.app --gui
 
-# CLI模式
-python -m backend.app --cli data/MPL6.dat
+
 ```
 
 ### 3. Web部署
@@ -27,17 +29,6 @@ python -m backend.app --cli data/MPL6.dat
 docs/DEPLOYMENT.md
 ```
 
-## 📚 详细文档
-
-### 🎯 用户指南
-- **[用户使用指南](docs/USER_GUIDE.md)** - GUI界面的使用说明和功能介绍
-- **[环境配置指南](docs/SETUP_GUIDE.md)** - Python环境配置和兼容性说明
-
-### 🏗️ 技术文档
-- **[系统架构说明](docs/ARCHITECTURE.md)** - Clean Architecture架构重构的详细说明
-- **[系统部署指南](docs/DEPLOYMENT.md)** - Web系统的部署和配置说明
-- **[测试指南](docs/TESTING.md)** - 测试框架和运行指南
-- **[系统配置指南](docs/CONFIGURATION.md)** - 通道配置和系统设置的详细说明
 
 ## 📁 项目结构
 
@@ -77,6 +68,18 @@ Smart_Monitor_Dev/
 - **测试**: pytest
 - **配置**: YAML
 
+## 📚 详细文档
+
+### 🎯 用户指南
+- **[用户使用指南](docs/USER_GUIDE.md)** - GUI界面的使用说明和功能介绍
+- **[环境配置指南](docs/SETUP_GUIDE.md)** - Python环境配置和兼容性说明
+
+### 🏗️ 技术文档
+- **[系统架构说明](docs/ARCHITECTURE.md)** - Clean Architecture架构重构的详细说明
+- **[系统部署指南](docs/DEPLOYMENT.md)** - Web系统的部署和配置说明
+- **[测试指南](docs/TESTING.md)** - 测试框架和运行指南
+- **[系统配置指南](docs/CONFIGURATION.md)** - 通道配置和系统设置的详细说明
+
 ## 📞 技术支持
 
 如有问题或建议，请：
@@ -88,5 +91,5 @@ Smart_Monitor_Dev/
 ---
 
 **项目版本**: 1.0.0  
-**最后更新**: 2024-01-01  
+**最后更新**: 2025-08-20  
 **文档状态**: ✅ 完整 
