@@ -1,5 +1,23 @@
 # Python 3.11 兼容性指南
 
+## 📋 目录
+
+- [🎯 兼容性状态](#-兼容性状态)
+- [🚀 安装指南](#-安装指南)
+  - [方法1: 使用conda (推荐)](#方法1-使用conda-推荐)
+  - [方法2: 使用pyenv](#方法2-使用pyenv)
+  - [方法3: 使用官方Python](#方法3-使用官方python)
+- [🧪 兼容性测试](#-兼容性测试)
+  - [运行测试脚本](#运行测试脚本)
+  - [测试GUI和CLI](#测试gui和cli)
+- [📦 依赖包说明](#-依赖包说明)
+- [🔧 故障排除](#-故障排除)
+  - [常见问题](#常见问题)
+  - [版本检查](#版本检查)
+- [✅ 总结](#-总结)
+
+---
+
 ## 🎯 兼容性状态
 
 ✅ **完全兼容 Python 3.11+**
@@ -56,7 +74,7 @@ pip install -r requirements.txt
 ### 运行测试脚本
 ```bash
 # 运行兼容性测试
-python test_python311_compatibility.py
+python tests/test_python311_compatibility.py
 
 # 运行单元测试
 python -m pytest tests/unit/ -v
@@ -74,7 +92,7 @@ python -m backend.app --gui
 python -m backend.app --cli --interactive
 
 # 测试演示脚本
-python demo_rule_engine.py
+python -m backend.app.demo_rule_engine
 ```
 
 ## 📦 依赖包说明
